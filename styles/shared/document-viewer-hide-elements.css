@@ -1,0 +1,51 @@
+/* Hide elements in eco-solvent printer product details per user request */
+
+/* 1. Hide the product title/description at top of document */
+.eco-solvent-printer .docx-content h1:first-child,
+.eco-solvent-printer .document-title,
+.eco-solvent-printer .document-subtitle {
+  display: none !important;
+}
+
+/* 2. Hide "Displaying X of Y pages" text */
+.eco-solvent-printer .pdf-page-count {
+  display: none !important;
+}
+
+/* 3. Hide page headers with page count */
+.eco-solvent-printer .pdf-page-header {
+  display: none !important;
+}
+
+/* 4. Download buttons are now shown as requested */
+
+/* 5. Hide Compatibility section and headings */
+.eco-solvent-printer h2:contains("Compatibility"),
+.eco-solvent-printer h3:contains("Compatibility"),
+.product-compatibility-section {
+  display: none !important;
+}
+
+/* 6. Hide Specifications section and headings */
+.eco-solvent-printer h2:contains("Specification"),
+.eco-solvent-printer h3:contains("Specification"),
+.eco-solvent-printer h2:contains("Features"),
+.eco-solvent-printer h3:contains("Features"),
+.product-specifications-section {
+  display: none !important;
+}
+
+/* Show the download link in "more pages" message but hide the text */
+.eco-solvent-printer .pdf-more-pages p {
+  visibility: hidden;
+}
+.eco-solvent-printer .pdf-more-pages p a.download-link {
+  visibility: visible;
+  display: inline-block;
+  margin-top: 20px;
+}
+
+/* Hide product description (red box) on printer detail pages */
+.product-description.js-product-description {
+  display: none !important;
+}

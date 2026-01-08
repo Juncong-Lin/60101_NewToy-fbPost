@@ -1,0 +1,689 @@
+.qili-header {
+  background-color: #232F3E;
+  color: white;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 10000; /* Increased z-index to be above sub-header */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: visible; /* Ensure dropdown can overflow the header */
+}
+
+/* Ensure proper flex distribution for better search bar width */
+@media (max-width: 1200px) {
+  .qili-header-middle-section {
+    max-width: 450px; /* Further reduce on larger tablets */
+    margin: 0 12px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .qili-header-left-section {
+    width: 80px; /* Further reduced for more search space */
+    min-width: 60px;
+  }
+  
+  .qili-header-middle-section {
+    margin: 0 10px;
+    max-width: none; /* Remove constraint on tablets */
+    min-width: 200px;
+  }
+  
+  .qili-header-right-section {
+    width: 80px; /* Further reduced for more search space */
+  }
+}
+
+.qili-header-left-section {
+  width: 150px; /* Increased from 120px for better balance */
+  min-width: 100px;
+  margin-right: 10px; /* Restored margin */
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+
+
+.header-link {
+  display: inline-block;
+  padding: 6px;
+  border-radius: 2px;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid rgba(0, 0, 0, 0);
+}
+
+.header-link:hover {
+  border: 1px solid white;
+}
+
+/* Desktop Logo Styles */
+.qili-logo {
+  margin-top: 5px;
+  width: 332px;
+  height: auto;
+  display: block;
+}
+
+/* Mobile Logo Styles */
+.qili-mobile-logo {
+  display: none;
+  width: 40px;
+  height: auto;
+}
+
+/* Logo Display Toggle */
+@media (max-width: 575px) {
+  .qili-logo {
+    display: none;
+  }
+
+  .qili-mobile-logo {
+    display: block;
+    width: 35px;
+    height: auto;
+    margin-top: 5px;
+  }
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 480px) {
+  .qili-mobile-logo {
+    width: 28px;
+    margin-top: 1px;
+  }
+  
+  .header-link {
+    padding: 2px;
+  }
+}
+
+@media (max-width: 360px) {
+  .qili-mobile-logo {
+    width: 24px;
+    margin-top: 1px;
+  }
+  
+  .header-link {
+    padding: 1px;
+  }
+}
+
+@media (max-width: 320px) {
+  .qili-mobile-logo {
+    width: 20px;
+    margin-top: 0;
+  }
+  
+  .header-link {
+    padding: 1px;
+  }
+}
+
+.qili-header-middle-section {
+  flex: 1;
+  max-width: 500px; /* Reduced from 600px for better desktop balance */
+  min-width: 250px; /* Ensure minimum usable width */
+  display: flex;
+  align-items: center;
+  margin: 0 15px; /* Restore reasonable margins for desktop */
+  position: relative; /* Ensure this is the positioning context for the dropdown */
+  overflow: visible; /* Ensure dropdown can overflow the container */
+  z-index: 10001; /* Higher than sub-header to create proper stacking context */
+}
+
+/* Mobile search centering - ensure search bar is truly centered */
+@media (max-width: 768px) {
+  .qili-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto; /* Auto-size side columns based on content */
+    align-items: center;
+    gap: 5px; /* Small gap between sections */
+    padding: 0 5px;
+  }
+  
+  .qili-header-left-section {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0; /* Remove margin for grid layout */
+  }
+  
+  .qili-header-middle-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0; /* Remove margin for grid layout */
+    min-width: 0; /* Allow shrinking */
+    max-width: none; /* Remove max-width constraint */
+  }
+  
+  .qili-header-right-section {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .qili-header {
+    padding: 0 3px;
+    grid-template-columns: 32px 1fr 32px; /* Smaller equal side columns */
+  }
+  
+  .qili-header-left-section {
+    width: 32px;
+    min-width: 32px;
+  }
+  
+  .qili-header-right-section {
+    width: 32px;
+    min-width: 32px;
+  }
+}
+
+@media (max-width: 360px) {
+  .qili-header {
+    padding: 0 2px;
+    grid-template-columns: 28px 1fr 28px; /* Even smaller equal side columns */
+  }
+  
+  .qili-header-left-section {
+    width: 28px;
+    min-width: 28px;
+  }
+  
+  .qili-header-right-section {
+    width: 28px;
+    min-width: 28px;
+  }
+}
+
+@media (max-width: 320px) {
+  .qili-header {
+    padding: 0 1px;
+    height: 55px;
+    grid-template-columns: 25px 1fr 25px; /* Ultra-small equal side columns */
+  }
+  
+  .qili-header-left-section {
+    width: 25px;
+    min-width: 25px;
+  }
+  
+  .qili-header-right-section {
+    width: 25px;
+    min-width: 25px;
+  }
+  
+  /* Hide orders link on ultra-small screens for more space */
+  .qili-header-right-section .orders-link {
+    display: none;
+  }
+}
+
+/* Mobile-specific positioning fixes */
+@media (max-width: 768px) {
+  /* Ensure body has proper top padding for fixed header */
+  body {
+    padding-top: 60px !important;
+  }
+}
+
+@media (max-width: 320px) {
+  .qili-header {
+    height: 55px !important; /* Reduced height for ultra-small screens */
+  }
+  
+  /* Adjust body padding for reduced header height */
+  body {
+    padding-top: 55px !important;
+  }
+}
+
+.search-bar {
+  flex: 1;
+  width: 100%; /* Force full width */
+  height: 40px;
+  padding: 0 15px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  min-width: 0; /* Allow shrinking below content size */
+  max-width: none; /* Remove any max-width constraints */
+}
+
+@media (max-width: 768px) {
+  .search-bar {
+    height: 36px;
+    padding: 0 8px; /* Reduced padding */
+    font-size: 14px;
+    /* Removed min-width to allow more flexibility */
+  }
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    height: 32px;
+    padding: 0 6px; /* Reduced padding */
+    font-size: 13px;
+    /* Removed min-width for more flexibility */
+  }
+}
+
+@media (max-width: 360px) {
+  .search-bar {
+    padding: 0 4px; /* Minimal padding */
+    font-size: 12px;
+    /* Removed min-width for maximum flexibility */
+    height: 28px; /* Smaller height for very small screens */
+  }
+}
+
+@media (max-width: 320px) {
+  /* Mobile search bar sizing to match container constraints */
+  .search-bar {
+    height: 26px;
+    padding: 0 3px;
+    font-size: 11px;
+  }
+}
+
+.search-bar::placeholder {
+  color: rgb(146, 146, 146);
+}
+
+.search-bar:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 48, 135, 0.2);
+}
+
+.search-button {
+  min-width: 45px;
+  height: 40px;  background-color: #1A252F;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .search-button {
+    min-width: 36px; /* Reduced */
+    height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-button {
+    min-width: 32px; /* Reduced */
+    height: 32px;
+  }
+}
+
+@media (max-width: 360px) {
+  .search-button {
+    min-width: 28px; /* Reduced to match smaller search bar */
+    height: 28px; /* Match search bar height */
+  }
+}
+
+@media (max-width: 320px) {
+  .search-button {
+    min-width: 26px;
+    height: 26px;
+  }
+}
+
+.search-button:hover {
+  background-color: #2C3A49;
+}
+
+.search-icon {
+  width: 22px;
+  height: 22px;
+  filter: brightness(0) invert(1); /* Make icon white */
+}
+
+@media (max-width: 768px) {
+  .search-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .search-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 320px) {
+  .search-icon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Extra small screens optimization */
+/* Search History Dropdown */
+.search-history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 45px; /* Account for search button width */
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* High z-index relative to parent stacking context */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  max-height: 250px;
+  overflow-y: auto;
+  pointer-events: none;
+  min-width: 250px; /* Ensure adequate width */
+  width: calc(100% - 45px); /* Full width minus search button */
+}
+
+.search-history-dropdown.show {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+  z-index: 1001 !important; /* Slightly higher when shown */
+  pointer-events: auto !important;
+}
+
+.search-history-header {
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center; /* Center the text */
+}
+
+.search-history-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-history-item:hover {
+  background-color: #f8f8f8;
+}
+
+.search-history-item:last-child {
+  border-bottom: none;
+}
+
+.search-history-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.search-history-time {
+  font-size: 11px;
+  color: #999;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.search-history-clear {
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  border-top: 1px solid #e0e0e0;
+  background: #f9f9f9;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.search-history-clear:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.search-history-empty {
+  padding: 20px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #999;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .search-history-dropdown {
+    right: 36px; /* Account for smaller search button */
+    max-height: 200px;
+  }
+  
+  .search-history-item {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .search-history-time {
+    font-size: 10px;
+  }
+  
+  .search-history-header {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  .search-history-clear {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-history-dropdown {
+    right: 32px; /* Account for search button */
+    max-height: 180px;
+    left: 0; /* Ensure it starts from the left edge */
+  }
+  
+  .search-history-item {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  
+  .search-history-header {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+  
+  .search-history-clear {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+  
+  .search-history-empty {
+    padding: 15px 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .search-history-dropdown {
+    right: 28px; /* Account for smaller search button */
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 320px) {
+  .search-history-dropdown {
+    right: 26px; /* Account for even smaller search button */
+  }
+}
+
+.qili-header-right-section {
+  width: 120px; /* Reduced from 180px */
+  flex-shrink: 0;
+  display: flex;
+  justify-content: end;
+}
+
+.orders-link {
+  color: white;
+}
+
+.returns-text {
+  display: block;
+  font-size: 13px;
+}
+
+.orders-text {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cart-link {
+  color: white;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.cart-icon {
+  width: 50px;
+}
+
+.cart-text {
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cart-quantity {
+  color: rgb(240, 136, 4);
+  font-size: 16px;
+  font-weight: 700;
+
+  position: absolute;
+  top: 4px;
+  left: 22px;
+  
+  width: 26px;
+  text-align: center;
+}
+
+/* Mobile cart icon sizing adjustments */
+@media (max-width: 768px) {
+  .cart-icon {
+    width: 32px;
+  }
+  
+  .cart-text {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  
+  .cart-quantity {
+    font-size: 12px;
+    width: 20px;
+    left: 16px;
+    top: 2px;
+  }
+  
+  .orders-text,
+  .returns-text {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-icon {
+    width: 28px;
+  }
+  
+  .cart-text {
+    font-size: 10px;
+    margin-top: 6px;
+  }
+  
+  .cart-quantity {
+    font-size: 10px;
+    width: 18px;
+    left: 14px;
+    top: 1px;
+  }
+}
+
+@media (max-width: 360px) {
+  .cart-icon {
+    width: 24px;
+  }
+  
+  .cart-text {
+    font-size: 9px;
+    margin-top: 4px;
+  }
+  
+  .cart-quantity {
+    font-size: 9px;
+    width: 16px;
+    left: 12px;
+    top: 1px;
+  }
+}
+
+@media (max-width: 320px) {
+  .cart-icon {
+    width: 20px;
+  }
+  
+  .cart-text {
+    font-size: 8px;
+    margin-top: 2px;
+  }
+  
+  .cart-quantity {
+    font-size: 8px;
+    width: 14px;
+    left: 10px;
+    top: 0;
+  }
+}

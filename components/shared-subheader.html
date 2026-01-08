@@ -1,0 +1,268 @@
+<!-- Shared Sub Header Navigation Component -->
+<div class="sub-header">
+  <div class="sub-header-content">
+    <nav class="sub-header-nav">      <a class="sub-header-link all-products-link active" href="javascript:void(0)" onclick="handleNavigationClick('')">See All Departments</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="inkjet-printers" onclick="handleNavigationClick('#inkjet-printers')">Inkjet Printers</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="print-heads" onclick="handleNavigationClick('#print-heads')">Print Heads</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="print-spare-parts" onclick="handleNavigationClick('#print-spare-parts')">Print Spare Parts</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="upgrading-kit" onclick="handleNavigationClick('#upgrading-kit')">Upgrading Kit</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="material" onclick="handleNavigationClick('#material')">Material</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="led-lcd" onclick="handleNavigationClick('#led-lcd')">LED & LCD</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="laser" onclick="handleNavigationClick('#laser')">Laser</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="cutting" onclick="handleNavigationClick('#cutting')">Cutting</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="channel-letter" onclick="handleNavigationClick('#channel-letter')">Channel Letter</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="cnc" onclick="handleNavigationClick('#cnc')">CNC</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="displays" onclick="handleNavigationClick('#displays')">Displays</a>
+      <a class="sub-header-link" href="javascript:void(0)" data-submenu="other" onclick="handleNavigationClick('#other')">Other</a>
+    </nav>
+  </div>
+  
+  <!-- Sub-header Submenus -->
+  <div class="sub-header-submenu" id="submenu-inkjet-printers">
+    <div class="sub-header-submenu-content">
+      <!-- Direct to Fabric & Film Technologies Row -->
+      <div class="sub-header-submenu-row">
+        <div class="sub-header-submenu-column">
+          <a class="sub-header-submenu-title sub-header-submenu-title-link" href="javascript:void(0)" onclick="handleCategoryClick('Direct to Fabric & Film')">Direct to Fabric & Film</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('DTF Printer')">DTF Printer</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV DTF Printer')">UV DTF Printer</a>
+        </div>
+      </div>
+      
+      <!-- Eco-Solvent & Solvent Printers Row -->
+      <div class="sub-header-submenu-row">
+        <div class="sub-header-submenu-column">
+          <a class="sub-header-submenu-title sub-header-submenu-title-link" href="javascript:void(0)" onclick="handleEconomicVersionClick()">Eco-Solvent Printers</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Eco-Solvent Inkjet Printers - With XP600 Printhead')">XP600 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Eco-Solvent Inkjet Printers - With I1600 Printhead')">I1600 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Eco-Solvent Inkjet Printers - With I3200 Printhead')">I3200 Printhead</a>
+        </div>
+        
+        <div class="sub-header-submenu-column">
+          <a class="sub-header-submenu-title sub-header-submenu-title-link" href="javascript:void(0)" onclick="handleCategoryClick('Solvent Inkjet Printers')">Solvent Printers</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Solvent Inket Printers - With Ricoh Gen5 Printhead')">Ricoh Gen5</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Solvent Inket Printers - With Ricoh Gen6 Printhead')">Ricoh Gen6</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Solvent Inket Printers - With Konica KM512i Printhead')">Konica KM512i</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Solvent Inket Printers - With Konica KM1024i Printhead')">Konica KM1024i</a>
+        </div>
+        
+        <div class="sub-header-submenu-column">
+          <a class="sub-header-submenu-title sub-header-submenu-title-link" href="javascript:void(0)" onclick="handleCategoryClick('Sublimation Printers')">Sublimation Printers</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Sublimation Printers - With XP600 Printhead')">XP600 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Sublimation Printers - With I1600 Printhead')">I1600 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Sublimation Printers - With I3200 Printhead')">I3200 Printhead</a>
+        </div>
+      </div>
+      
+      <!-- UV Inkjet Printers Row -->
+      <div class="sub-header-submenu-row">
+        <div class="sub-header-submenu-column">
+          <a class="sub-header-submenu-title sub-header-submenu-title-link" href="javascript:void(0)" onclick="handleCategoryClick('UV Inkjet Printers')">UV Inkjet Printers</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Inkjet Printers - With XP600 Printhead')">XP600 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Inkjet Printers - With I1600 Printhead')">I1600 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Inkjet Printers - With I3200 Printhead')">I3200 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Inkjet Printers - With Ricoh Gen5 Printhead')">Ricoh Gen5</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Inkjet Printers - With Ricoh Gen6 Printhead')">Ricoh Gen6</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Inkjet Printers - With Konica KM1024i Printhead')">Konica KM1024i</a>
+        </div>
+      </div>
+      
+      <!-- UV Flatbed & UV Hybrid Printers Row -->
+      <div class="sub-header-submenu-row">
+        <div class="sub-header-submenu-column">
+          <a class="sub-header-submenu-title sub-header-submenu-title-link" href="javascript:void(0)" onclick="handleCategoryClick('UV Flatbed Printers')">UV Flatbed Printers</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Flatbed Printers - With XP600 Printhead')">XP600 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Flatbed Printers - With I3200 Printhead')">I3200 Printhead</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Flatbed Printers - With Ricoh Gen5 Printhead')">Ricoh Gen5</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Flatbed Printers - With Ricoh Gen6 Printhead')">Ricoh Gen6</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Flatbed Printers - With Konica KM1024i Printheads')">Konica KM1024i</a>
+        </div>
+        
+        <div class="sub-header-submenu-column">
+          <a class="sub-header-submenu-title sub-header-submenu-title-link" href="javascript:void(0)" onclick="handleCategoryClick('UV Hybrid Inkjet Printer')">UV Hybrid Printers</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Hybrid Inkjet Printer - With Ricoh Gen6 Printheads')">Ricoh Gen6</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('UV Hybrid Inkjet Printer - With Konica KM1024i Printheads')">Konica KM1024i</a>
+        </div>
+        
+        <div class="sub-header-submenu-column">
+          <a class="sub-header-submenu-title sub-header-submenu-title-link" href="javascript:void(0)" onclick="handleDoubleSidePrintersClick()">Double Side Printers</a>
+          <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleDoubleSideDirectPrintingClick()">Direct Printing</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sub-header-submenu" id="submenu-print-heads">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Print Heads</div>
+        <div class="sub-header-submenu-content"> 
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('canon')">Canon Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('epson')">Epson Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('konica')">Konica Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('ricoh')">Ricoh Printhead</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('kyocera')">Kyocera Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('mimaki')">Mimaki Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('mutoh')">Mutoh Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('roland')">Roland Printhead</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('seiko')">Seiko Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('spectra')">Spectra Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('toshiba')">Toshiba Printhead</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handlePrintheadClick('xaar')">Xaar Printhead</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sub-header-submenu" id="submenu-print-spare-parts">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Printer Parts</div>        <div class="sub-header-submenu-content">      
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Epson Printer Spare Parts')">Epson Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Roland Printer Spare Parts')">Roland Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Mutoh Printer Spare Parts')">Mutoh Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Mimaki Printer Spare Parts')">Mimaki Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Gongzheng Printer Spare Parts')">Gongzheng Printer Parts</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Canon Printer Spare Parts')">Canon Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('HP Printer Spare Parts')">HP Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Brother Printer Spare Parts')">Brother Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Ricoh Printer Spare Parts')">Ricoh Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Human Printer Spare Parts')">Human Printer Parts</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Flora Printer Spare Parts')">Flora Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Galaxy Printer Spare Parts')">Galaxy Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Infiniti / Challenger Printer Spare Parts')">Infiniti/Challenger Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Wit-color Printer Spare Parts')">Wit-color Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Teflon Printer Spare Parts')">Teflon Printer Parts</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Wiper Printer Spare Parts')">Wiper Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Xaar Printer Spare Parts')">Xaar Printer Parts</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Toshiba Printer Spare Parts')">Toshiba Printer Parts</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>    <div class="sub-header-submenu" id="submenu-upgrading-kit">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Upgrading Kit</div>
+        <div class="sub-header-submenu-content"> 
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleUpgradingKitClick('hoson')">Hoson Upgrading Kits</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleUpgradingKitClick('mimaki')">Mimaki Upgrading Kits</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleUpgradingKitClick('mutoh')">Mutoh Upgrading Kits</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleUpgradingKitClick('roll_to_roll_style')">Roll to Roll Style</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleUpgradingKitClick('uv_flatbed')">UV Flatbed Kits</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleUpgradingKitClick('without_cable_work')">Without Cable Work</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>  <div class="sub-header-submenu" id="submenu-material">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Material</div>
+        <div class="sub-header-submenu-content"> 
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleMaterialClick('adhevie')">Adhevie Material</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleMaterialClick('flex')">Flex Material</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleMaterialClick('ink')">Ink Material</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleMaterialClick('mesh')">Mesh Material</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleMaterialClick('oneway')">Oneway Material</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleMaterialClick('photo')">Photo Material</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>    <div class="sub-header-submenu" id="submenu-led-lcd">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">LED & LCD</div>
+        <div class="sub-header-submenu-content"> 
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleLedLcdClick('display')">Display LED & LCD</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleLedLcdClick('outdoor')">Outdoor LED & LCD</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sub-header-submenu" id="submenu-laser">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Laser</div>
+        <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Laser')">View All Laser Products</a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sub-header-submenu" id="submenu-cutting">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Cutting</div>
+        <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Cutting')">View All Cutting Products</a>
+      </div>
+    </div>
+  </div>    <div class="sub-header-submenu" id="submenu-channel-letter">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Channel Letter</div>
+        <div class="sub-header-submenu-content"> 
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleChannelLetterClick('aluminum')">Aluminum</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleChannelLetterClick('automatic')">Automatic</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleChannelLetterClick('letter')">Letter</a>
+          </div>
+          <div class="sub-header-submenu-column">
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleChannelLetterClick('plate')">Plate</a>
+            <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleChannelLetterClick('special')">Special</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sub-header-submenu" id="submenu-cnc">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">CNC</div>
+        <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('CNC')">View All CNC Products</a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sub-header-submenu" id="submenu-displays">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Displays</div>
+        <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleCategoryClick('Displays')">View All Display Products</a>
+      </div>
+    </div>
+  </div>
+    <div class="sub-header-submenu" id="submenu-other">
+    <div class="sub-header-submenu-content">
+      <div class="sub-header-submenu-column">
+        <div class="sub-header-submenu-title">Other</div>
+        <a class="sub-header-submenu-item" href="javascript:void(0)" onclick="handleOtherClick('spectrophotometer')">Spectrophotometer</a>
+      </div>
+    </div>
+  </div>
+</div>

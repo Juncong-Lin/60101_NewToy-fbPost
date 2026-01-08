@@ -1,0 +1,776 @@
+/* Combined Checkout Styles */
+
+/* ============================================ */
+/* CHECKOUT HEADER STYLES */
+/* ============================================ */
+
+.checkout-header {
+  height: 60px;
+  padding-left: 30px;
+  padding-right: 30px;
+  background-color: #232F3E;
+  color: white;
+
+  display: flex;
+  justify-content: center;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.header-content {
+  width: 100%;
+  max-width: 1100px;
+
+  display: flex;
+  align-items: center;
+}
+
+.checkout-header-left-section {
+  width: 150px;
+}
+
+/* Note: .qili-logo and .qili-mobile-logo styles are already defined in qili-header.css */
+
+@media (max-width: 575px) {
+  .checkout-header-left-section {
+    width: auto;
+  }
+}
+
+.checkout-header-middle-section {
+  flex: 1;
+  flex-shrink: 0;
+  text-align: center;
+
+  font-size: 25px;
+  font-weight: 500;
+
+  display: flex;
+  justify-content: center;
+}
+
+.return-to-home-link {
+  color: rgb(0, 113, 133);
+  font-size: 23px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media (max-width: 1000px) {
+  .checkout-header-middle-section {
+    font-size: 20px;
+    margin-right: 60px;
+  }
+
+  .return-to-home-link {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 575px) {
+  .checkout-header-middle-section {
+    margin-right: 5px;
+    font-size: 16px;
+  }
+  
+  .checkout-header {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .return-to-home-link {
+    font-size: 16px;
+  }
+}
+
+.checkout-header-right-section {
+  text-align: right;
+  width: 150px;
+}
+
+@media (max-width: 1000px) {
+  .checkout-header-right-section {
+    width: auto;
+  }
+}
+
+/* ============================================ */
+/* MAIN CHECKOUT STYLES */
+/* ============================================ */
+
+.main {
+  max-width: 1100px;
+  padding-left: 30px;
+  padding-right: 30px;
+
+  margin-top: 92px; /* 60px (checkout header) + 32px (sub-header) */
+  margin-bottom: 100px;
+
+  /* margin-left: auto;
+     margin-right auto;
+     Is a trick for centering an element horizontally
+     without needing a container. */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-title {
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 20px;
+  margin-top: 0;
+  text-align: center;
+  
+  /* Make sticky relative to viewport */
+  position: fixed;
+  top: 92px; /* Below header (60px) and subheader (32px) */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 800px; /* Match product container width */
+  background-color: white;
+  z-index: 100;
+  padding: 15px 30px;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+
+.checkout-grid {
+  display: grid;
+  /* Changed to single column since we moved payment summary out */
+  grid-template-columns: 1fr;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 800px; /* Added max-width to constrain product container */
+
+  /* Use align-items: start; to prevent the elements
+     in the grid from stretching vertically. */
+  align-items: start;
+    /* Add top margin to account for fixed elements */
+  margin-top: 338px; /* Increased: Space for fixed title (~52px) and payment summary (~200px) + buffer (~68px) */
+  padding-top: 20px; /* Additional padding for first item */
+}
+
+@media (max-width: 1000px) {
+  .main {
+    max-width: 500px;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-top: 92px; /* Keep same as desktop */
+  }  .checkout-grid {
+    grid-template-columns: 1fr;
+    margin-top: 290px; /* Increased: Adjusted for tablet sized payment summary */
+    padding-top: 15px;
+  }
+    .page-title {
+    font-size: 20px;
+    top: 92px; /* Header (60px) + subheader (32px) */
+    padding: 12px 20px;
+    max-width: 500px;
+  }
+    .payment-summary {
+    top: 138px; /* Below page title with no gap */
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 500px;
+  }
+}
+
+/* Added more specific mobile styling */
+@media (max-width: 767px) {
+  .main {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 92px; /* Keep same as desktop */
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .page-title {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 0px !important; /* Remove margin bottom */
+    top: 92px; /* Header (60px) + subheader (32px) */
+    padding: 8px 15px !important; /* Reduce padding */
+    max-width: 450px;
+    border-bottom: none !important; /* Remove border for mobile */
+    min-height: 26px !important; /* Explicit minimum height */
+  }
+  
+  .payment-summary {
+    top: 118px !important; /* Calculated: 92px + 26px = 118px */
+    max-width: 450px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-top: 1px solid #eee !important;
+  }
+  
+  .checkout-grid {
+    max-width: 450px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 280px; /* Increased: 118px (payment-summary top) + ~162px (payment-summary height) = ~280px */
+    padding-top: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 92px; /* Keep same as desktop */
+  }
+  
+  .page-title {
+    font-size: 16px;
+    margin-bottom: 0px !important; /* Remove margin bottom */
+    top: 92px; /* Header (60px) + subheader (32px) */
+    padding: 6px 10px !important; /* Reduce padding further */
+    max-width: calc(100% - 20px);
+    border-bottom: none !important; /* Remove border for mobile */
+    min-height: 22px !important; /* Explicit minimum height */
+  }
+  
+  .payment-summary {
+    top: 100px !important; /* Calculated: 92px + 22px = 114px */
+    max-width: calc(100% - 20px);
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-top: 1px solid #eee !important;
+  }
+    .checkout-grid {
+    max-width: 100%;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 310px; /* Increased: 114px (payment-summary top) + ~156px (payment-summary height) = ~270px */
+    padding-top: 10px;
+  }
+}
+
+.cart-item-container,
+.payment-summary {
+  border: 1px solid rgb(222, 222, 222);
+  border-radius: 4px;
+  padding: 18px;
+}
+
+.cart-item-container {
+  margin-bottom: 12px;
+}
+
+/* Empty cart message styling - simplified and optimized */
+.empty-cart-message,
+.js-empty-cart {
+  text-align: center;
+  padding: 40px;
+  min-height: 400px;
+}
+
+.empty-cart-description {
+  margin: 20px 0;
+}
+
+/* When empty cart is shown, make it flex for centering */
+.empty-cart-message:not([style*="display: none"]),
+.js-empty-cart:not([style*="display: none"]) {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 480px) {
+  .cart-item-container,
+  .payment-summary {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
+  .cart-item-container {
+    margin-bottom: 10px;
+  }
+}
+
+.payment-summary {
+  padding-bottom: 5px;
+  /* Position the payment summary below the title but above the products */
+  margin-top: 0;
+  margin-bottom: 20px;
+  box-sizing: border-box; /* Include padding and border in the width calculation */
+  
+  /* Make sticky relative to viewport */
+  position: fixed;
+  top: 144px; /* Directly below the page title with no gap */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 800px; /* Match product container width */
+  background-color: white;
+  z-index: 99;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+@media (max-width: 1000px) {
+  .checkout-grid {
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .payment-summary {
+    /* Match the width of the checkout grid */
+    margin-bottom: 20px;
+    margin-top: 0;
+    max-width: 500px;
+    width: 100%;
+    top: 138px; /* Positioned below page title with no gap */
+  }
+  .page-title {
+    max-width: 500px; /* Match checkout grid width */
+  }
+}
+
+.delivery-date {
+  color: rgb(0, 118, 0);
+  font-weight: 700;
+  font-size: 19px;
+  margin-top: 5px;
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .delivery-date {
+    font-size: 16px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .delivery-date {
+    font-size: 15px;
+    margin-bottom: 10px;
+    margin-top: 2px;
+    text-align: center;
+  }
+}
+
+.cart-item-details-grid {
+  display: grid;
+  /* 100px 1fr 1fr; means the 2nd and 3rd column will
+     take up half the remaining space in the grid
+     (they will divide up the remaining space evenly). */
+  grid-template-columns: 100px 1fr 1fr;
+  column-gap: 25px;
+}
+
+@media (max-width: 1000px) {
+  .cart-item-details-grid {
+    grid-template-columns: 100px 1fr;
+    row-gap: 30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .cart-item-details-grid {
+    grid-template-columns: 80px 1fr;
+    row-gap: 12px;
+    column-gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-item-details-grid {
+    grid-template-columns: 70px 1fr;
+    column-gap: 10px;
+    row-gap: 8px;
+  }
+  
+  .product-name {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  
+  .product-price {
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  .product-quantity {
+    margin-bottom: 0;
+    line-height: 1.5;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 380px) {
+  .checkout-header-middle-section {
+    font-size: 14px;
+    max-width: 80%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .return-to-home-link {
+    font-size: 14px;
+  }
+  
+  .cart-item-details-grid {
+    grid-template-columns: 60px 1fr;
+    column-gap: 8px;
+  }
+  
+  .product-image {
+    max-height: 60px;
+  }
+  
+  .product-name {
+    font-size: 13px;
+  }
+  
+  .product-price {
+    font-size: 13px;
+  }
+  
+  .delivery-option-date,
+  .delivery-option-price {
+    font-size: 12px;
+  }
+}
+
+.product-image {
+  max-width: 100%;
+  max-height: 120px;
+
+  /* margin-left: auto;
+     margin-right auto;
+     Is a trick for centering an element horizontally
+     without needing a container. */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Mobile optimization for product info */
+@media (max-width: 767px) {
+  /* Help with overflow issues */
+  .cart-item-container {
+    overflow-x: hidden;
+    word-break: break-word;
+  }
+  
+  /* Mobile optimization for product info */
+  .product-quantity, 
+  .product-price {
+    margin-bottom: 6px;
+  }
+  
+  /* Force proper sizing for product image */
+  .product-image {
+    max-width: 100%;
+    max-height: 80px;
+    object-fit: contain;
+  }
+}
+
+.product-name {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.product-price {
+  color: rgb(177, 39, 4);
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.product-quantity .link-primary {
+  margin-left: 3px;
+}
+
+@media (max-width: 1000px) {
+  .delivery-options {
+    /* grid-column: 1 means this element will be placed
+       in column 1 in the grid. (Normally, the column that
+       an element is placed in is determined by the order
+       of the elements in the HTML. grid-column overrides
+       this default ordering).
+       
+       / span 2 means this element will take up 2 columns
+       in the grid (Normally, each element takes up 1
+       column in the grid). */
+    grid-column: 1 / span 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .delivery-options {
+    margin-top: 0px;
+  }
+  
+  .delivery-options-title {
+    font-size: 15px;
+    text-align: center;
+    margin-bottom: 2px;
+    margin-top: 0;
+    padding-top: 0;
+  }
+}
+
+.delivery-options-title {
+  font-weight: 700;
+}
+
+.delivery-option {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.delivery-option-input {
+  margin-left: 0px;
+  cursor: pointer;
+}
+
+.delivery-option-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Better touch targets */
+@media (max-width: 767px) {
+  .delivery-option {
+    padding: 4px 0;
+    margin-bottom: 8px;
+  }
+  
+  .delivery-option-input {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .delivery-option-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  /* Footer mobile optimization */
+  .footer {
+    padding-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .delivery-option {
+    grid-template-columns: 20px 1fr;
+    padding: 0;
+    margin-bottom: 1px;
+  }
+  
+  .delivery-option-date {
+    font-size: 13px;
+  }
+  
+  .delivery-option-price {
+    font-size: 12px;
+  }
+}
+
+.delivery-option-date {
+  color: rgb(0, 118, 0);
+  font-weight: 500;
+}
+
+.delivery-option-price {
+  color: rgb(120, 120, 120);
+  font-size: 15px;
+}
+
+.payment-summary-title {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 480px) {
+  .payment-summary-title {
+    text-align: center;
+    font-size: 16px;
+  }
+}
+
+.payment-summary-row {
+  display: grid;
+  /* 1fr auto; means the width of the 2nd column will be
+     determined by the elements inside the column (auto).
+     The 1st column will take up the remaining space. */
+  grid-template-columns: 1fr auto;
+
+  font-size: 15px;
+  margin-bottom: 9px;
+}
+
+@media (max-width: 480px) {
+  .payment-summary-row {
+    font-size: 14px;
+  }
+}
+
+.payment-summary-money {
+  text-align: right;
+}
+
+.subtotal-row .payment-summary-money {
+  border-top: 1px solid rgb(222, 222, 222);
+}
+
+.subtotal-row div {
+  padding-top: 9px;
+}
+
+.total-row {
+  color: rgb(177, 39, 4);
+  font-weight: 700;
+  font-size: 18px;
+
+  border-top: 1px solid rgb(222, 222, 222);
+  padding-top: 18px;
+}
+
+@media (max-width: 480px) {
+  .total-row {
+    font-size: 16px;
+  }
+}
+
+.place-order-button {
+  width: 100%;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-radius: 8px;
+
+  margin-top: 11px;
+  margin-bottom: 15px;
+
+  background-color: #232F3E;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+@media (max-width: 480px) {
+  .place-order-button {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 18px;
+    margin-top: 15px;
+  }
+}
+
+.place-order-button:hover {
+  background-color: #1A252F;
+}
+
+.continue-shopping-button {
+  display: inline-block;
+  text-decoration: none;
+  margin-top: 10px;
+  min-width: 140px;
+}
+
+.order-button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+}
+
+/* Note: The base no-sidebar style is now in general.css */
+
+/* Handle the viewport height better */
+@media screen and (max-height: 700px) {
+  .main {
+    margin-top: 110px;
+    margin-bottom: 60px;
+  }
+}
+
+/* ============================================ */
+/* MOBILE-SPECIFIC OVERRIDE SECTION */
+/* Force mobile gap elimination with highest specificity */
+/* ============================================ */
+
+/* Extra specific mobile selectors to force gap elimination */
+@media (max-width: 767px) and (min-width: 481px) {
+  body .main .page-title {
+    top: 92px !important;
+    padding: 8px 15px !important;
+    margin-bottom: 0px !important;
+    border-bottom: none !important;
+    height: auto !important;
+    min-height: 26px !important; /* Explicit minimum height */
+  }
+  
+  body .main .payment-summary {
+    top: 118px !important; /* Calculated: 92px + 26px = 118px */
+    border-top: 1px solid #eee !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body .main .page-title {
+    top: 92px !important;
+    padding: 6px 10px !important;
+    margin-bottom: 0px !important;
+    border-bottom: none !important;
+    height: auto !important;
+    min-height: 22px !important; /* Explicit minimum height */
+  }
+  
+  body .main .payment-summary {
+    top: 114px !important; /* Calculated: 92px + 22px = 114px */
+    border-top: 1px solid #eee !important;
+  }
+}
+
+/* --- Product hover effect for checkout page (match qilitrading product grid) --- */
+.cart-item-details-grid a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+.cart-item-details-grid a:hover .product-image,
+.cart-item-details-grid a:focus .product-image {
+  transform: scale(1.05);
+  transition: transform 0.2s;
+}
+.cart-item-details-grid a:hover,
+.cart-item-details-grid a:focus {
+  color: rgb(1, 124, 182);
+  text-decoration: underline;
+}
+.cart-item-details-grid .product-image {
+  transition: transform 0.2s;
+}

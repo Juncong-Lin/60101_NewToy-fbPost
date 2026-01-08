@@ -1,0 +1,140 @@
+{
+  "roll_to_roll_style": [],
+  "hoson": [],
+  "without_cable_work": [],
+  "uv_flatbed": [],
+  "roland": [],
+  "epson": [],
+  "mimaki": [],
+  "mutoh": [],
+  "witcolor": [],
+  "galaxy": [],
+  "human": [],
+  "gongzheng": [],
+  "flora": [],
+  "xuli": [],
+  "xenos": [],
+  "yongli": [],
+  "zhongye": [],
+  "skyjet": [],
+  "yaselan": [],
+  "teckwin": [],
+  "ricoh": [],
+  "titanjet": [],
+  "seiko": [],
+  "skycolor": [],
+  "myjet": [],
+  "phaeton": [],
+  "meitu": [],
+  "jhf": [],
+  "kingfisher": [],
+  "liyu": [],
+  "locor": [],
+  "infiniti_challenger": [],
+  "handtop": [],
+  "funsunjet": [],
+  "ecotech": [],
+  "encad": [],
+  "dgi": [],
+  "docan": [],
+  "crystaljet": [],
+  "atexco": [],
+  "audley": [],
+  "allwin": [],
+  "photo_papers": [],
+  "mesh": [
+    {
+      "id": "Mesh",
+      "name": "Mesh",
+      "image": "products/material/Mesh/Mesh/image/Mesh.jpg",
+      "lower_price": 140,
+      "higher_price": 200,
+      "brand": "Mesh"
+    }
+  ],
+  "adhevie_vinyl": [],
+  "oneway_vision": [],
+  "flex_banner": [],
+  "ink": [
+    {
+      "id": "Sublimation-ink",
+      "name": "Sublimation ink",
+      "image": "products/material/ink/Sublimation ink/image/Sublimation ink.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "ink"
+    },
+    {
+      "id": "DTF-ink",
+      "name": "DTF ink",
+      "image": "products/material/ink/DTF ink/image/DTF ink.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "ink"
+    },
+    {
+      "id": "UV-Ink",
+      "name": "UV Ink",
+      "image": "products/material/ink/UV Ink/image/UV Ink.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "ink"
+    },
+    {
+      "id": "Eco-Solvent-Ink",
+      "name": "Eco-Solvent Ink",
+      "image": "products/material/ink/Eco-Solvent Ink/image/Eco-Solvent Ink.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "ink"
+    },
+    {
+      "id": "Solvent-ink",
+      "name": "Solvent ink",
+      "image": "products/material/ink/Solvent ink/image/Solvent ink.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "ink"
+    }
+  ],
+  "photo": [
+    {
+      "id": "Photo-Papers",
+      "name": "Photo Papers",
+      "image": "products/material/Photo/Photo Papers/image/Photo Papers.jpg",
+      "lower_price": 150,
+      "higher_price": 200,
+      "brand": "Photo"
+    }
+  ],
+  "adhevie": [
+    {
+      "id": "Adhevie-Vinyl",
+      "name": "Adhevie Vinyl",
+      "image": "products/material/Adhevie/Adhevie Vinyl/image/Adhevie Vinyl.jpg",
+      "lower_price": 55,
+      "higher_price": 170,
+      "brand": "Adhevie"
+    }
+  ],
+  "oneway": [
+    {
+      "id": "Oneway-Vision",
+      "name": "Oneway Vision",
+      "image": "products/material/Oneway/Oneway Vision/image/Oneway Vision.jpg",
+      "lower_price": 50,
+      "higher_price": 200,
+      "brand": "Oneway"
+    }
+  ],
+  "flex": [
+    {
+      "id": "Flex-banner",
+      "name": "Flex banner",
+      "image": "products/material/Flex/Flex banner/image/Flex banner.jpg",
+      "lower_price": 40,
+      "higher_price": 150,
+      "brand": "Flex"
+    }
+  ]
+}

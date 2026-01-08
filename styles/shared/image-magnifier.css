@@ -1,0 +1,245 @@
+/* Image Magnifier Styles */
+
+.image-magnifier-container {
+  position: relative;
+  display: inline-block;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.image-magnifier-container:hover {
+  cursor: crosshair;
+}
+
+.image-magnifier-container.magnifying img {
+  filter: none; /* Remove filter for cleaner look */
+}
+
+.magnifier-lens {
+  position: absolute;
+  border: 2px solid #3498db;
+  border-radius: 4px; /* Square lens like in the reference */
+  background: rgba(52, 152, 219, 0.3); /* Blue overlay like in reference */
+  backdrop-filter: none;
+  pointer-events: none;
+  display: none;
+  z-index: 10;
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: lensAppear 0.15s ease-out;
+}
+
+@keyframes lensAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.magnifier-result {
+  position: fixed;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  background-repeat: no-repeat;
+  display: none;
+  z-index: 10002; /* Higher than header z-index (10000) and any other elements */
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  animation: resultAppear 0.2s ease-out;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  animation: resultAppear 0.3s ease-out;
+}
+
+@keyframes resultAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.magnifier-result::before {
+  content: '';
+  display: none; /* Remove the label for cleaner look */
+}
+
+/* Hide the toggle button since we're using hover activation */
+.magnifier-toggle {
+  display: none !important;
+}
+
+.magnifier-toggle:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+}
+
+.magnifier-toggle:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 1px;
+}
+
+.magnifier-toggle.active {
+  background: #3498db;
+  animation: toggleActive 0.2s ease;
+}
+
+.magnifier-toggle.active:hover {
+  background: #2980b9;
+}
+
+@keyframes toggleActive {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Magnifier icon */
+.magnifier-toggle::before {
+  content: '🔍';
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.magnifier-toggle.active::before {
+  content: '✕';
+  font-size: 11px;
+  transform: rotate(0deg); /* Remove rotation for cleaner look */
+}
+
+/* Add tooltip for magnifier toggle */
+.magnifier-toggle::after {
+  content: attr(aria-label);
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.magnifier-toggle:hover::after {
+  opacity: 1;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .magnifier-lens {
+    width: 120px !important;
+    height: 120px !important;
+    border-width: 2px;
+  }
+  
+  .magnifier-result {
+    width: 280px !important;
+    height: 280px !important;
+    position: fixed;
+    /* JavaScript will handle top positioning to avoid covering original image */
+    right: 20px;
+    border-width: 1px;
+    border-radius: 4px;
+    z-index: 10002; /* Ensure it appears above header and all other elements */
+  }
+}
+
+@media (max-width: 480px) {
+  .magnifier-lens {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  
+  .magnifier-result {
+    width: 220px !important;
+    height: 220px !important;
+  }
+}
+
+/* Desktop - larger magnified view */
+@media (min-width: 769px) {
+  .magnifier-lens {
+    width: 150px !important;
+    height: 150px !important;
+  }
+  
+  .magnifier-result {
+    width: 400px !important;
+    height: 400px !important;
+  }
+}
+
+@media (max-width: 320px) {
+  .magnifier-lens {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  
+  .magnifier-result {
+    width: 160px !important;
+    height: 160px !important;
+  }
+  
+  .magnifier-toggle {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+}
+
+/* High DPI display adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .magnifier-result {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Smooth transitions */
+.magnifier-lens,
+.magnifier-result {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.image-magnifier-container img {
+  transition: filter 0.3s ease;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .magnifier-lens,
+  .magnifier-result,
+  .magnifier-toggle,
+  .image-magnifier-container img {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .magnifier-toggle,
+  .magnifier-lens,
+  .magnifier-result {
+    display: none !important;
+  }
+}

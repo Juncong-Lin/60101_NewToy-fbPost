@@ -1,0 +1,342 @@
+.sub-header {
+  background-color: #1A252F; /* Match Qili's secondary blue */
+  color: white;
+  padding: 0;
+  position: fixed;
+  top: 60px; /* Position below main header */
+  left: 0;
+  right: 0;
+  height: 32px; /* Slightly reduced height */
+  z-index: 1000; /* Ensure it's above main content but below submenu */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 100%; /* Full width */
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sub-header-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.sub-header-nav {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 0;
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0 15px;
+}
+
+.sub-header-link {
+  color: white;
+  text-decoration: none;
+  padding: 0 15px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  height: 100%;
+  line-height: 32px;
+  display: inline-block;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-header-link:first-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-header-link:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+}
+
+.sub-header-link.active {
+  background-color: #2C3A49; /* Darker blue when active */
+  font-weight: bold;
+  border-bottom: 3px solid #ffa724; /* Qili orange border */
+  box-sizing: border-box;
+}
+
+/* Make the active state more visible on hover */
+.sub-header-link.active:hover {
+  background-color: #2C3A49; /* Keep the darker blue on hover */
+}
+
+/* Special styling for "All Products" */
+.sub-header-link:first-child {
+  font-weight: 600;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sub-header-link:first-child.active {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Shared All Products link styling */
+.all-products-link {
+  position: relative;
+  z-index: 2;
+}
+
+/* Sidebar placeholder for All Products link */
+.all-products-sidebar-placeholder {
+  height: 32px; /* Same as sub-header height */
+  position: relative;
+}
+
+/* Clone the sub-header All Products link visually into the sidebar */
+@media (min-width: 700px) {  .all-products-link {
+    position: fixed;
+    top: 92px; /* 60px header + 32px sub-header */
+    left: 0;
+    width: 180px;
+    height: 32px;
+    background: #1A252F;
+    color: #FF9900 !important;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 25px;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    text-align: left;
+    font-size: 15px;
+    transition: none;
+    pointer-events: auto;
+  }
+  .sub-header .all-products-link {
+    width: auto;
+    height: 100%;
+    background: none;
+    color: white !important;
+    font-weight: 600;
+    padding-left: 15px;
+    padding-right: 15px;
+    justify-content: center;
+    position: static;
+    display: inline-block;
+    text-align: center;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 700px) {
+  .all-products-link {
+    position: static !important;
+    width: auto !important;
+    height: 100% !important;
+    background: none !important;
+    color: white !important;
+    font-weight: 600;
+    padding-left: 15px;
+    padding-right: 15px;
+    justify-content: center;
+    display: inline-block;
+    text-align: center;
+    font-size: 13px;
+  }
+  .all-products-sidebar-placeholder {
+    display: none;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+  .sub-header-link {
+    font-size: 12px;
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .sub-header-link {
+    font-size: 11px;
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sub-header-link {
+    font-size: 10px;
+    padding: 0 8px;
+  }
+}
+
+/* Adjust main content to account for sub-header */
+.main {
+  margin-top: 92px !important; /* 60px (main header) + 32px (sub-header) */
+}
+
+/* Special handling for checkout page */
+.checkout-header ~ .main {
+  margin-top: 92px !important;
+}
+
+/* Loading animation for products */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  width: 100%;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(35, 47, 62, 0.2);
+  border-radius: 50%;
+  border-top-color: #232F3E;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  color: #555;
+  font-size: 16px;
+}
+
+/* Sub-header dropdown submenu styles */
+.sub-header-submenu {
+  position: fixed;
+  top: 92px; /* Below sub-header (60px header + 32px sub-header) */
+  left: 0;
+  width: 100%;
+  background-color: #232F3E;
+  color: white;
+  z-index: 1001; /* Higher z-index to appear above all content */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-header-submenu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.sub-header-submenu-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0;
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.sub-header-submenu-column {
+  padding: 0 15px;
+}
+
+.sub-header-submenu-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FF9900;
+  margin-bottom: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-header-submenu-item {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 8px 0;
+  font-size: 13px;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.sub-header-submenu-item:hover {
+  color: #FF9900;
+}
+
+.sub-header-submenu-subgroup {
+  margin-bottom: 15px;
+}
+
+.sub-header-submenu-subgroup-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #CCE7FF;
+  margin-bottom: 8px;
+  padding: 3px 0;
+}
+
+.sub-header-submenu-subitem {
+  display: block;
+  color: #E0E0E0;
+  text-decoration: none;
+  padding: 5px 0 5px 15px;
+  font-size: 12px;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.sub-header-submenu-subitem:hover {
+  color: #FF9900;
+}
+
+/* Responsive design for submenus */
+@media (max-width: 1200px) {
+  .sub-header-submenu-content {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    padding: 15px;
+  }
+}
+
+@media (max-width: 900px) {
+  .sub-header-submenu-content {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    padding: 12px;
+  }
+  
+  .sub-header-submenu-item {
+    font-size: 12px;
+  }
+  
+  .sub-header-submenu-subitem {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sub-header-submenu-content {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+}
+
+/* Mobile sub-header positioning adjustments */
+@media (max-width: 320px) {
+  .sub-header {
+    top: 55px !important; /* Position below reduced-height main header */
+  }
+}

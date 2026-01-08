@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Qilitrading.com</title>
+    <!-- This code is needed for responsive design to work.
+      (Responsive design = make the website look good on
+      smaller screen sizes like a phone or a tablet). -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no"
+    />
+
+    <!-- Load a font called Roboto from Google Fonts. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Here are the CSS files for this page. -->
+    <link rel="stylesheet" href="styles/shared/general.css" />
+    <link rel="stylesheet" href="styles/shared/qili-header.css" />
+    <link rel="stylesheet" href="styles/shared/sub-header.css" />
+    <link rel="stylesheet" href="styles/shared/sidebar.css" />
+    <link rel="stylesheet" href="styles/pages/qilitrading.css" />
+    <link rel="stylesheet" href="styles/shared/footer.css" />
+    <link rel="stylesheet" href="styles/shared/right-panel.css" />
+    <!-- Meta Pixel Code -->
+    <script>
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = "2.0";
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        "script",
+        "https://connect.facebook.net/en_US/fbevents.js"
+      );
+      fbq("init", "569190689377819");
+      fbq("track", "PageView");
+    </script>
+    <noscript
+      ><img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=569190689377819&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+  </head>
+  <body class="has-sidebar">
+    <!-- Main Header - Loaded dynamically from shared component -->
+    <div id="shared-header-placeholder"></div>
+    <!-- Sub Header Navigation - Loaded dynamically from shared component -->
+    <div id="shared-subheader-placeholder"></div>
+
+    <!-- Sidebar - Loaded dynamically from shared component -->
+    <div id="shared-sidebar-placeholder"></div>
+
+    <div class="main">
+      <!-- Hero Banner Section -->
+      <section class="hero-banner">
+        <div class="hero-carousel">
+          <!-- Navigation Arrows -->
+          <button
+            class="hero-nav-arrow hero-nav-prev"
+            onclick="heroCarousel.prev()"
+            aria-label="Previous slide"
+          >
+            <span>‹</span>
+          </button>
+          <button
+            class="hero-nav-arrow hero-nav-next"
+            onclick="heroCarousel.next()"
+            aria-label="Next slide"
+          >
+            <span>›</span>
+          </button>
+
+          <!-- Carousel Container -->
+          <div class="hero-container">
+            <div class="hero-slide active" data-index="0">
+              <div
+                class="hero-card hero-card-wide"
+                onclick="window.loadAllPrintheadProducts && window.loadAllPrintheadProducts(); window.location.hash = 'print-heads'"
+              >
+                <div class="hero-image-wrapper">
+                  <img
+                    src="images/home/All Printheads home img.jpg"
+                    alt="All Printheads"
+                    class="hero-image"
+                  />
+                  <div class="hero-overlay">
+                    <h3 class="hero-title">All Printheads</h3>
+                    <p class="hero-description">
+                      Discover our complete range of high-quality printheads
+                    </p>
+                    <span class="hero-cta">Explore Collection →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-slide" data-index="1">
+              <div
+                class="hero-card hero-card-wide"
+                onclick="window.loadSpecificCategory && window.loadSpecificCategory('Upgrading Kit')"
+              >
+                <div class="hero-image-wrapper">
+                  <img
+                    src="images/home/Upgrading Kit-Xp600 img.jpg"
+                    alt="Upgrading Kit"
+                    class="hero-image"
+                  />
+                  <div class="hero-overlay">
+                    <h3 class="hero-title">Upgrading Kit</h3>
+                    <p class="hero-description">
+                      Professional upgrade solutions for your printing needs
+                    </p>
+                    <span class="hero-cta">View Upgrades →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="hero-slide" data-index="2">
+              <div
+                class="hero-card hero-card-wide"
+                onclick="window.loadSpecificCategory && window.loadSpecificCategory('Inkjet Printers')"
+              >
+                <div class="hero-image-wrapper">
+                  <img
+                    src="images/home/Inkjet Printers home img.jpg"
+                    alt="Inkjet Printers"
+                    class="hero-image"
+                  />
+                  <div class="hero-overlay">
+                    <h3 class="hero-title">Inkjet Printers</h3>
+                    <p class="hero-description">
+                      Advanced inkjet printing solutions for every application
+                    </p>
+                    <span class="hero-cta">Browse Printers →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carousel Indicators -->
+          <div class="hero-indicators">
+            <button
+              class="hero-indicator active"
+              onclick="heroCarousel.goToSlide(0)"
+              aria-label="Go to slide 1"
+            ></button>
+            <button
+              class="hero-indicator"
+              onclick="heroCarousel.goToSlide(1)"
+              aria-label="Go to slide 2"
+            ></button>
+            <button
+              class="hero-indicator"
+              onclick="heroCarousel.goToSlide(2)"
+              aria-label="Go to slide 3"
+            ></button>
+          </div>
+        </div>
+      </section>
+
+      <div class="products-grid js-prodcts-grid"></div>
+    </div>
+
+    <!-- Shared Footer - Loaded dynamically from shared component -->
+    <div id="shared-footer-placeholder"></div>
+
+    <!-- Shared Right Panel - Loaded dynamically from shared component -->
+    <div id="shared-right-panel-placeholder"></div>
+  </body>
+  <script type="module" src="scripts/index/qilitrading.js"></script>
+  <script src="scripts/shared/url-utils.js"></script>
+  <script src="scripts/shared/search.js"></script>
+  <script src="scripts/shared/shared-header-loader.js"></script>
+  <script src="scripts/shared/shared-subheader-loader.js"></script>
+  <script src="scripts/shared/shared-sidebar-loader.js"></script>
+  <script src="scripts/shared/shared-footer-loader.js"></script>
+  <script src="scripts/shared/shared-right-panel-loader.js"></script>
+  <script src="scripts/shared/sub-header-nav.js"></script>
+</html>

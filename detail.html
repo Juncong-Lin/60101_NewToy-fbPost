@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Product Detail - Qilitrading.com</title>
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles/shared/general.css" />
+    <link rel="stylesheet" href="styles/shared/qili-header.css" />
+    <link rel="stylesheet" href="styles/shared/sub-header.css" />
+    <link rel="stylesheet" href="styles/shared/sidebar.css" />
+    <link rel="stylesheet" href="styles/pages/detail.css" />
+    <link rel="stylesheet" href="styles/shared/footer.css" />
+    <link rel="stylesheet" href="styles/shared/right-panel.css" />
+    <link rel="stylesheet" href="styles/shared/document-viewer.css" />
+    <link
+      rel="stylesheet"
+      href="styles/shared/document-viewer-hide-elements.css"
+    />
+    <link rel="stylesheet" href="styles/shared/image-magnifier.css" />
+    <!-- Meta Pixel Code -->
+    <script>
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = "2.0";
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        "script",
+        "https://connect.facebook.net/en_US/fbevents.js"
+      );
+      fbq("init", "569190689377819");
+      fbq("track", "PageView");
+    </script>
+    <noscript
+      ><img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=569190689377819&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+  </head>
+  <body class="no-sidebar">
+    <!-- Main Header - Loaded dynamically from shared component -->
+    <div id="shared-header-placeholder"></div>
+    <!-- Sub Header Navigation - Loaded dynamically from shared component -->
+    <div id="shared-subheader-placeholder"></div>
+    <div class="main">
+      <!-- Unified Breadcrumb navigation -->
+      <div class="breadcrumb-nav"></div>
+
+      <!-- Product detail header -->
+      <div class="product-title-container">
+        <h1 class="product-title js-product-name"></h1>
+      </div>
+
+      <div class="product-detail-grid">
+        <div class="product-image-section">
+          <!-- Main product image -->
+          <div class="product-main-image-container">
+            <img class="product-image js-product-image" />
+          </div>
+          <!-- Product image thumbnails with scroll arrows -->
+          <div class="product-thumbnails-wrapper">
+            <button
+              class="thumbnail-arrow left js-thumbnail-arrow-left"
+              aria-label="Scroll left"
+            >
+              <span>‹</span>
+            </button>
+            <div class="product-thumbnails js-product-thumbnails">
+              <!-- Thumbnails will be inserted by JavaScript -->
+            </div>
+            <button
+              class="thumbnail-arrow right js-thumbnail-arrow-right"
+              aria-label="Scroll right"
+            >
+              <span>›</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="product-detail-section">
+          <!-- Price section -->
+          <div class="product-price-container">
+            <div class="product-price js-product-price"></div>
+            <div class="product-original-price js-product-original-price"></div>
+          </div>
+
+          <!-- Product rating -->
+          <div class="product-rating-container">
+            <img class="product-rating-stars js-product-rating" />
+            <div class="product-rating-count js-product-rating-count"></div>
+          </div>
+
+          <!-- Product tags/labels -->
+          <div class="product-tags js-product-tags">
+            <!-- Tags will be inserted by JavaScript -->
+          </div>
+          <!-- Quantity selector and Add to Cart - Temporarily commented out -->
+          <!--
+          <div class="product-purchase-container">
+            <div class="product-quantity-container">
+              <select class="js-quantity-selector">
+                <option selected value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+
+            <div class="added-to-cart js-added-message">
+              <img src="images/icons/checkmark.png">
+              Added
+            </div>
+
+            <button class="add-to-cart-button js-add-to-cart">
+              Add to Cart
+            </button>
+          </div>
+          -->
+
+          <!-- Product information display only - no cart functionality -->
+        </div>
+      </div>
+      <!-- Product details tabs -->
+      <div class="product-info-tabs">
+        <div class="tab-headers">
+          <div class="tab-header active" data-tab="product-details">
+            Product Details
+          </div>
+        </div>
+
+        <div class="tab-content">
+          <div class="tab-panel active" id="product-details">
+            <div class="product-description js-product-description"></div>
+            <div
+              class="product-details-content js-product-details-content"
+            ></div>
+
+            <!-- Compatibility section directly below product details -->
+            <div
+              class="product-compatibility-section"
+              data-tab="compatibility"
+              style="display: block"
+            >
+              <h2>Compatibility</h2>
+              <div class="product-compatibility js-product-compatibility"></div>
+            </div>
+
+            <!-- Specifications section directly below compatibility -->
+            <div
+              class="product-specifications-section"
+              data-tab="specifications"
+              style="display: block"
+            >
+              <h2>Specifications</h2>
+              <div
+                class="product-specifications js-product-specifications"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Shared Footer - Loaded dynamically from shared component -->
+    <div id="shared-footer-placeholder"></div>
+
+    <!-- Shared Right Panel - Loaded dynamically from shared component -->
+    <div id="shared-right-panel-placeholder"></div>
+
+    <!-- Libraries for document parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js"></script>
+    <script>
+      // Initialize PDF.js worker
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js";
+      }
+    </script>
+    <script type="module" src="scripts/detail/detail.js"></script>
+    <script type="module" src="scripts/index/qilitrading.js"></script>
+    <script src="scripts/shared/url-utils.js"></script>
+    <script src="scripts/shared/search.js"></script>
+    <script src="scripts/shared/shared-header-loader.js"></script>
+    <script src="scripts/shared/sub-header-nav.js"></script>
+    <script src="scripts/shared/shared-subheader-loader.js"></script>
+    <script src="scripts/shared/shared-footer-loader.js"></script>
+    <script src="scripts/shared/shared-right-panel-loader.js"></script>
+  </body>
+</html>

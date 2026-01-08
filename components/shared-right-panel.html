@@ -1,0 +1,64 @@
+<!-- Shared Right Panel Component -->
+<div class="right-panel-fixed">
+  <div class="right-panel-buttons">
+        <!-- Go Top Button -->
+    <button class="right-panel-btn go-top-btn" onclick="scrollToTop()" title="Go to top">
+      <span class="btn-icon">↑</span>
+      <span class="btn-text">GO Top</span>
+    </button>
+
+    <!-- Phone Button -->
+    <div class="right-panel-btn phone-btn" title="Call us">
+      <span class="btn-icon">☎</span>
+      <span class="btn-text">Phone</span>
+      <span class="phone-btn-popup">
+        <span class="phone-number-label">Phone:</span>
+        <span class="phone-number-value">+86 13631292010</span>
+      </span>
+    </div>
+    
+    <!-- WeChat Button -->
+    <a href="weixin://dl/chat" target="_blank" class="right-panel-btn wechat-btn" title="Contact us on WeChat" onclick="return handleMobileClick(event, 'wechat')">
+      <img src="images/icons/wechat.svg" alt="WeChat" class="wechat-icon">
+      <span class="btn-text">WeChat</span>
+      <div class="wechat-qrcode-container">
+        <img src="images/WeChat.jpg" alt="WeChat QR Code" class="wechat-qrcode">
+      </div>
+    </a>
+    
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/8613631292010" target="_blank" class="right-panel-btn whatsapp-btn" title="Contact us on WhatsApp" onclick="return handleMobileClick(event, 'whatsapp')">
+      <img src="images/icons/whatsapp.svg" alt="WhatsApp" class="whatsapp-icon">
+      <span class="btn-text">WhatsApp</span>
+      <div class="whatsapp-qrcode-container">
+        <img src="images/WhatsApp.jpg" alt="WhatsApp QR Code" class="whatsapp-qrcode">
+      </div>
+    </a>
+
+        <!-- Contact Button -->
+    <button class="right-panel-btn contact-btn" onclick="scrollToFooter()" title="Go to contact section">
+      <span class="btn-icon">🎧</span>
+      <span class="btn-text">Contact</span>
+    </button>
+    
+  </div>
+</div>
+
+<script>
+// Function to detect if the device is mobile
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+         window.innerWidth <= 768;
+}
+
+// Function to handle mobile click behavior for WeChat and WhatsApp
+function handleMobileClick(event, type) {
+  if (isMobileDevice()) {
+    // Prevent default link behavior on mobile devices
+    event.preventDefault();
+    return false;
+  }
+  // Allow default behavior on desktop
+  return true;
+}
+</script>

@@ -1,0 +1,203 @@
+body.has-sidebar .departments-sidebar {
+  position: fixed;
+  top: 92px; /* 60px (main header) + 32px (sub-header) */
+  bottom: 0;
+  left: 0;  width: 166px;
+  background-color: #1A252F;
+  color: white;
+  z-index: 1;
+  overflow-y: auto;
+  /* Ensure sidebar doesn't appear above footer */
+  z-index: 1;
+}
+
+.departments-heading {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 20px 12px 20px;
+}
+
+.department-link {
+  display: block;
+  padding: 8px 25px; /* Match submenu padding */
+  text-decoration: none;
+  color: white;
+  font-size: 14px;
+  position: relative;
+  transition: background-color 0.2s ease;
+  height: 36px; /* Fixed height for consistent alignment */
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.department-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.department-group {
+  position: relative;
+}
+
+.submenu {
+  visibility: hidden;
+  opacity: 0;
+  position: fixed;
+  left: 166px; /* Same as sidebar width */
+  top: 92px; /* Adjusted: 60px (main header) + 32px (sub-header) */
+  bottom: 0;
+  width: 260px; /* Increased width for longer text */  background-color: #232F3E;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 100; /* Adjusted: to be above sub-header (z-index: 99) */
+  transition: visibility 0s 0.2s, opacity 0.2s ease;
+  padding: 0; /* Removed padding to align items vertically */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  max-height: calc(100vh - 92px); /* Adjusted: Ensure it doesn\'t overflow viewport */
+}
+
+.department-subgroup {
+  position: relative;
+}
+
+.department-subgroup > .submenu {
+  position: fixed;
+  left: 426px; /* parent submenu width (320px) + sidebar width (150px) */
+  background-color: #37475A;
+}
+
+/* Ensure nested submenus don't create multiple scrollbars */
+.department-subgroup > .submenu {
+  max-height: none;
+  overflow: visible;
+}
+
+/* Custom scrollbar styling */
+.submenu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.submenu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.submenu::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.submenu.active {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.submenu .department-link {
+  padding: 8px 25px; /* Match the main sidebar height */
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  height: 36px; /* Fixed height to match main sidebar links */
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.submenu .department-link:last-child {
+  border-bottom: none;
+}
+
+.submenu .department-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding-left: 30px; /* Keep the slide effect */
+}
+
+/* Ensure consistent height for all submenu levels */
+.department-subgroup .submenu .department-link {
+  padding: 8px 25px; /* Same as second-level submenu */
+  height: 36px; /* Fixed height to match all other links */
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.department-subgroup .submenu .department-link:hover {
+  padding-left: 30px; /* Consistent hover effect */
+}
+
+.expandable {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.expandable::after {
+  content: "›";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+  line-height: 1;
+}
+
+.expandable.active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.expandable.active::after {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+@media (max-width: 800px) {
+  body.has-sidebar .submenu {
+    position: static;
+    width: auto;
+    box-shadow: none;
+    background-color: rgba(0, 0, 0, 0.2);
+    display: none;
+    visibility: visible;
+    opacity: 1;
+    transition: none;
+  }
+  body.has-sidebar .submenu.active {
+    display: block;
+  }
+  
+  body.has-sidebar .submenu .department-link {
+    padding: 8px 25px; /* Adjusted from 8px 40px */
+    height: 36px;
+    display: flex;
+    align-items: center;
+  }
+
+  body.has-sidebar .department-link {
+    padding: 8px 25px;
+    height: 36px;
+  }
+
+  body.has-sidebar .submenu .department-link:hover {
+    padding-left: 30px; /* Adjusted from 45px */
+  }
+  
+  /* Mobile styling for All Products link */
+  body.has-sidebar .department-link[href="javascript:void(0)"][onclick="loadAllProducts()"] {
+    padding: 8px 25px;
+    height: 36px;     
+  }
+}
+
+/* Special styling for "All Products" link to align with other items */
+body.has-sidebar .department-link[href="javascript:void(0)"][onclick="loadAllProducts()"] {
+  padding: 8px 25px;   /* Match other links */
+  height: 36px;        /* Match other links */
+}
+
+body.has-sidebar .department-subgroup:hover > .submenu,
+body.has-sidebar .department-subgroup > .submenu.active {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  z-index: 101;
+}

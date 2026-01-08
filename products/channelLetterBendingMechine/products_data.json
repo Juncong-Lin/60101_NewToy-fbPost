@@ -1,0 +1,130 @@
+{
+  "plate": [
+    {
+      "id": "AMO-A130-A130S-HIGH-SPEED-PLATE-BENDING-MACHINE",
+      "name": "AMO-A130&A130S HIGH SPEED PLATE BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Plate/AMO-A130&A130S HIGH SPEED PLATE BENDING MACHINE/image/AMO-A130&A130S HIGH SPEED PLATE BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Plate"
+    }
+  ],
+  "automatic": [
+    {
+      "id": "AMO-AL160-AUTOMATIC-ALUMINUM-CHANNEL-LETTER-BENDING-MACHINE",
+      "name": "AMO-AL160 AUTOMATIC ALUMINUM CHANNEL LETTER BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Automatic/AMO-AL160 AUTOMATIC ALUMINUM CHANNEL LETTER BENDING MACHINE/image/AMO-AL160 AUTOMATIC ALUMINUM CHANNEL LETTER BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Automatic"
+    },
+    {
+      "id": "AMO-AL130-AUTOMATIC-BENDING-MACHINE-FOR-ALUMINUM-SIDEBAND",
+      "name": "AMO-AL130 AUTOMATIC BENDING MACHINE FOR ALUMINUM SIDEBAND",
+      "image": "products/channelLetterBendingMechine/Automatic/AMO-AL130 AUTOMATIC BENDING MACHINE FOR ALUMINUM SIDEBAND/image/AMO-AL130 AUTOMATIC BENDING MACHINE FOR ALUMINUM SIDEBAND.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Automatic"
+    },
+    {
+      "id": "AMO-A200-A200S-AUTOMATIC-BENDING-MACHINE",
+      "name": "AMO-A200&A200S AUTOMATIC BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Automatic/AMO-A200&A200S AUTOMATIC BENDING MACHINE/image/AMO-A200&A200S AUTOMATIC BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Automatic"
+    },
+    {
+      "id": "AMO-A400-AUTOMATIC-BENDING-MACHINE",
+      "name": "AMO-A400-AUTOMATIC BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Automatic/AMO-A400-AUTOMATIC BENDING MACHINE/image/AMO-A400-AUTOMATIC BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Automatic"
+    }
+  ],
+  "special": [
+    {
+      "id": "AMO-AT1200-SPECIAL-SHAPED-LOGO-INDUSTRIAL-BENDING-MACHINE",
+      "name": "AMO-AT1200 SPECIAL-SHAPED LOGO INDUSTRIAL BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Special/AMO-AT1200 SPECIAL-SHAPED LOGO INDUSTRIAL BENDING MACHINE/image/AMO-AT1200 SPECIAL-SHAPED LOGO INDUSTRIAL BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Special"
+    },
+    {
+      "id": "AMO-AT1500-SPECIAL-SHAPED-LOGO-INDUSTRIAL-BENDING-MACHINE",
+      "name": "AMO-AT1500 SPECIAL-SHAPED LOGO INDUSTRIAL BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Special/AMO-AT1500 SPECIAL-SHAPED LOGO INDUSTRIAL BENDING MACHINE/image/AMO-AT1500 SPECIAL-SHAPED LOGO INDUSTRIAL BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Special"
+    },
+    {
+      "id": "AMO-AT800-SPECIAL-SHAPED-MARKING-INDUSTRIAL-BENDING-MACHINE",
+      "name": "AMO-AT800 SPECIAL-SHAPED MARKING INDUSTRIAL BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Special/AMO-AT800 SPECIAL-SHAPED MARKING INDUSTRIAL BENDING MACHINE/image/AMO-AT800 SPECIAL-SHAPED MARKING INDUSTRIAL BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Special"
+    }
+  ],
+  "aluminum": [
+    {
+      "id": "AMO-AL100-HIGHSPEED-FLAT-ALUMINUME-BENDING-MACHINE",
+      "name": "AMO-AL100 HIGHSPEED FLAT ALUMINUME BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Aluminum/AMO-AL100 HIGHSPEED FLAT ALUMINUME BENDING MACHINE/image/AMO-AL100 HIGHSPEED FLAT ALUMINUME BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Aluminum"
+    }
+  ],
+  "letter": [
+    {
+      "id": "AMO-A110-FINE-LETTER-BENDING-MACHINE",
+      "name": "AMO-A110 FINE LETTER BENDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Letter/AMO-A110 FINE LETTER BENDING MACHINE/image/AMO-A110 FINE LETTER BENDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Letter"
+    },
+    {
+      "id": "AMO-SEIKO-LETTER-CRINDING-MACHINE",
+      "name": "AMO-SEIKO LETTER CRINDING MACHINE",
+      "image": "products/channelLetterBendingMechine/Letter/AMO-SEIKO LETTER CRINDING MACHINE/image/AMO-SEIKO LETTER CRINDING MACHINE.jpg",
+      "lower_price": null,
+      "higher_price": null,
+      "brand": "Letter"
+    }
+  ],
+  "outdoor": [],
+  "display": [],
+  "hoson": [],
+  "roland": [],
+  "epson": [],
+  "mimaki": [],
+  "mutoh": [],
+  "witcolor": [],
+  "galaxy": [],
+  "human": [],
+  "gongzheng": [],
+  "flora": [],
+  "xuli": [],
+  "xenos": [],
+  "yongli": [],
+  "zhongye": [],
+  "skyjet": [],
+  "yaselan": [],
+  "teckwin": [],
+  "ricoh": [],
+  "titanjet": [],
+  "seiko": [],
+  "skycolor": [],
+  "myjet": [],
+  "phaeton": [],
+  "meitu": [],
+  "jhf": [],
+  "kingfisher": [],
+  "liyu": [],
+  "locor": []
+}

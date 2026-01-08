@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>Orders</title>
+    <!-- This code is needed for responsive design to work.
+      (Responsive design = make the website look good on
+      smaller screen sizes like a phone or a tablet). -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no"
+    />
+
+    <!-- Load a font called Roboto from Google Fonts. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Here are the CSS files for this page. -->
+    <link rel="stylesheet" href="styles/shared/general.css" />
+    <link rel="stylesheet" href="styles/shared/qili-header.css" />
+    <link rel="stylesheet" href="styles/shared/sub-header.css" />
+    <link rel="stylesheet" href="styles/pages/orders.css" />
+    <link rel="stylesheet" href="styles/shared/footer.css" />
+    <link rel="stylesheet" href="styles/shared/right-panel.css" />
+    <!-- Meta Pixel Code -->
+    <script>
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = "2.0";
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        "script",
+        "https://connect.facebook.net/en_US/fbevents.js"
+      );
+      fbq("init", "569190689377819");
+      fbq("track", "PageView");
+    </script>
+    <noscript
+      ><img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=569190689377819&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+  </head>
+  <body class="no-sidebar">
+    <!-- Main Header - Loaded dynamically from shared component -->
+    <div id="shared-header-placeholder"></div>
+    <!-- Sub Header Navigation - Loaded dynamically from shared component -->
+    <div id="shared-subheader-placeholder"></div>
+    <div class="main">
+      <div class="page-title">Your Orders</div>
+
+      <div class="orders-grid">
+        <div class="order-container">
+          <div class="order-header">
+            <div class="order-header-left-section">
+              <div class="order-date">
+                <div class="order-header-label">Order Placed:</div>
+                <div>August 12</div>
+              </div>
+              <div class="order-total">
+                <div class="order-header-label">Total:</div>
+                <div>$35.06</div>
+              </div>
+            </div>
+
+            <div class="order-header-right-section">
+              <div class="order-header-label">Order ID:</div>
+              <div>27cba69d-4c3d-4098-b42d-ac7fa62b7664</div>
+            </div>
+          </div>
+
+          <div class="order-details-grid">
+            <div class="product-image-container">
+              <img src="products/athletic-cotton-socks-6-pairs.jpg" />
+            </div>
+
+            <div class="product-image-container">
+              <img src="products/adults-plain-cotton-tshirt-2-pack-teal.jpg" />
+            </div>
+
+            <div class="product-details">
+              <div class="product-name">
+                Adults Plain Cotton T-Shirt - 2 Pack
+              </div>
+              <div class="product-delivery-date">Arriving on: August 19</div>
+              <div class="product-quantity">Quantity: 2</div>
+              <button class="buy-again-button button-primary">
+                <img class="buy-again-icon" src="images/icons/buy-again.png" />
+                <span class="buy-again-message">Buy it again</span>
+              </button>
+            </div>
+
+            <div class="product-actions">
+              <a href="tracking.html">
+                <button class="track-package-button button-secondary">
+                  Track package
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-container">
+          <div class="order-header">
+            <div class="order-header-left-section">
+              <div class="order-date">
+                <div class="order-header-label">Order Placed:</div>
+                <div>June 10</div>
+              </div>
+              <div class="order-total">
+                <div class="order-header-label">Total:</div>
+                <div>$41.90</div>
+              </div>
+            </div>
+
+            <div class="order-header-right-section">
+              <div class="order-header-label">Order ID:</div>
+              <div>b6b6c212-d30e-4d4a-805d-90b52ce6b37d</div>
+            </div>
+          </div>
+
+          <div class="order-details-grid">
+            <div class="product-image-container">
+              <img src="products/intermediate-composite-basketball.jpg" />
+            </div>
+
+            <div class="product-details">
+              <div class="product-name">Intermediate Size Basketball</div>
+              <div class="product-delivery-date">Arriving on: June 17</div>
+              <div class="product-quantity">Quantity: 2</div>
+              <button class="buy-again-button button-primary">
+                <img class="buy-again-icon" src="images/icons/buy-again.png" />
+                <span class="buy-again-message">Buy it again</span>
+              </button>
+            </div>
+
+            <div class="product-actions">
+              <a href="tracking.html">
+                <button class="track-package-button button-secondary">
+                  Track package
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared Footer - Loaded dynamically from shared component -->
+    <div id="shared-footer-placeholder"></div>
+
+    <!-- Shared Right Panel - Loaded dynamically from shared component -->
+    <div id="shared-right-panel-placeholder"></div>
+    <script src="scripts/shared/url-utils.js"></script>
+    <script src="scripts/shared/search.js"></script>
+    <script src="scripts/shared/shared-header-loader.js"></script>
+    <script src="scripts/shared/sub-header-nav.js"></script>
+    <script src="scripts/shared/shared-subheader-loader.js"></script>
+    <script src="scripts/shared/shared-footer-loader.js"></script>
+    <script src="scripts/shared/shared-right-panel-loader.js"></script>
+    <script src="scripts/shared/right-panel.js"></script>
+  </body>
+</html>

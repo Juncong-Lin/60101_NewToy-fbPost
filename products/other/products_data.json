@@ -1,0 +1,41 @@
+{
+  "spectrophotometer": [
+    {
+      "id": "Spectrophotometer-EFI-Xrite-ES-2000",
+      "name": "Spectrophotometer EFI Xrite ES-2000",
+      "image": "products/other/Spectrophotometer/Spectrophotometer EFI Xrite ES-2000/image/Spectrophotometer EFI Xrite ES-2000.jpg",
+      "lower_price": 98000,
+      "higher_price": 98000,
+      "brand": "Spectrophotometer"
+    }
+  ],
+  "display": [],
+  "hoson": [],
+  "roland": [],
+  "epson": [],
+  "mimaki": [],
+  "mutoh": [],
+  "witcolor": [],
+  "galaxy": [],
+  "human": [],
+  "gongzheng": [],
+  "flora": [],
+  "xuli": [],
+  "xenos": [],
+  "yongli": [],
+  "zhongye": [],
+  "skyjet": [],
+  "yaselan": [],
+  "teckwin": [],
+  "ricoh": [],
+  "titanjet": [],
+  "seiko": [],
+  "skycolor": [],
+  "myjet": [],
+  "phaeton": [],
+  "meitu": [],
+  "jhf": [],
+  "kingfisher": [],
+  "liyu": [],
+  "locor": []
+}
