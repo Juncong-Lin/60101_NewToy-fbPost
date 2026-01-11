@@ -3,6 +3,11 @@ __pycache__/
 
 # Ignore directory for YaoSheng products
 products_YaoSheng/
+products_YS/
+
+# Ignore directory for products_up_helper/
+products_up_helper/
+products_to_toy_design_help_folder/
 
 # check all the json fires carefully, ultra think, wright a extract_all1688_photos.py to extact all the *.json files photo in product_1688 folder , save the photos into the products_1688/all1688_photos folder, each photo's name should be like : 汕头市澄海区生彩玩具厂_企业积木定制模型入职司龄礼周年纪念摆件建筑玩具IP手办礼品定做_947525126764.jpg
 # Ignore directory for 1688 products
