@@ -2041,6 +2041,16 @@ window.loadSpecificCategory = function(categoryName) {
     'Roland Printer Spare Parts': 'Print Spare Parts',
     'Canon Printer Spare Parts': 'Print Spare Parts',
     'Ricoh Printer Spare Parts': 'Print Spare Parts',
+    '仿真餐具': 'Inkjet Printers',
+    '剑龙-雷塔勇士': 'Inkjet Printers',
+    '弓弹射猴子粘布套装': 'Inkjet Printers',
+    '泡沫飞剑': 'Inkjet Printers',
+    '火光烟雾剑': 'Inkjet Printers',
+    '火花烟零激光剑': 'Inkjet Printers',
+    '火花烟零激光剑双剑': 'Inkjet Printers',
+    '烹饪主厨': 'Inkjet Printers',
+    '美少女餐具': 'Inkjet Printers',
+    '过家家': 'Inkjet Printers',
     // fallback: categoryName itself
   };
   document.querySelectorAll('.sub-header-link').forEach(link => {
@@ -2113,6 +2123,226 @@ window.loadSpecificCategory = function(categoryName) {
       updatePageHeader('Inkjet Printers', allToys.length);
 
       // Update breadcrumb navigation
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '仿真餐具') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '剑龙-雷塔勇士') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '弓弹射猴子粘布套装') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '泡沫飞剑') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '火光烟雾剑') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '火花烟零激光剑') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '火花烟零激光剑双剑') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '烹饪主厨') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '美少女餐具') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
+      updateBreadcrumb('inkjetPrinters');
+    } else if (categoryName === '过家家') {
+      // Load toy products for this category
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      const categoryProducts = toyObj[categoryName] || {};
+      let allToys = [];
+      for (const sku in categoryProducts) {
+        const entries = categoryProducts[sku] || [];
+        entries.forEach(entry => {
+          const fixed = Object.assign({}, entry);
+          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+          }
+          allToys.push(fixed);
+        });
+      }
+      const productsHTML = renderProducts(allToys, 'regular');
+      const productsGrid = document.querySelector('.js-prodcts-grid');
+      productsGrid.innerHTML = productsHTML;
+      productsGrid.classList.remove('showing-coming-soon');
+      attachAddToCartListeners();
+      updatePageHeader(categoryName, allToys.length);
       updateBreadcrumb('inkjetPrinters');
     } else if (categoryName === 'Eco-Solvent Inkjet Printers - With XP600 Printhead') {
       // Load XP600 printers instead of showing placeholder

@@ -80,7 +80,17 @@ window.handleCategoryClick = function(categoryName) {
     'UV Hybrid Inkjet Printer - With Ricoh Gen6 Printheads',
     'UV Hybrid Inkjet Printer - With Konica KM1024i Printheads',
     'Double Side Printers',
-    'Direct Printing'
+    'Direct Printing',
+    '仿真餐具',
+    '剑龙-雷塔勇士',
+    '弓弹射猴子粘布套装',
+    '泡沫飞剑',
+    '火光烟雾剑',
+    '火花烟零激光剑',
+    '火花烟零激光剑双剑',
+    '烹饪主厨',
+    '美少女餐具',
+    '过家家'
   ];
   
   if (inkjetCategories.includes(categoryName) && window.subHeaderNav && window.subHeaderNav.hideAllSubmenus) {
