@@ -429,7 +429,7 @@ class SearchSystem {  constructor() {
             <h3>Popular categories:</h3>
             <div class="suggestion-links">
               <a href="javascript:void(0)" onclick="window.loadAllPrintheadProducts && window.loadAllPrintheadProducts()">Print Heads</a>
-              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Inkjet Printers')">Inkjet Printers</a>
+              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Inkjet Printers')">Action Figures & Role Play</a>
               <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Print Spare Parts')">Print Spare Parts</a>
               <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Upgrading Kit')">Upgrading Kit</a>
             </div>

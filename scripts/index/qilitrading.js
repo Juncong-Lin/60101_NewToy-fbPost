@@ -606,13 +606,13 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Inkjet Printers</span>
+          <span class="breadcrumb-current">Action Figures & Role Play</span>
         `;
       } else {
         breadcrumbElement.innerHTML = `
           <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Inkjet Printers</span>
+          <span class="breadcrumb-current">Action Figures & Role Play</span>
         `;
       }
     } else if (brand === 'printSpareParts') {
@@ -634,7 +634,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <span class="breadcrumb-current">Eco-Solvent Inkjet Printers</span>
         `;
@@ -642,7 +642,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <span class="breadcrumb-current">Eco-Solvent Inkjet Printers</span>
         `;
@@ -652,7 +652,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#inkjetprinters-ecosolvent" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -662,7 +662,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Eco-Solvent Inkjet Printers')" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -674,7 +674,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#inkjetprinters-ecosolvent" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -684,7 +684,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Eco-Solvent Inkjet Printers')" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -696,7 +696,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#inkjetprinters-ecosolvent" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -706,7 +706,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Eco-Solvent Inkjet Printers')" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -718,7 +718,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <span class="breadcrumb-current">Direct to Fabric & Film</span>
         `;
@@ -726,7 +726,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <span class="breadcrumb-current">Direct to Fabric & Film</span>
         `;
@@ -736,7 +736,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="javascript:void(0)" onclick="loadDirectToFabricFilmPrinters()" class="breadcrumb-link">Direct to Fabric & Film</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -746,7 +746,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="javascript:void(0)" onclick="loadDirectToFabricFilmPrinters()" class="breadcrumb-link">Direct to Fabric & Film</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -758,7 +758,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="javascript:void(0)" onclick="loadDirectToFabricFilmPrinters()" class="breadcrumb-link">Direct to Fabric & Film</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -768,7 +768,7 @@ function updateBreadcrumb(brand) {
         breadcrumbElement.innerHTML = `
           <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="javascript:void(0)" onclick="loadDirectToFabricFilmPrinters()" class="breadcrumb-link">Direct to Fabric & Film</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2122,7 +2122,7 @@ window.loadSpecificCategory = function(categoryName) {
       attachAddToCartListeners();
 
       // Update page header
-      updatePageHeader('Inkjet Printers', allToys.length);
+      updatePageHeader('Action Figures & Role Play', allToys.length);
 
       // Update breadcrumb navigation
       updateBreadcrumb('inkjetPrinters');

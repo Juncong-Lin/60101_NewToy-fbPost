@@ -1,6 +1,5 @@
 import { products } from '../../data/products.js';
 import { printheadProducts } from '../../data/printhead-products.js';
-import { inkjetPrinterProducts } from '../../data/inkjetPrinter-products.js';
 import { ActionFiguresRolePlayProducts } from '../../products_toy/toy/each_group_products/ActionFigures&RolePlay/ActionFigures&RolePlay.js';
 import { ArtsCraftsToysProducts } from '../../products_toy/toy/each_group_products/Arts&CraftsToys/Arts&CraftsToys.js';
 import { BuildingBlocksConstructionProducts } from '../../products_toy/toy/each_group_products/BuildingBlocks&Construction/BuildingBlocks&Construction.js';
@@ -1984,7 +1983,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#direct-to-fabric-film" class="breadcrumb-link">Direct to Fabric & Film</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -1999,7 +1998,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#direct-to-fabric-film" class="breadcrumb-link">Direct to Fabric & Film</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2029,7 +2028,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#direct-to-fabric-film" class="breadcrumb-link">Direct to Fabric & Film</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2044,7 +2043,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#direct-to-fabric-film" class="breadcrumb-link">Direct to Fabric & Film</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2075,7 +2074,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#sublimation-printers" class="breadcrumb-link">Sublimation Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2088,7 +2087,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#sublimation-printers" class="breadcrumb-link">Sublimation Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2118,7 +2117,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#solvent-inkjet-printers" class="breadcrumb-link">Solvent Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2128,7 +2127,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#solvent-inkjet-printers" class="breadcrumb-link">Solvent Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2141,7 +2140,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
       breadcrumbElement.innerHTML = `
         <a href="index.html" class="breadcrumb-link">Home</a>
         <span class="breadcrumb-separator">&gt;</span>
-        <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+        <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
         <span class="breadcrumb-separator">&gt;</span>
         <a href="index.html#double-side-printers" class="breadcrumb-link">Double Side Printers</a>
         <span class="breadcrumb-separator">&gt;</span>
@@ -2158,7 +2157,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#uv-hybrid-inkjet-printers" class="breadcrumb-link">Hybrid UV Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2171,7 +2170,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#uv-hybrid-inkjet-printers" class="breadcrumb-link">Hybrid UV Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2184,7 +2183,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#uv-hybrid-inkjet-printers" class="breadcrumb-link">Hybrid UV Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2197,7 +2196,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2209,7 +2208,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2221,7 +2220,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2260,7 +2259,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
           breadcrumbElement.innerHTML = `
             <a href="index.html" class="breadcrumb-link">Home</a>
             <span class="breadcrumb-separator">&gt;</span>
-            <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+            <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
             <span class="breadcrumb-separator">&gt;</span>
             <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
             <span class="breadcrumb-separator">&gt;</span>
@@ -2272,7 +2271,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
           breadcrumbElement.innerHTML = `
             <a href="index.html" class="breadcrumb-link">Home</a>
             <span class="breadcrumb-separator">&gt;</span>
-            <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+            <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
             <span class="breadcrumb-separator">&gt;</span>
             <a href="index.html#uv-inkjet-printers" class="breadcrumb-link">UV Inkjet Printers</a>
             <span class="breadcrumb-separator">&gt;</span>
@@ -2287,7 +2286,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
           breadcrumbElement.innerHTML = `
             <a href="index.html" class="breadcrumb-link">Home</a>
             <span class="breadcrumb-separator">&gt;</span>
-            <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+            <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
             <span class="breadcrumb-separator">&gt;</span>
             <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
             <span class="breadcrumb-separator">&gt;</span>
@@ -2299,7 +2298,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
           breadcrumbElement.innerHTML = `
             <a href="index.html" class="breadcrumb-link">Home</a>
             <span class="breadcrumb-separator">&gt;</span>
-            <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+            <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
             <span class="breadcrumb-separator">&gt;</span>
             <a href="index.html#uv-inkjet-printers" class="breadcrumb-link">UV Inkjet Printers</a>
             <span class="breadcrumb-separator">&gt;</span>
@@ -2339,7 +2338,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#uv-inkjet-printers" class="breadcrumb-link">UV Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
@@ -2351,7 +2350,7 @@ function updateBreadcrumbDetail(product, productType, productBrand) {
         breadcrumbElement.innerHTML = `
           <a href="index.html" class="breadcrumb-link">Home</a>
           <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
+          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
           <span class="breadcrumb-separator">&gt;</span>
           <a href="index.html#uv-inkjet-printers" class="breadcrumb-link">UV Inkjet Printers</a>
           <span class="breadcrumb-separator">&gt;</span>
