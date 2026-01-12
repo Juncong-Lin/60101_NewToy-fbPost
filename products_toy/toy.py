@@ -9,6 +9,7 @@ import json
 import time
 import copy
 import shutil
+import csv
 import logging
 from datetime import datetime
 from urllib.parse import urlparse
@@ -434,16 +435,47 @@ def write_group_products(root_dir, structure, generated_at):
                         os.makedirs(image_folder, exist_ok=True)
                         image_filename = determine_image_filename(product_folder_name, image_url)
                         image_path = os.path.join(image_folder, image_filename)
-                        referer = product.get('galleyItemLink href', '').strip() or None
-                        downloaded = download_product_image(image_url, image_path, referer=referer)
-                        if downloaded:
-                            image_rel_path = os.path.relpath(image_path, start=root_rel_base)
-                        else:
+
+                        # First, try to resolve local image files exported alongside the CSV.
+                        local_images_dir = os.path.normpath(os.path.join(SCRIPT_BASE_DIR, '..', 'products_to_toy_design_help_folder', 'products_ys_images'))
+                        found_local = False
+                        # Normalize candidate paths that might be stored in CSV (relative paths or bare filenames)
+                        candidate = image_url.replace('\\', '/').lstrip('./')
+                        potential_paths = [
+                            os.path.join(local_images_dir, candidate),
+                            os.path.join(local_images_dir, os.path.basename(candidate))
+                        ]
+                        # Sometimes CSV contains full file:// URIs
+                        if candidate.startswith('file://'):
+                            potential_paths.insert(0, candidate[7:])
+
+                        for p in potential_paths:
                             try:
-                                if os.path.exists(image_path):
+                                if os.path.exists(p):
+                                    try:
+                                        shutil.copy2(p, image_path)
+                                    except Exception:
+                                        # fallback to a simple open/write copy
+                                        with open(p, 'rb') as rf, open(image_path, 'wb') as wf:
+                                            wf.write(rf.read())
                                     image_rel_path = os.path.relpath(image_path, start=root_rel_base)
-                            except OSError:
-                                image_rel_path = ""
+                                    found_local = True
+                                    break
+                            except Exception:
+                                continue
+
+                        if not found_local:
+                            # If not a local file, attempt HTTP download (existing behavior)
+                            referer = product.get('galleyItemLink href', '').strip() or None
+                            downloaded = download_product_image(image_url, image_path, referer=referer)
+                            if downloaded:
+                                image_rel_path = os.path.relpath(image_path, start=root_rel_base)
+                            else:
+                                try:
+                                    if os.path.exists(image_path):
+                                        image_rel_path = os.path.relpath(image_path, start=root_rel_base)
+                                except OSError:
+                                    image_rel_path = ""
 
                     markdown_rel_path = os.path.relpath(markdown_path, start=root_rel_base)
 
@@ -792,25 +824,51 @@ def main():
 
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Load existing product data from individual brand files
+    # Prefer loading product list directly from CSV exported by the design helper.
+    # Falls back to reading existing per-brand JSON files if CSV is not present.
     products_by_brand = {}
-    if os.path.exists(each_brand_dir):
-        for file in os.listdir(each_brand_dir):
-            if file.endswith('.json'):
-                brand_file_path = os.path.join(each_brand_dir, file)
-                with open(brand_file_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    for brand_key in data:
-                        products = data[brand_key]
-                        # Deduplicate while preserving stored order
-                        products = deduplicate_in_display_order(products)
-                        for product in products:
-                            href = product.get("galleyItemLink href")
-                            product.setdefault("sectionName", "")
-                            lookup_entry = category_lookup.get(href, {}) if href else {}
-                            product['categoryFolder'] = lookup_entry.get('category', product.get('categoryFolder', ''))
-                            product['groupName'] = lookup_entry.get('group', product.get('groupName', ''))
-                        products_by_brand[brand_key] = products
+    csv_path = os.path.normpath(os.path.join(SCRIPT_BASE_DIR, '..', 'products_to_toy_design_help_folder', 'products_ys.csv'))
+    if os.path.exists(csv_path):
+        try:
+            with open(csv_path, 'r', encoding='utf-8-sig') as cf:
+                reader = csv.DictReader(cf)
+                for row in reader:
+                    brand_key = (row.get('公司编号') or row.get('摊位号') or row.get('company') or 'Unknown').strip()
+                    product = {
+                        "galleyItemLink href": row.get('链接', '').strip(),
+                        "galleyImg src": row.get('图片', '').strip(),
+                        "galleyName": row.get('品名', '').strip(),
+                        "sampleTag": row.get('货号', '').strip(),
+                        "sampleTag (2)": row.get('包装', '').strip(),
+                        "sampleTag (3)": row.get('摊位号', '').strip(),
+                        "price": str(row.get('价格', '')).strip(),
+                        "priceRight": row.get('装箱量', '').strip(),
+                        "marketTag": row.get('内盒', '').strip(),
+                        "sectionName": row.get('公司编号', '').strip()
+                    }
+                    products_by_brand.setdefault(brand_key, []).append(product)
+        except Exception as e:
+            if logger:
+                logger.warning(f"Failed to load CSV {csv_path}: {e}")
+            products_by_brand = {}
+    else:
+        if os.path.exists(each_brand_dir):
+            for file in os.listdir(each_brand_dir):
+                if file.endswith('.json'):
+                    brand_file_path = os.path.join(each_brand_dir, file)
+                    with open(brand_file_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        for brand_key in data:
+                            products = data[brand_key]
+                            # Deduplicate while preserving stored order
+                            products = deduplicate_in_display_order(products)
+                            for product in products:
+                                href = product.get("galleyItemLink href")
+                                product.setdefault("sectionName", "")
+                                lookup_entry = category_lookup.get(href, {}) if href else {}
+                                product['categoryFolder'] = lookup_entry.get('category', product.get('categoryFolder', ''))
+                                product['groupName'] = lookup_entry.get('group', product.get('groupName', ''))
+                            products_by_brand[brand_key] = products
 
     original_products_by_brand = copy.deepcopy(products_by_brand)
 

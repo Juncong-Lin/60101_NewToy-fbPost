@@ -3,6 +3,7 @@
 import {products} from '../../data/products.js';
 import {printheadProducts} from '../../data/printhead-products.js';
 import {inkjetPrinterProducts} from '../../data/inkjetPrinter-products.js';
+import { ActionFiguresRolePlayProducts } from '../../products_toy/toy/each_group_products/ActionFigures&RolePlay/ActionFigures&RolePlay.js';
 import {printSparePartProducts} from '../../data/printsparepart-products.js';
 import {upgradingKitProducts} from '../../data/upgradingkit-products.js';
 import {materialProducts} from '../../data/material-products.js';
@@ -2081,40 +2082,36 @@ window.loadSpecificCategory = function(categoryName) {
     
     // Special handling for printer categories
     if (categoryName === 'Inkjet Printers') {
-      // Load all inkjet printer products (eco-solvent + solvent + others)
-      const ecoSolventPrinters = getAllEcoSolventPrinters();
-      const solventPrinters = getAllSolventPrinters();
-      const dtfPrinters = inkjetPrinterProducts.dtf_printer || [];
-      const uvDtfPrinters = inkjetPrinterProducts.uv_dtf || [];
-      const sublimationPrinters = inkjetPrinterProducts.sublimation || [];
-      const uvInkjetPrinters = inkjetPrinterProducts.amo_uv_inkjet || [];
-      const uvFlatbedPrinters = inkjetPrinterProducts.uv_flatbed || [];
-      const hybridUvPrinters = inkjetPrinterProducts.hybrid_uv || [];
-      const doubleSidePrinters = inkjetPrinterProducts.double_side || [];
-      
-      const allPrinters = [
-        ...ecoSolventPrinters,
-        ...solventPrinters,
-        ...dtfPrinters,
-        ...uvDtfPrinters,
-        ...sublimationPrinters,
-        ...uvInkjetPrinters,
-        ...uvFlatbedPrinters,
-        ...hybridUvPrinters,
-        ...doubleSidePrinters
-      ];
-      
-      const productsHTML = renderProducts(allPrinters, 'printer');
+      // NOTE: replaced inkjet products datasource with Action Figures toy dataset
+      // Flatten ActionFiguresRolePlayProducts into an array suitable for renderProducts
+      const toyObj = ActionFiguresRolePlayProducts || {};
+      let allToys = [];
+      for (const groupName in toyObj) {
+        const idMap = toyObj[groupName];
+        for (const sku in idMap) {
+          const entries = idMap[sku] || [];
+          entries.forEach(entry => {
+            // Ensure image paths point to the products_toy folder so they resolve on the site
+            const fixed = Object.assign({}, entry);
+            if (fixed.image && !fixed.image.startsWith('products_toy/')) {
+              fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
+            }
+            allToys.push(fixed);
+          });
+        }
+      }
+
+      const productsHTML = renderProducts(allToys, 'regular');
       const productsGrid = document.querySelector('.js-prodcts-grid');
       productsGrid.innerHTML = productsHTML;
       productsGrid.classList.remove('showing-coming-soon');
-      
+
       // Re-attach event listeners for the new add to cart buttons
       attachAddToCartListeners();
-      
+
       // Update page header
-      updatePageHeader('Inkjet Printers', allPrinters.length);
-      
+      updatePageHeader('Inkjet Printers', allToys.length);
+
       // Update breadcrumb navigation
       updateBreadcrumb('inkjetPrinters');
     } else if (categoryName === 'Eco-Solvent Inkjet Printers - With XP600 Printhead') {
