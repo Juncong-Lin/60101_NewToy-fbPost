@@ -2103,6 +2103,8 @@ window.loadSpecificCategory = function(categoryName) {
           entries.forEach(entry => {
             // Ensure image paths point to the products_toy folder so they resolve on the site
             const fixed = Object.assign({}, entry);
+            // set SKU as id so detail links work (always overwrite to ensure unique SKU id)
+            fixed.id = sku;
             if (fixed.image && !fixed.image.startsWith('products_toy/')) {
               fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
             }
@@ -2133,6 +2135,7 @@ window.loadSpecificCategory = function(categoryName) {
         const entries = categoryProducts[sku] || [];
         entries.forEach(entry => {
           const fixed = Object.assign({}, entry);
+          if (!fixed.id) fixed.id = sku;
           if (fixed.image && !fixed.image.startsWith('products_toy/')) {
             fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
           }
@@ -2155,6 +2158,7 @@ window.loadSpecificCategory = function(categoryName) {
         const entries = categoryProducts[sku] || [];
         entries.forEach(entry => {
           const fixed = Object.assign({}, entry);
+          if (!fixed.id) fixed.id = sku;
           if (fixed.image && !fixed.image.startsWith('products_toy/')) {
             fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
           }
@@ -2177,6 +2181,7 @@ window.loadSpecificCategory = function(categoryName) {
         const entries = categoryProducts[sku] || [];
         entries.forEach(entry => {
           const fixed = Object.assign({}, entry);
+          if (!fixed.id) fixed.id = sku;
           if (fixed.image && !fixed.image.startsWith('products_toy/')) {
             fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
           }
@@ -2199,6 +2204,7 @@ window.loadSpecificCategory = function(categoryName) {
         const entries = categoryProducts[sku] || [];
         entries.forEach(entry => {
           const fixed = Object.assign({}, entry);
+          if (!fixed.id) fixed.id = sku;
           if (fixed.image && !fixed.image.startsWith('products_toy/')) {
             fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
           }
@@ -2221,6 +2227,7 @@ window.loadSpecificCategory = function(categoryName) {
         const entries = categoryProducts[sku] || [];
         entries.forEach(entry => {
           const fixed = Object.assign({}, entry);
+          if (!fixed.id) fixed.id = sku;
           if (fixed.image && !fixed.image.startsWith('products_toy/')) {
             fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
           }
@@ -2243,6 +2250,7 @@ window.loadSpecificCategory = function(categoryName) {
         const entries = categoryProducts[sku] || [];
         entries.forEach(entry => {
           const fixed = Object.assign({}, entry);
+          if (!fixed.id) fixed.id = sku;
           if (fixed.image && !fixed.image.startsWith('products_toy/')) {
             fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
           }
@@ -2265,6 +2273,7 @@ window.loadSpecificCategory = function(categoryName) {
         const entries = categoryProducts[sku] || [];
         entries.forEach(entry => {
           const fixed = Object.assign({}, entry);
+          if (!fixed.id) fixed.id = sku;
           if (fixed.image && !fixed.image.startsWith('products_toy/')) {
             fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
           }
@@ -2287,6 +2296,7 @@ window.loadSpecificCategory = function(categoryName) {
         const entries = categoryProducts[sku] || [];
         entries.forEach(entry => {
           const fixed = Object.assign({}, entry);
+          if (!fixed.id) fixed.id = sku;
           if (fixed.image && !fixed.image.startsWith('products_toy/')) {
             fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
           }

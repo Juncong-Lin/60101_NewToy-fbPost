@@ -1,6 +1,20 @@
 import { products } from '../../data/products.js';
 import { printheadProducts } from '../../data/printhead-products.js';
 import { inkjetPrinterProducts } from '../../data/inkjetPrinter-products.js';
+import { ActionFiguresRolePlayProducts } from '../../products_toy/toy/each_group_products/ActionFigures&RolePlay/ActionFigures&RolePlay.js';
+import { ArtsCraftsToysProducts } from '../../products_toy/toy/each_group_products/Arts&CraftsToys/Arts&CraftsToys.js';
+import { BuildingBlocksConstructionProducts } from '../../products_toy/toy/each_group_products/BuildingBlocks&Construction/BuildingBlocks&Construction.js';
+import { DollsPlushToysProducts } from '../../products_toy/toy/each_group_products/Dolls&PlushToys/Dolls&PlushToys.js';
+import { EducationalToysProducts } from '../../products_toy/toy/each_group_products/EducationalToys/EducationalToys.js';
+import { ElectronicInteractiveToysProducts } from '../../products_toy/toy/each_group_products/Electronic&InteractiveToys/Electronic&InteractiveToys.js';
+import { InflatableWaterToysProducts } from '../../products_toy/toy/each_group_products/Inflatable&WaterToys/Inflatable&WaterToys.js';
+import { OtherIndustriesProducts } from '../../products_toy/toy/each_group_products/OtherIndustries/OtherIndustries.js';
+import { OtherToysProducts } from '../../products_toy/toy/each_group_products/OtherToys/OtherToys.js';
+import { OutdoorSportsToysProducts } from '../../products_toy/toy/each_group_products/Outdoor&SportsToys/Outdoor&SportsToys.js';
+import { PopCultureLicensedToysProducts } from '../../products_toy/toy/each_group_products/PopCulture&LicensedToys/PopCulture&LicensedToys.js';
+import { PuzzlesBoardGamesProducts } from '../../products_toy/toy/each_group_products/Puzzles&BoardGames/Puzzles&BoardGames.js';
+import { TraditionalToysProducts } from '../../products_toy/toy/each_group_products/TraditionalToys/TraditionalToys.js';
+import { VehiclesRideOnToysProducts } from '../../products_toy/toy/each_group_products/Vehicles&Ride-OnToys/Vehicles&Ride-OnToys.js';
 import { getEcoSolventI1600Printers, getEcoSolventI3200Printers, getInkjetPrinterById, getAllEcoSolventPrinters, getAllSolventPrinters, getSolventKM512iPrinters, getSolventKM1024iPrinters } from '../index/qilitrading.js';
 import { printSparePartProducts } from '../../data/printsparepart-products.js';
 import { upgradingKitProducts } from '../../data/upgradingkit-products.js';
@@ -84,6 +98,52 @@ function findOtherById(id) {
   return null;
 }
 
+// Helper to find toy product in ActionFigures&RolePlay dataset
+// Aggregate all toy group datasets for lookup
+const ALL_TOY_GROUPS = {
+  ActionFiguresRolePlayProducts,
+  ArtsCraftsToysProducts,
+  BuildingBlocksConstructionProducts,
+  DollsPlushToysProducts,
+  EducationalToysProducts,
+  ElectronicInteractiveToysProducts,
+  InflatableWaterToysProducts,
+  OtherIndustriesProducts,
+  OtherToysProducts,
+  OutdoorSportsToysProducts,
+  PopCultureLicensedToysProducts,
+  PuzzlesBoardGamesProducts,
+  TraditionalToysProducts,
+  VehiclesRideOnToysProducts
+};
+
+// Generalized toy lookup across all groups
+function findToyById(id) {
+  for (const groupKey in ALL_TOY_GROUPS) {
+    const groupObjRoot = ALL_TOY_GROUPS[groupKey];
+    for (const group in groupObjRoot) {
+      const groupObj = groupObjRoot[group];
+      for (const code in groupObj) {
+        if (code === id) {
+          const entry = groupObj[code][0];
+          return {
+            id: id,
+            name: entry.name || group,
+            image: `products_toy/toy/each_group_products/${entry.image}`,
+            markdown: entry.markdown ? `products_toy/toy/each_group_products/${entry.markdown}` : null,
+            description: entry.name || '',
+            price: entry.price,
+            priceRight: entry.priceRight,
+            tags: entry.tags || [],
+            category: group
+          };
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // Get the product ID and type from URL parameters
 const urlParams = new URLSearchParams(window.location.search);
 productId = urlParams.get('id') || urlParams.get('productId') || urlParams.get('product');
@@ -95,6 +155,16 @@ if (urlProductType) {
 }
 
 let product = null;
+
+// Try toy lookup first across all toy groups (make toys primary datasource)
+if (productId) {
+  const toyEarly = findToyById(productId);
+  if (toyEarly) {
+    product = toyEarly;
+    productType = 'toy';
+    productBrand = toyEarly.category || 'ActionFigures&RolePlay';
+  }
+}
 
 // If product type is specified in URL, search in the appropriate data structure
 if (productType === 'printsparepart' || productType === 'print-spare-parts') {
@@ -136,6 +206,15 @@ if (productType === 'printsparepart' || productType === 'print-spare-parts') {
   if (product) {
     // Determine the brand/category from the product
     productBrand = product.category || 'eco-solvent';
+  }
+  // If not found in printer dataset, try toy dataset (ActionFigures&RolePlay)
+  if (!product) {
+    const toy = findToyById(productId);
+    if (toy) {
+      product = toy;
+      productType = 'toy';
+      productBrand = toy.category || 'ActionFigures&RolePlay';
+    }
   }
 } else if (productType === 'solventprinter') {
   // Search in solvent inkjet printer products
@@ -202,6 +281,15 @@ if (!product && !urlProductType) {
       productBrand = product.category || 'eco-solvent';
     }
   }// If not found in printer products, search in print spare parts
+  // If still not found, try toy dataset
+  if (!product) {
+    const toy = findToyById(productId);
+    if (toy) {
+      product = toy;
+      productType = 'toy';
+      productBrand = toy.category || 'ActionFigures&RolePlay';
+    }
+  }
   if (!product) {
     product = findPrintSparePartById(productId);
     if (product) {
@@ -359,6 +447,8 @@ if (product) {
     setupOtherProductContent(product);
   } else if (productType === 'printer') {
     setupPrinterProductContent(product);
+  } else if (productType === 'toy') {
+    setupToyProductContent(product);
   } else {
     setupRegularProductContent(product);
   }
@@ -1051,6 +1141,55 @@ async function setupPrinterProductContent(product) {
     console.error('Error loading markdown content for printer:', error);
     // Fallback to basic content if markdown loading fails
     setupBasicPrinterContent(product);
+  }
+}
+
+/**
+ * Set up content for toy products from ActionFigures&RolePlay
+ */
+async function setupToyProductContent(product) {
+  try {
+    // Basic description
+    document.querySelector('.js-product-description').innerHTML = product.description || product.name || 'Toy product details.';
+
+    // Try to load markdown if available
+    if (product.markdown) {
+      try {
+        const response = await fetch(product.markdown);
+        if (response.ok) {
+          const mdContent = await response.text();
+          const parsedContent = parseMarkdown(mdContent);
+          document.querySelector('.js-product-details-content').innerHTML = parsedContent || '';
+          // Hide compatibility/spec sections
+          const compatibilitySection = document.querySelector('.product-compatibility-section');
+          const specificationsSection = document.querySelector('.product-specifications-section');
+          if (compatibilitySection) compatibilitySection.style.display = 'none';
+          if (specificationsSection) specificationsSection.style.display = 'none';
+          return;
+        }
+      } catch (err) {
+        console.warn('Toy markdown fetch failed:', err);
+      }
+    }
+
+    // Fallback content when no markdown found
+    document.querySelector('.js-product-details-content').innerHTML = `
+      <h3>${product.name}</h3>
+      <p>Detailed product information is being updated. Contact us for specifications.</p>
+    `;
+
+    // Hide compatibility/spec sections
+    const compatibilitySection = document.querySelector('.product-compatibility-section');
+    const specificationsSection = document.querySelector('.product-specifications-section');
+    if (compatibilitySection) compatibilitySection.style.display = 'none';
+    if (specificationsSection) specificationsSection.style.display = 'none';
+
+  } catch (error) {
+    console.error('Error setting up toy product content:', error);
+    document.querySelector('.js-product-details-content').innerHTML = `
+      <h3>${product.name}</h3>
+      <p>Product information is temporarily unavailable.</p>
+    `;
   }
 }
 
