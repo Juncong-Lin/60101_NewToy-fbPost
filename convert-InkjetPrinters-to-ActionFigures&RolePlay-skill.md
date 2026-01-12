@@ -114,8 +114,4 @@ Notes & rationale
 - Hash encoding: browsers percent-encode non-ASCII characters in the URL; index code must decode before mapping to category names.
 - Keep the `renderProducts()` contract (expects `product.id` and `product.image`) and update the detail loader to accept `productId` query param consistently.
 
-If you want, I can now:
-- Produce exact patches for the places above (targeted edits to `qilitrading.js`, `detail.js`, and `sub-header-nav.js`).
-- Add a small test script to validate anchors in a static DOM snapshot.
-
 -- End of guide

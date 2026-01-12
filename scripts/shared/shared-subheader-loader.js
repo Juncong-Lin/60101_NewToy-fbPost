@@ -27,6 +27,31 @@ async function loadSharedSubheader() {
   }
 }
 
+function getToyDataAPI() {
+  if (window.toyData && typeof window.toyData.getGroupList === 'function') {
+    return window.toyData;
+  }
+  return null;
+}
+
+function findToyCategoryMetaByName(categoryName) {
+  const toyAPI = getToyDataAPI();
+  if (!toyAPI || !categoryName) {
+    return null;
+  }
+
+  const groups = toyAPI.getGroupList();
+  for (let index = 0; index < groups.length; index += 1) {
+    const group = groups[index];
+    const category = toyAPI.resolveCategory(group.key, categoryName);
+    if (category) {
+      return { category, group };
+    }
+  }
+
+  return null;
+}
+
 // Global navigation handler functions for the shared subheader
 window.handleNavigationClick = function(hash) {  // Check if we're on the index page
   if (UrlUtils.isIndexPage()) {
@@ -101,6 +126,12 @@ window.handleCategoryClick = function(categoryName) {
   if (UrlUtils.isIndexPage() && window.loadSpecificCategory && typeof window.loadSpecificCategory === 'function') {
     // We're on index page - use existing function
     
+    const toyMeta = findToyCategoryMetaByName(categoryName);
+    if (toyMeta) {
+      window.loadSpecificCategory(categoryName);
+      return;
+    }
+
     // Map category names to their correct hash values for consistency
     let hashValue = '';
     if (categoryName === 'Eco-Solvent Inkjet Printers - With XP600 Printhead') {
@@ -266,6 +297,12 @@ window.handleCategoryClick = function(categoryName) {
     }
   } else {
     // We're on a different page - navigate to index and handle the category loading
+    const toyMeta = findToyCategoryMetaByName(categoryName);
+    if (toyMeta) {
+      UrlUtils.navigateToIndex(`#${toyMeta.category.hash}`);
+      return;
+    }
+
     let hashValue = '';
     if (categoryName === 'Eco-Solvent Inkjet Printers - With XP600 Printhead') {
       hashValue = '#eco-solvent-xp600-printers';

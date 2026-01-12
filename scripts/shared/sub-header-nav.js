@@ -1,3 +1,30 @@
+function getToyDataAPI() {
+  if (window.toyData && typeof window.toyData.getGroupList === 'function') {
+    return window.toyData;
+  }
+  return null;
+}
+
+function resolveToyTargetFromHash(hash) {
+  const toyAPI = getToyDataAPI();
+  if (!toyAPI || !hash) {
+    return null;
+  }
+
+  const cleaned = hash.replace(/^#/, '');
+  const category = toyAPI.resolveCategoryByHash(cleaned);
+  if (category) {
+    return { type: 'category', category };
+  }
+
+  const group = toyAPI.resolveGroupByHash(cleaned);
+  if (group) {
+    return { type: 'group', group };
+  }
+
+  return null;
+}
+
 // Sub-header navigation functionality
 class SubHeaderNavigation {
   constructor() {
@@ -360,6 +387,28 @@ class SubHeaderNavigation {
     // Handle special category prefixes
     if (hash.startsWith('category-')) {
       hash = hash.replace('category-', '');
+    }
+
+    const toyTarget = resolveToyTargetFromHash(hash);
+    if (toyTarget && window.loadSpecificCategory) {
+      const targetLabel = toyTarget.type === 'group'
+        ? (toyTarget.group.label || toyTarget.group.key)
+        : toyTarget.category.name;
+
+      // Prevent recursive hash updates while we load the target
+      const resetPrevent = () => {
+        window.preventHashUpdate = false;
+      };
+      window.preventHashUpdate = true;
+      window.loadSpecificCategory(targetLabel);
+      setTimeout(resetPrevent, 100);
+
+      if (toyTarget.type === 'group') {
+        this.setActiveCategory(toyTarget.group.label || targetLabel);
+      } else {
+        this.setActiveCategory(toyTarget.category.groupLabel || 'Action Figures & Role Play');
+      }
+      return;
     }
     
     // Handle printhead-specific hashes

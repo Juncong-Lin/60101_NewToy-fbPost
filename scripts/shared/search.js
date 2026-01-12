@@ -1,3 +1,10 @@
+function getToyDataAPI() {
+  if (window.toyData && typeof window.toyData.searchProducts === 'function') {
+    return window.toyData;
+  }
+  return null;
+}
+
 // Search functionality for the header
 class SearchSystem {  constructor() {
     this.searchInput = null;
@@ -259,7 +266,8 @@ class SearchSystem {  constructor() {
     const searchTermLower = searchTerm.toLowerCase();
     let searchResults = [];    try {
       // Check if product data is available, if not wait for it to load
-      const hasProducts = window.inkjetPrinterProducts || window.printheadProducts || 
+      const toyAPI = getToyDataAPI();
+      const hasProducts = toyAPI || window.inkjetPrinterProducts || window.printheadProducts || 
                          window.printSparePartProducts || window.upgradingKitProducts;
       
       if (!hasProducts) {
@@ -269,6 +277,17 @@ class SearchSystem {  constructor() {
       }
 
       // Search in all product datasets      // Search inkjet printer products
+      if (toyAPI) {
+        const toyMatches = toyAPI.searchProducts(searchTermLower);
+        const mappedToyMatches = toyMatches.map((product) => ({
+          ...product,
+          type: 'toy',
+          category: product.categoryName || product.groupLabel || 'toys',
+          brand: product.groupLabel || 'toys',
+        }));
+        searchResults = searchResults.concat(mappedToyMatches);
+      }
+
       if (window.inkjetPrinterProducts) {
         for (const category in window.inkjetPrinterProducts) {
           const products = window.inkjetPrinterProducts[category];
@@ -429,7 +448,7 @@ class SearchSystem {  constructor() {
             <h3>Popular categories:</h3>
             <div class="suggestion-links">
               <a href="javascript:void(0)" onclick="window.loadAllPrintheadProducts && window.loadAllPrintheadProducts()">Print Heads</a>
-              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Inkjet Printers')">Action Figures & Role Play</a>
+              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Action Figures & Role Play')">Action Figures & Role Play</a>
               <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Print Spare Parts')">Print Spare Parts</a>
               <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Upgrading Kit')">Upgrading Kit</a>
             </div>
@@ -607,7 +626,7 @@ class SearchSystem {  constructor() {
     
     // Check for product data availability every 100ms
     const checkInterval = setInterval(() => {
-      const hasProducts = window.inkjetPrinterProducts || window.printheadProducts || 
+      const hasProducts = getToyDataAPI() || window.inkjetPrinterProducts || window.printheadProducts || 
                          window.printSparePartProducts || window.upgradingKitProducts;
       
       if (hasProducts) {
@@ -619,7 +638,7 @@ class SearchSystem {  constructor() {
     // Stop checking after 10 seconds to avoid infinite loop
     setTimeout(() => {
       clearInterval(checkInterval);
-      if (!(window.inkjetPrinterProducts || window.printheadProducts || 
+      if (!(getToyDataAPI() || window.inkjetPrinterProducts || window.printheadProducts || 
             window.printSparePartProducts || window.upgradingKitProducts)) {
         this.showSearchMessage('Unable to load product data. Please refresh the page and try again.');
       }

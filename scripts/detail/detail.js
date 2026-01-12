@@ -1,19 +1,5 @@
 import { products } from '../../data/products.js';
 import { printheadProducts } from '../../data/printhead-products.js';
-import { ActionFiguresRolePlayProducts } from '../../products_toy/toy/each_group_products/ActionFigures&RolePlay/ActionFigures&RolePlay.js';
-import { ArtsCraftsToysProducts } from '../../products_toy/toy/each_group_products/Arts&CraftsToys/Arts&CraftsToys.js';
-import { BuildingBlocksConstructionProducts } from '../../products_toy/toy/each_group_products/BuildingBlocks&Construction/BuildingBlocks&Construction.js';
-import { DollsPlushToysProducts } from '../../products_toy/toy/each_group_products/Dolls&PlushToys/Dolls&PlushToys.js';
-import { EducationalToysProducts } from '../../products_toy/toy/each_group_products/EducationalToys/EducationalToys.js';
-import { ElectronicInteractiveToysProducts } from '../../products_toy/toy/each_group_products/Electronic&InteractiveToys/Electronic&InteractiveToys.js';
-import { InflatableWaterToysProducts } from '../../products_toy/toy/each_group_products/Inflatable&WaterToys/Inflatable&WaterToys.js';
-import { OtherIndustriesProducts } from '../../products_toy/toy/each_group_products/OtherIndustries/OtherIndustries.js';
-import { OtherToysProducts } from '../../products_toy/toy/each_group_products/OtherToys/OtherToys.js';
-import { OutdoorSportsToysProducts } from '../../products_toy/toy/each_group_products/Outdoor&SportsToys/Outdoor&SportsToys.js';
-import { PopCultureLicensedToysProducts } from '../../products_toy/toy/each_group_products/PopCulture&LicensedToys/PopCulture&LicensedToys.js';
-import { PuzzlesBoardGamesProducts } from '../../products_toy/toy/each_group_products/Puzzles&BoardGames/Puzzles&BoardGames.js';
-import { TraditionalToysProducts } from '../../products_toy/toy/each_group_products/TraditionalToys/TraditionalToys.js';
-import { VehiclesRideOnToysProducts } from '../../products_toy/toy/each_group_products/Vehicles&Ride-OnToys/Vehicles&Ride-OnToys.js';
 import { getEcoSolventI1600Printers, getEcoSolventI3200Printers, getInkjetPrinterById, getAllEcoSolventPrinters, getAllSolventPrinters, getSolventKM512iPrinters, getSolventKM1024iPrinters } from '../index/qilitrading.js';
 import { printSparePartProducts } from '../../data/printsparepart-products.js';
 import { upgradingKitProducts } from '../../data/upgradingkit-products.js';
@@ -26,6 +12,7 @@ import { otherProducts } from '../../data/other-products.js';
 // import { updateCartQuantity } from '../shared/cart-quantity.js';
 import { parseMarkdown } from '../shared/markdown-parser.js';
 import { formatPriceRange } from '../shared/money.js';
+import { findProductById as findToyProductById } from '../shared/toy-data.js';
 
 let productId;
 let productType = 'regular'; // Can be 'regular', 'printhead', 'printer', or 'printsparepart'
@@ -97,50 +84,26 @@ function findOtherById(id) {
   return null;
 }
 
-// Helper to find toy product in ActionFigures&RolePlay dataset
-// Aggregate all toy group datasets for lookup
-const ALL_TOY_GROUPS = {
-  ActionFiguresRolePlayProducts,
-  ArtsCraftsToysProducts,
-  BuildingBlocksConstructionProducts,
-  DollsPlushToysProducts,
-  EducationalToysProducts,
-  ElectronicInteractiveToysProducts,
-  InflatableWaterToysProducts,
-  OtherIndustriesProducts,
-  OtherToysProducts,
-  OutdoorSportsToysProducts,
-  PopCultureLicensedToysProducts,
-  PuzzlesBoardGamesProducts,
-  TraditionalToysProducts,
-  VehiclesRideOnToysProducts
-};
-
-// Generalized toy lookup across all groups
 function findToyById(id) {
-  for (const groupKey in ALL_TOY_GROUPS) {
-    const groupObjRoot = ALL_TOY_GROUPS[groupKey];
-    for (const group in groupObjRoot) {
-      const groupObj = groupObjRoot[group];
-      for (const code in groupObj) {
-        if (code === id) {
-          const entry = groupObj[code][0];
-          return {
-            id: id,
-            name: entry.name || group,
-            image: `products_toy/toy/each_group_products/${entry.image}`,
-            markdown: entry.markdown ? `products_toy/toy/each_group_products/${entry.markdown}` : null,
-            description: entry.name || '',
-            price: entry.price,
-            priceRight: entry.priceRight,
-            tags: entry.tags || [],
-            category: group
-          };
-        }
-      }
-    }
+  const lookup = findToyProductById(id);
+  if (!lookup) {
+    return null;
   }
-  return null;
+
+  const primary = { ...lookup.primary };
+  primary.variants = lookup.variants.map((variant) => ({ ...variant }));
+
+  if (!primary.category) {
+    primary.category = primary.categoryName || primary.groupLabel || 'toys';
+  }
+
+  if (!primary.price && primary.priceValue !== null && primary.priceValue !== undefined) {
+    primary.price = primary.priceValue;
+  }
+
+  primary.tags = Array.isArray(primary.tags) ? primary.tags : [];
+
+  return primary;
 }
 
 // Get the product ID and type from URL parameters
@@ -161,7 +124,7 @@ if (productId) {
   if (toyEarly) {
     product = toyEarly;
     productType = 'toy';
-    productBrand = toyEarly.category || 'ActionFigures&RolePlay';
+    productBrand = toyEarly.categorySlug || toyEarly.category || toyEarly.categoryName || 'ActionFigures&RolePlay';
   }
 }
 
@@ -212,7 +175,7 @@ if (productType === 'printsparepart' || productType === 'print-spare-parts') {
     if (toy) {
       product = toy;
       productType = 'toy';
-      productBrand = toy.category || 'ActionFigures&RolePlay';
+      productBrand = toy.categorySlug || toy.category || toy.categoryName || 'ActionFigures&RolePlay';
     }
   }
 } else if (productType === 'solventprinter') {

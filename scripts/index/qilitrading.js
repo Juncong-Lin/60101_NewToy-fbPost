@@ -3,13 +3,20 @@
 import {products} from '../../data/products.js';
 import {printheadProducts} from '../../data/printhead-products.js';
 import {inkjetPrinterProducts} from '../../data/inkjetPrinter-products.js';
-import { ActionFiguresRolePlayProducts } from '../../products_toy/toy/each_group_products/ActionFigures&RolePlay/ActionFigures&RolePlay.js';
 import {printSparePartProducts} from '../../data/printsparepart-products.js';
 import {upgradingKitProducts} from '../../data/upgradingkit-products.js';
 import {materialProducts} from '../../data/material-products.js';
 import {ledAndLcdProducts} from '../../data/ledAndLcd-products.js';
 import {channelLetterBendingMechineProducts} from '../../data/channelLetterBendingMechine-products.js';
 import {otherProducts} from '../../data/other-products.js';
+import {
+  getGroupList,
+  getGroupInfo,
+  getProductsForGroup,
+  getProductsForCategory,
+  resolveCategory,
+  resolveCategoryByHash,
+} from '../shared/toy-data.js';
 import { formatCurrency, formatPriceRange } from '../shared/money.js';
 
 // Early search parameter detection to prevent hero banner flash
@@ -98,6 +105,95 @@ function renderProducts(productList, type = 'regular') {
       </div>`;
   });
   return productsHTML;
+}
+
+const toyGroupsMeta = getGroupList();
+const toyGroupAliasMap = {
+  'Inkjet Printers': 'ActionFiguresRolePlay',
+  'Action Figures & Role Play': 'ActionFiguresRolePlay',
+};
+
+function safeLower(value) {
+  return typeof value === 'string' ? value.toLowerCase() : '';
+}
+
+function resolveToyCategory(identifier) {
+  if (!identifier) {
+    return null;
+  }
+
+  let category = resolveCategoryByHash(identifier);
+  if (category) {
+    return category;
+  }
+
+  for (let index = 0; index < toyGroupsMeta.length; index += 1) {
+    const group = toyGroupsMeta[index];
+    category = resolveCategory(group.key, identifier);
+    if (category) {
+      return category;
+    }
+    category = resolveCategory(group.key, safeLower(identifier));
+    if (category) {
+      return category;
+    }
+  }
+
+  return null;
+}
+
+function loadToyGroupView(groupKey, { displayName } = {}) {
+  if (!groupKey) {
+    return false;
+  }
+
+  const products = getProductsForGroup(groupKey);
+  if (!products || products.length === 0) {
+    return false;
+  }
+
+  const productsGrid = document.querySelector('.js-prodcts-grid');
+  const productsHTML = renderProducts(products, 'regular');
+  productsGrid.innerHTML = productsHTML;
+  productsGrid.classList.remove('showing-coming-soon');
+  attachAddToCartListeners();
+
+  const groupInfo = getGroupInfo(groupKey);
+  const headerTitle = displayName || (groupInfo ? groupInfo.label : 'Products');
+  updatePageHeader(headerTitle, products.length);
+  updateBreadcrumb('inkjetPrinters');
+  scrollToProducts();
+  if (groupInfo) {
+    return groupInfo;
+  }
+  return {
+    key: groupKey,
+    label: headerTitle,
+    hash: null,
+  };
+}
+
+function loadToyCategoryView(identifier, presetInfo) {
+  const categoryInfo = presetInfo || resolveToyCategory(identifier);
+  if (!categoryInfo) {
+    return false;
+  }
+
+  const products = getProductsForCategory(categoryInfo.groupKey, categoryInfo.hash);
+  if (!products || products.length === 0) {
+    return false;
+  }
+
+  const productsGrid = document.querySelector('.js-prodcts-grid');
+  const productsHTML = renderProducts(products, 'regular');
+  productsGrid.innerHTML = productsHTML;
+  productsGrid.classList.remove('showing-coming-soon');
+  attachAddToCartListeners();
+
+  updatePageHeader(categoryInfo.name, products.length);
+  updateBreadcrumb('inkjetPrinters');
+  scrollToProducts();
+  return categoryInfo;
 }
 
 // Function to load printhead products for a specific brand
@@ -1861,6 +1957,7 @@ function handleHashFallback(hash) {
       'cutting': 'Cutting',
       'channel-letter': 'Channel Letter',
       'cnc': 'CNC',
+      'action-figures-and-role-play': 'Action Figures & Role Play',
       'displays': 'Displays',
       'other': 'Other'
     };
@@ -2020,6 +2117,21 @@ window.loadSpecificCategory = function(categoryName) {
     // Add loading animation
   showLoadingState();
 
+  const groupAliasKey = toyGroupAliasMap[categoryName];
+  let targetGroupInfo = null;
+  if (groupAliasKey) {
+    targetGroupInfo = getGroupInfo(groupAliasKey);
+  }
+
+  const toyCategoryInfo = resolveToyCategory(categoryName);
+  let preferredHashSegment = null;
+  if (toyCategoryInfo && toyCategoryInfo.hash) {
+    preferredHashSegment = toyCategoryInfo.hash;
+  }
+  if (targetGroupInfo && targetGroupInfo.hash) {
+    preferredHashSegment = targetGroupInfo.hash;
+  }
+
   // --- Highlight the corresponding nav item (including special sidebar categories) ---
   const subHeaderMap = {
     'Eco-Solvent Inkjet Printers': 'Inkjet Printers',
@@ -2054,16 +2166,17 @@ window.loadSpecificCategory = function(categoryName) {
     'Roland Printer Spare Parts': 'Print Spare Parts',
     'Canon Printer Spare Parts': 'Print Spare Parts',
     'Ricoh Printer Spare Parts': 'Print Spare Parts',
-    '仿真餐具': 'Inkjet Printers',
-    '剑龙-雷塔勇士': 'Inkjet Printers',
-    '弓弹射猴子粘布套装': 'Inkjet Printers',
-    '泡沫飞剑': 'Inkjet Printers',
-    '火光烟雾剑': 'Inkjet Printers',
-    '火花烟零激光剑': 'Inkjet Printers',
-    '火花烟零激光剑双剑': 'Inkjet Printers',
-    '烹饪主厨': 'Inkjet Printers',
-    '美少女餐具': 'Inkjet Printers',
-    '过家家': 'Inkjet Printers',
+    'Action Figures & Role Play': 'Action Figures & Role Play',
+    '仿真餐具': 'Action Figures & Role Play',
+    '剑龙-雷塔勇士': 'Action Figures & Role Play',
+    '弓弹射猴子粘布套装': 'Action Figures & Role Play',
+    '泡沫飞剑': 'Action Figures & Role Play',
+    '火光烟雾剑': 'Action Figures & Role Play',
+    '火花烟零激光剑': 'Action Figures & Role Play',
+    '火花烟零激光剑双剑': 'Action Figures & Role Play',
+    '烹饪主厨': 'Action Figures & Role Play',
+    '美少女餐具': 'Action Figures & Role Play',
+    '过家家': 'Action Figures & Role Play',
     // fallback: categoryName itself
   };
   document.querySelectorAll('.sub-header-link').forEach(link => {
@@ -2077,15 +2190,16 @@ window.loadSpecificCategory = function(categoryName) {
 
   // Convert category for use in hash navigation
   const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-').replace(/&/g, '');
+  const hashSegment = preferredHashSegment || categorySlug;
 
   // Update URL hash without triggering a navigation (unless prevented by flag)
   if (!window.preventHashUpdate) {
     // Add a flag to prevent recursive navigation
     window.updatingHashFromCategory = true;
     if (history.pushState) {
-      history.pushState(null, null, `#${categorySlug}`);
+      history.pushState(null, null, `#${hashSegment}`);
     } else {
-      location.hash = `#${categorySlug}`;
+      location.hash = `#${hashSegment}`;
     }
     // Clear the flag after a short delay
     setTimeout(() => {
@@ -2093,7 +2207,20 @@ window.loadSpecificCategory = function(categoryName) {
     }, 100);
   }
   // Small delay for smooth transition
-  setTimeout(() => {    
+  setTimeout(() => {
+    if (groupAliasKey) {
+      if (loadToyGroupView(groupAliasKey, { displayName: categoryName })) {
+        return;
+      }
+    }
+
+    const toyLoadResult = toyCategoryInfo
+      ? loadToyCategoryView(categoryName, toyCategoryInfo)
+      : loadToyCategoryView(categoryName);
+    if (toyLoadResult) {
+      return;
+    }
+
     // Special handling for economic version printers
     if (categoryName === 'Eco-Solvent Inkjet Printers') {
       // Use the new economic version printers function
@@ -2104,272 +2231,7 @@ window.loadSpecificCategory = function(categoryName) {
     }
     
     // Special handling for printer categories
-    if (categoryName === 'Inkjet Printers') {
-      // NOTE: replaced inkjet products datasource with Action Figures toy dataset
-      // Flatten ActionFiguresRolePlayProducts into an array suitable for renderProducts
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      let allToys = [];
-      for (const groupName in toyObj) {
-        const idMap = toyObj[groupName];
-        for (const sku in idMap) {
-          const entries = idMap[sku] || [];
-          entries.forEach(entry => {
-            // Ensure image paths point to the products_toy folder so they resolve on the site
-            const fixed = Object.assign({}, entry);
-            // set SKU as id so detail links work (always overwrite to ensure unique SKU id)
-            fixed.id = sku;
-            if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-              fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-            }
-            allToys.push(fixed);
-          });
-        }
-      }
-
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-
-      // Update page header
-      updatePageHeader('Action Figures & Role Play', allToys.length);
-
-      // Update breadcrumb navigation
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '仿真餐具') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '剑龙-雷塔勇士') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '弓弹射猴子粘布套装') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '泡沫飞剑') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '火光烟雾剑') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '火花烟零激光剑') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '火花烟零激光剑双剑') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '烹饪主厨') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '美少女餐具') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === '过家家') {
-      // Load toy products for this category
-      const toyObj = ActionFiguresRolePlayProducts || {};
-      const categoryProducts = toyObj[categoryName] || {};
-      let allToys = [];
-      for (const sku in categoryProducts) {
-        const entries = categoryProducts[sku] || [];
-        entries.forEach(entry => {
-          const fixed = Object.assign({}, entry);
-          fixed.id = sku;
-          if (fixed.image && !fixed.image.startsWith('products_toy/')) {
-            fixed.image = `products_toy/toy/each_group_products/${fixed.image}`;
-          }
-          allToys.push(fixed);
-        });
-      }
-      const productsHTML = renderProducts(allToys, 'regular');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      attachAddToCartListeners();
-      updatePageHeader(categoryName, allToys.length);
-      updateBreadcrumb('inkjetPrinters');
-    } else if (categoryName === 'Eco-Solvent Inkjet Printers - With XP600 Printhead') {
+    if (categoryName === 'Eco-Solvent Inkjet Printers - With XP600 Printhead') {
       // Load XP600 printers instead of showing placeholder
       const xp600Printers = getEcoSolventXP600Printers();
       const productsHTML = renderProducts(xp600Printers, 'printer');
