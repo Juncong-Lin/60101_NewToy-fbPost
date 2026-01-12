@@ -37,6 +37,45 @@ const GROUP_DEFINITIONS = [
   { key: 'VehiclesRideOnToys', label: 'Vehicles & Ride-On Toys', data: VehiclesRideOnToysProducts },
 ];
 
+const NAV_GROUP_MAP = {
+  'Action Figures & Role Play': 'ActionFiguresRolePlay',
+  'Dolls & Plush Toys': 'DollsPlushToys',
+  'Electronic & Interactive Toys': 'ElectronicInteractiveToys',
+  'Building Blocks & Construction': 'BuildingBlocksConstruction',
+  'Puzzles & Board Games': 'PuzzlesBoardGames',
+  'Arts & Crafts Toys': 'ArtsCraftsToys',
+  'Pop Culture & Licensed Toys': 'PopCultureLicensedToys',
+  'Outdoor & Sports Toys': 'OutdoorSportsToys',
+  'Traditional Toys': 'TraditionalToys',
+  'Vehicles & Ride-On Toys': 'VehiclesRideOnToys',
+  'Educational Toys': 'EducationalToys',
+  'Inflatable & Water Toys': 'InflatableWaterToys',
+  'Other Industries': 'OtherIndustries',
+  'Other Toys': 'OtherToys',
+};
+
+const LEGACY_NAV_ALIASES = {
+  'Print Heads': 'ElectronicInteractiveToys',
+  'Print Spare Parts': 'BuildingBlocksConstruction',
+  'Upgrading Kit': 'VehiclesRideOnToys',
+  'Material': 'ArtsCraftsToys',
+  'LED & LCD': 'PopCultureLicensedToys',
+  'Laser': 'OutdoorSportsToys',
+  'Cutting': 'TraditionalToys',
+  'Channel Letter': 'OtherIndustries',
+  'CNC': 'EducationalToys',
+  'Displays': 'InflatableWaterToys',
+  'Other': 'OtherToys',
+  'Inkjet Printers': 'ActionFiguresRolePlay',
+};
+
+const GROUP_TO_NAV = Object.entries(NAV_GROUP_MAP).reduce((accumulator, [displayName, groupKey]) => {
+  if (!accumulator[groupKey]) {
+    accumulator[groupKey] = displayName;
+  }
+  return accumulator;
+}, {});
+
 const groupCache = new Map();
 const groupLookup = new Map();
 const categoryIndexByGroup = new Map();
@@ -195,6 +234,28 @@ function registerGroupLookup(groupInfo) {
     groupInfo.slug,
     groupInfo.hash,
   ];
+  const navDisplayAlias = resolveNavDisplay(groupInfo.key);
+  if (navDisplayAlias) {
+    keys.push(navDisplayAlias, safeLower(navDisplayAlias));
+    const navSlug = createSlug(navDisplayAlias, navDisplayAlias);
+    if (navSlug) {
+      keys.push(navSlug, safeLower(navSlug));
+      if (navSlug.includes('-and-')) {
+        const legacySlug = navSlug.replace(/-and-/g, '-');
+        keys.push(legacySlug, safeLower(legacySlug));
+      }
+    }
+  }
+  Object.entries(LEGACY_NAV_ALIASES).forEach(([legacyDisplay, legacyGroupKey]) => {
+    if (legacyGroupKey !== groupInfo.key) {
+      return;
+    }
+    keys.push(legacyDisplay, safeLower(legacyDisplay));
+    const legacySlug = createSlug(legacyDisplay, legacyDisplay);
+    if (legacySlug) {
+      keys.push(legacySlug, safeLower(legacySlug));
+    }
+  });
   keys.forEach((key) => {
     if (!key) {
       return;
@@ -524,6 +585,40 @@ function findProductById(productId) {
   };
 }
 
+function getNavGroupMap() {
+  return { ...NAV_GROUP_MAP };
+}
+
+function getNavEntries() {
+  return Object.keys(NAV_GROUP_MAP);
+}
+
+function resolveNavGroupKey(displayName) {
+  if (!displayName) {
+    return null;
+  }
+  return NAV_GROUP_MAP[displayName] || LEGACY_NAV_ALIASES[displayName] || null;
+}
+
+function getLegacyNavAliases() {
+  return { ...LEGACY_NAV_ALIASES };
+}
+
+function resolveNavDisplay(groupKey) {
+  if (!groupKey) {
+    return null;
+  }
+  return GROUP_TO_NAV[groupKey] || null;
+}
+
+function getGroupInfoForNav(displayName) {
+  const groupKey = resolveNavGroupKey(displayName);
+  if (!groupKey) {
+    return null;
+  }
+  return getGroupInfo(groupKey);
+}
+
 const toyDataAPI = {
   getGroupList,
   getGroupInfo,
@@ -536,6 +631,12 @@ const toyDataAPI = {
   getAllProducts,
   findProductById,
   searchProducts,
+  getNavGroupMap,
+  getNavEntries,
+  resolveNavGroupKey,
+  resolveNavDisplay,
+  getLegacyNavAliases,
+  getGroupInfoForNav,
 };
 
 export {
@@ -551,6 +652,12 @@ export {
   getAllProducts,
   findProductById,
   searchProducts,
+  getNavGroupMap,
+  getNavEntries,
+  resolveNavGroupKey,
+  resolveNavDisplay,
+  getLegacyNavAliases,
+  getGroupInfoForNav,
 };
 
 if (typeof window !== 'undefined') {

@@ -16,6 +16,10 @@ import {
   getProductsForCategory,
   resolveCategory,
   resolveCategoryByHash,
+  getNavGroupMap,
+  getLegacyNavAliases,
+  resolveNavGroupKey,
+  resolveNavDisplay,
 } from '../shared/toy-data.js';
 import { formatCurrency, formatPriceRange } from '../shared/money.js';
 
@@ -108,10 +112,159 @@ function renderProducts(productList, type = 'regular') {
 }
 
 const toyGroupsMeta = getGroupList();
-const toyGroupAliasMap = {
-  'Inkjet Printers': 'ActionFiguresRolePlay',
-  'Action Figures & Role Play': 'ActionFiguresRolePlay',
-};
+const navGroupMap = getNavGroupMap();
+const legacyNavAliases = getLegacyNavAliases();
+const toyGroupAliasMap = {};
+const toyNavSlugToDisplay = {};
+const toyNavDisplayByGroup = {};
+
+function createNavSlug(value) {
+  if (!value) {
+    return '';
+  }
+
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function registerDisplayAlias(displayName, groupKey, { primary = false } = {}) {
+  if (!displayName || !groupKey) {
+    return;
+  }
+  const navDisplay = resolveNavDisplay(groupKey) || displayName;
+
+  const registerAliasKey = (key) => {
+    if (!key) {
+      return;
+    }
+    toyGroupAliasMap[key] = groupKey;
+  };
+
+  registerAliasKey(displayName);
+  registerAliasKey(displayName.toLowerCase());
+
+  const slugFromDisplay = createNavSlug(displayName);
+  const registerSlug = (slug) => {
+    if (!slug) {
+      return;
+    }
+    toyGroupAliasMap[slug] = groupKey;
+    toyNavSlugToDisplay[slug] = navDisplay;
+  };
+
+  if (slugFromDisplay) {
+    registerSlug(slugFromDisplay);
+    registerSlug(slugFromDisplay.toLowerCase());
+    if (slugFromDisplay.includes('-and-')) {
+      const legacySlug = slugFromDisplay.replace(/-and-/g, '-');
+      registerSlug(legacySlug);
+      registerSlug(legacySlug.toLowerCase());
+    }
+  }
+
+  if (primary && navDisplay) {
+    toyNavDisplayByGroup[groupKey] = navDisplay;
+  }
+}
+
+const registeredGroupKeys = new Set();
+
+Object.entries(navGroupMap).forEach(([displayName, groupKey]) => {
+  registerDisplayAlias(displayName, groupKey, { primary: true });
+  registeredGroupKeys.add(groupKey);
+});
+
+Object.entries(legacyNavAliases).forEach(([displayName, groupKey]) => {
+  registerDisplayAlias(displayName, groupKey);
+  registeredGroupKeys.add(groupKey);
+});
+
+registeredGroupKeys.forEach((groupKey) => {
+  const groupInfo = getGroupInfo(groupKey);
+  const navDisplay = toyNavDisplayByGroup[groupKey] || resolveNavDisplay(groupKey) || (groupInfo ? groupInfo.label : null);
+
+  if (groupInfo) {
+    const aliasCandidates = new Set([
+      groupInfo.label,
+      groupInfo.slug,
+      groupInfo.hash,
+    ]);
+    aliasCandidates.forEach((aliasCandidate) => {
+      if (!aliasCandidate) {
+        return;
+      }
+      toyGroupAliasMap[aliasCandidate] = groupKey;
+      const lowerAlias = aliasCandidate.toLowerCase();
+      toyGroupAliasMap[lowerAlias] = groupKey;
+    });
+
+    if (groupInfo.hash) {
+      try {
+        const decodedHash = decodeURIComponent(groupInfo.hash);
+        toyGroupAliasMap[decodedHash] = groupKey;
+        toyGroupAliasMap[decodedHash.toLowerCase()] = groupKey;
+      } catch (error) {
+        // Ignore decode errors and continue
+      }
+    }
+
+    const slugCandidates = new Set([
+      groupInfo.slug,
+      groupInfo.hash,
+    ]);
+
+    slugCandidates.forEach((slugCandidate) => {
+      if (!slugCandidate) {
+        return;
+      }
+      toyNavSlugToDisplay[slugCandidate] = navDisplay;
+      toyNavSlugToDisplay[slugCandidate.toLowerCase()] = navDisplay;
+      try {
+        const decodedSlug = decodeURIComponent(slugCandidate);
+        toyNavSlugToDisplay[decodedSlug] = navDisplay;
+        toyNavSlugToDisplay[decodedSlug.toLowerCase()] = navDisplay;
+      } catch (error) {
+        // Ignore decode errors and continue
+      }
+    });
+  }
+});
+
+if (!toyGroupAliasMap['Inkjet Printers']) {
+  toyGroupAliasMap['Inkjet Printers'] = resolveNavGroupKey('Action Figures & Role Play') || 'ActionFiguresRolePlay';
+}
+
+function getNavDisplayForGroup(groupKey) {
+  if (!groupKey) {
+    return null;
+  }
+  if (toyNavDisplayByGroup[groupKey]) {
+    return toyNavDisplayByGroup[groupKey];
+  }
+  const computedDisplay = resolveNavDisplay(groupKey);
+  if (computedDisplay) {
+    toyNavDisplayByGroup[groupKey] = computedDisplay;
+    return computedDisplay;
+  }
+  const groupInfo = getGroupInfo(groupKey);
+  if (groupInfo && groupInfo.label) {
+    toyNavDisplayByGroup[groupKey] = groupInfo.label;
+    return groupInfo.label;
+  }
+  return null;
+}
+
+function loadNavGroup(displayName) {
+  const groupKey = resolveNavGroupKey(displayName);
+  if (!groupKey) {
+    return false;
+  }
+  return !!loadToyGroupView(groupKey, { displayName });
+}
 
 function safeLower(value) {
   return typeof value === 'string' ? value.toLowerCase() : '';
@@ -161,7 +314,11 @@ function loadToyGroupView(groupKey, { displayName } = {}) {
   const groupInfo = getGroupInfo(groupKey);
   const headerTitle = displayName || (groupInfo ? groupInfo.label : 'Products');
   updatePageHeader(headerTitle, products.length);
-  updateBreadcrumb('inkjetPrinters');
+  updateToyBreadcrumb({
+    navDisplayName: displayName || getNavDisplayForGroup(groupKey) || headerTitle,
+    groupInfo,
+    categoryInfo: null,
+  });
   scrollToProducts();
   if (groupInfo) {
     return groupInfo;
@@ -173,7 +330,7 @@ function loadToyGroupView(groupKey, { displayName } = {}) {
   };
 }
 
-function loadToyCategoryView(identifier, presetInfo) {
+function loadToyCategoryView(identifier, presetInfo, navDisplayOverride) {
   const categoryInfo = presetInfo || resolveToyCategory(identifier);
   if (!categoryInfo) {
     return false;
@@ -191,9 +348,137 @@ function loadToyCategoryView(identifier, presetInfo) {
   attachAddToCartListeners();
 
   updatePageHeader(categoryInfo.name, products.length);
-  updateBreadcrumb('inkjetPrinters');
+  const groupInfo = getGroupInfo(categoryInfo.groupKey);
+  updateToyBreadcrumb({
+    navDisplayName: navDisplayOverride || getNavDisplayForGroup(categoryInfo.groupKey),
+    groupInfo,
+    categoryInfo,
+  });
   scrollToProducts();
   return categoryInfo;
+}
+
+const HERO_GROUP_LIMIT = 4;
+
+function buildHeroSlides() {
+  const heroContainer = document.querySelector('.hero-container');
+  const indicatorContainer = document.querySelector('.hero-indicators');
+
+  if (!heroContainer || !indicatorContainer) {
+    return;
+  }
+
+  const heroGroups = [...toyGroupsMeta]
+    .filter((meta) => meta && meta.productCount > 0)
+    .sort((a, b) => b.productCount - a.productCount)
+    .slice(0, HERO_GROUP_LIMIT);
+
+  heroContainer.innerHTML = '';
+  indicatorContainer.innerHTML = '';
+  heroContainer.classList.remove('hero-empty');
+
+  if (heroGroups.length === 0) {
+    heroContainer.classList.add('hero-empty');
+    return;
+  }
+
+  const slideFragment = document.createDocumentFragment();
+  const indicatorFragment = document.createDocumentFragment();
+  let slidePosition = 0;
+
+  heroGroups.forEach((groupMeta) => {
+    const groupInfo = getGroupInfo(groupMeta.key);
+    if (!groupInfo || !Array.isArray(groupInfo.allProducts) || groupInfo.allProducts.length === 0) {
+      return;
+    }
+
+    const heroProduct = groupInfo.allProducts.find((product) => product && product.image) || groupInfo.allProducts[0];
+    const heroImage = heroProduct && heroProduct.image ? heroProduct.image : null;
+    const categoryHighlights = (groupInfo.categories || [])
+      .slice(0, 3)
+      .map((category) => category.name)
+      .join(' | ');
+
+    const slide = document.createElement('div');
+    slide.className = 'hero-slide';
+    const slideIndex = slidePosition;
+    slide.dataset.index = String(slideIndex);
+
+    const card = document.createElement('div');
+    card.className = 'hero-card hero-card-wide hero-card-toy';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Shop ${groupMeta.label}`);
+    const navigateToGroup = () => {
+      window.handleNavigationClick(`group:${groupMeta.key}`);
+    };
+    card.addEventListener('click', navigateToGroup);
+    card.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        navigateToGroup();
+      }
+    });
+
+    const imageWrapper = document.createElement('div');
+    imageWrapper.className = 'hero-image-wrapper';
+
+    if (heroImage) {
+      const image = document.createElement('img');
+      image.className = 'hero-image';
+      image.src = heroImage;
+      image.alt = `${groupMeta.label} highlight product`;
+      imageWrapper.appendChild(image);
+    } else {
+      imageWrapper.classList.add('hero-image-fallback');
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'hero-overlay';
+
+    const badge = document.createElement('span');
+    badge.className = 'hero-badge';
+    badge.textContent = `${groupMeta.productCount}+ styles`;
+    overlay.appendChild(badge);
+
+    const title = document.createElement('h3');
+    title.className = 'hero-title';
+    title.textContent = groupMeta.label;
+    overlay.appendChild(title);
+
+    const description = document.createElement('p');
+    description.className = 'hero-description';
+    description.textContent = categoryHighlights || 'Discover imaginative play across our newest arrivals';
+    overlay.appendChild(description);
+
+    const cta = document.createElement('span');
+    cta.className = 'hero-cta';
+    cta.textContent = 'Shop the collection >';
+    overlay.appendChild(cta);
+
+    imageWrapper.appendChild(overlay);
+    card.appendChild(imageWrapper);
+    slide.appendChild(card);
+    slideFragment.appendChild(slide);
+
+    const indicator = document.createElement('button');
+    indicator.className = 'hero-indicator';
+    indicator.type = 'button';
+    indicator.dataset.index = String(slideIndex);
+    indicator.setAttribute('aria-label', `Go to ${groupMeta.label}`);
+    indicatorFragment.appendChild(indicator);
+
+    slidePosition += 1;
+  });
+
+  heroContainer.appendChild(slideFragment);
+  indicatorContainer.appendChild(indicatorFragment);
+
+  if (heroCarousel) {
+    heroCarousel.stopAutoPlay();
+  }
+  heroCarousel = null;
+  window.heroCarousel = null;
 }
 
 // Function to load printhead products for a specific brand
@@ -282,12 +567,17 @@ window.loadAllProducts = function() {
   
   // Highlight selected menu item
   highlightSelectedMenuItem('all');
-    // Show hero banner for main homepage view
+  buildHeroSlides();
+
+  // Show hero banner for main homepage view
   showHeroBanner();
-    // Initialize hero carousel
-  if (!heroCarousel) {
+  const slideCount = document.querySelectorAll('.hero-slide').length;
+  if (slideCount > 0) {
     heroCarousel = new HeroCarousel();
     window.heroCarousel = heroCarousel;
+  } else {
+    heroCarousel = null;
+    window.heroCarousel = null;
   }
   
   // Clear products grid for homepage - just show hero banner
@@ -622,6 +912,9 @@ function showHeroBanner() {
 function hideHeroBanner() {
   const heroBanner = document.querySelector('.hero-banner');
   if (heroBanner) {
+    if (heroCarousel) {
+      heroCarousel.stopAutoPlay();
+    }
     heroBanner.classList.remove('show');
     // Hide after transition completes
     setTimeout(() => {
@@ -681,6 +974,114 @@ function updatePageHeader(title, productCount = null) {
 }
 
 // Function to update breadcrumb navigation
+function ensureBreadcrumbContainer() {
+  let breadcrumbElement = document.querySelector('.breadcrumb-nav');
+  if (!breadcrumbElement) {
+    breadcrumbElement = document.createElement('div');
+    breadcrumbElement.className = 'breadcrumb-nav';
+
+    const mainElement = document.querySelector('.main');
+    if (mainElement) {
+      mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
+    }
+  }
+  return breadcrumbElement;
+}
+
+function createBreadcrumbSeparator() {
+  const separator = document.createElement('span');
+  separator.className = 'breadcrumb-separator';
+  separator.textContent = '>'; // ASCII arrow for compatibility
+  return separator;
+}
+
+function createBreadcrumbNode({ text, href, onClick, isCurrent }) {
+  if (isCurrent || (!href && !onClick)) {
+    const span = document.createElement('span');
+    span.className = 'breadcrumb-current';
+    span.textContent = text;
+    return span;
+  }
+
+  const link = document.createElement('a');
+  link.className = 'breadcrumb-link';
+  link.textContent = text;
+  link.href = href || 'javascript:void(0)';
+
+  if (typeof onClick === 'function') {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      onClick();
+    });
+  }
+
+  return link;
+}
+
+function updateToyBreadcrumb({
+  navDisplayName,
+  groupInfo,
+  categoryInfo,
+}) {
+  const breadcrumbElement = ensureBreadcrumbContainer();
+  if (!breadcrumbElement) {
+    return;
+  }
+
+  breadcrumbElement.innerHTML = '';
+
+  const isDetailPage = window.location.pathname.includes('detail.html');
+  const nodes = [];
+
+  const homeNode = createBreadcrumbNode({
+    text: 'Home',
+    href: isDetailPage ? 'index.html' : 'javascript:void(0)',
+    onClick: isDetailPage ? null : () => {
+      if (window.loadAllProducts) {
+        window.loadAllProducts();
+      }
+    },
+    isCurrent: false,
+  });
+  nodes.push(homeNode);
+
+  const groupSlug = groupInfo && (groupInfo.slug || groupInfo.hash) ? (groupInfo.slug || groupInfo.hash) : '';
+  if (navDisplayName) {
+    nodes.push(createBreadcrumbSeparator());
+    const navNode = createBreadcrumbNode({
+      text: navDisplayName,
+      href: isDetailPage && groupSlug ? `index.html#${groupSlug}` : 'javascript:void(0)',
+      onClick: isDetailPage ? null : () => {
+        if (window.loadSpecificCategory) {
+          window.loadSpecificCategory(navDisplayName);
+        }
+      },
+      isCurrent: !categoryInfo,
+    });
+    nodes.push(navNode);
+  }
+
+  if (categoryInfo && categoryInfo.name) {
+    nodes.push(createBreadcrumbSeparator());
+    const categorySlug = categoryInfo.slug || categoryInfo.hash || categoryInfo.name;
+    const categoryNode = createBreadcrumbNode({
+      text: categoryInfo.name,
+      href: isDetailPage ? `index.html#${categorySlug}` : 'javascript:void(0)',
+      onClick: isDetailPage ? null : () => {
+        if (window.loadSpecificCategory) {
+          window.loadSpecificCategory(categoryInfo.name);
+        }
+      },
+      isCurrent: true,
+    });
+    nodes.push(categoryNode);
+  }
+
+  nodes.forEach((node) => {
+    breadcrumbElement.appendChild(node);
+  });
+}
+
 function updateBreadcrumb(brand) {
   let breadcrumbElement = document.querySelector('.breadcrumb-nav');
   if (!breadcrumbElement) {
@@ -1672,19 +2073,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const isIndexPage = document.querySelector('.products-grid') || document.querySelector('#products-grid');
     
     if (isIndexPage && !hash && !isSearchRequest) {
-      // Show hero banner for default homepage view only
-      showHeroBanner();
-        // Initialize hero carousel
-      if (!heroCarousel) {
-        heroCarousel = new HeroCarousel();
-        window.heroCarousel = heroCarousel;
-      }
+      loadAllProducts();
     }
   }, 150);
 });
 
 // Fallback function to handle hash navigation when sub-header nav is not available
 function handleHashFallback(hash) {
+  if (!hash) {
+    loadAllProducts();
+    return;
+  }
+
+  const normalizedHash = typeof hash === 'string' ? hash.toLowerCase() : '';
+  let navDisplayMatch = toyNavSlugToDisplay[hash] || toyNavSlugToDisplay[normalizedHash];
+  if (!navDisplayMatch) {
+    try {
+      const decodedHash = decodeURIComponent(hash);
+      navDisplayMatch = toyNavSlugToDisplay[decodedHash] || toyNavSlugToDisplay[decodedHash.toLowerCase()];
+    } catch (error) {
+      // Ignore decode errors and continue
+    }
+  }
+
+  if (navDisplayMatch && typeof window.loadSpecificCategory === 'function') {
+    window.loadSpecificCategory(navDisplayMatch);
+    return;
+  }
+
   if (hash === 'print-heads' || hash === 'printheads') {
     if (window.loadAllPrintheadProducts) {
       window.loadAllPrintheadProducts();
@@ -2117,7 +2533,8 @@ window.loadSpecificCategory = function(categoryName) {
     // Add loading animation
   showLoadingState();
 
-  const groupAliasKey = toyGroupAliasMap[categoryName];
+  const categoryNameLower = typeof categoryName === 'string' ? categoryName.toLowerCase() : '';
+  const groupAliasKey = toyGroupAliasMap[categoryName] || toyGroupAliasMap[categoryNameLower];
   let targetGroupInfo = null;
   if (groupAliasKey) {
     targetGroupInfo = getGroupInfo(groupAliasKey);
@@ -2125,12 +2542,14 @@ window.loadSpecificCategory = function(categoryName) {
 
   const toyCategoryInfo = resolveToyCategory(categoryName);
   let preferredHashSegment = null;
-  if (toyCategoryInfo && toyCategoryInfo.hash) {
-    preferredHashSegment = toyCategoryInfo.hash;
+  if (toyCategoryInfo) {
+    preferredHashSegment = toyCategoryInfo.slug || toyCategoryInfo.hash;
   }
-  if (targetGroupInfo && targetGroupInfo.hash) {
-    preferredHashSegment = targetGroupInfo.hash;
+  if (targetGroupInfo) {
+    preferredHashSegment = targetGroupInfo.slug || targetGroupInfo.hash || preferredHashSegment;
   }
+
+  const navDisplayName = getNavDisplayForGroup(groupAliasKey) || (toyCategoryInfo ? getNavDisplayForGroup(toyCategoryInfo.groupKey) : null);
 
   // --- Highlight the corresponding nav item (including special sidebar categories) ---
   const subHeaderMap = {
@@ -2182,7 +2601,7 @@ window.loadSpecificCategory = function(categoryName) {
   document.querySelectorAll('.sub-header-link').forEach(link => {
     link.classList.remove('active');
     if (
-      link.textContent.trim() === (subHeaderMap[categoryName] || categoryName)
+      link.textContent.trim() === (navDisplayName || subHeaderMap[categoryName] || categoryName)
     ) {
       link.classList.add('active');
     }
@@ -2209,14 +2628,14 @@ window.loadSpecificCategory = function(categoryName) {
   // Small delay for smooth transition
   setTimeout(() => {
     if (groupAliasKey) {
-      if (loadToyGroupView(groupAliasKey, { displayName: categoryName })) {
+      if (loadToyGroupView(groupAliasKey, { displayName: navDisplayName || categoryName })) {
         return;
       }
     }
 
     const toyLoadResult = toyCategoryInfo
-      ? loadToyCategoryView(categoryName, toyCategoryInfo)
-      : loadToyCategoryView(categoryName);
+      ? loadToyCategoryView(categoryName, toyCategoryInfo, navDisplayName)
+      : loadToyCategoryView(categoryName, undefined, navDisplayName);
     if (toyLoadResult) {
       return;
     }
@@ -3770,6 +4189,7 @@ class HeroCarousel {
     this.currentSlide = 0;
     this.slides = document.querySelectorAll('.hero-slide');
     this.indicators = document.querySelectorAll('.hero-indicator');
+    this.heroElement = document.querySelector('.hero-carousel');
     this.autoPlayInterval = null;
     this.autoPlayDelay = 5000; // 5 seconds
     
@@ -3784,11 +4204,9 @@ class HeroCarousel {
     
     // Start auto-play
     this.startAutoPlay();
-    
-    // Add event listeners for manual navigation
-    this.addEventListeners();
   }
-    showSlide(index) {
+
+  showSlide(index) {
     // Hide all slides
     this.slides.forEach((slide, i) => {
       slide.style.opacity = '0';
@@ -3812,7 +4230,8 @@ class HeroCarousel {
     
     this.currentSlide = index;
   }
-    goToSlide(index) {
+
+  goToSlide(index) {
     if (index >= 0 && index < this.slides.length) {
       this.showSlide(index);
       this.restartAutoPlay();
@@ -3840,6 +4259,9 @@ class HeroCarousel {
   }
   
   startAutoPlay() {
+    if (this.slides.length <= 1) {
+      return;
+    }
     this.autoPlayInterval = setInterval(() => {
       this.nextSlide();
     }, this.autoPlayDelay);
@@ -3856,22 +4278,81 @@ class HeroCarousel {
     this.stopAutoPlay();
     this.startAutoPlay();
   }
-  
-  addEventListeners() {
-    // Pause auto-play on hover
-    const heroCarousel = document.querySelector('.hero-carousel');
-    if (heroCarousel) {
-      heroCarousel.addEventListener('mouseenter', () => this.stopAutoPlay());
-      heroCarousel.addEventListener('mouseleave', () => this.startAutoPlay());
-    }
-  }
 }
 
-// Initialize hero carousel
-let heroCarousel;
+// Initialize hero carousel reference
+let heroCarousel = null;
 
 // Make heroCarousel globally accessible
 window.heroCarousel = null;
+
+const heroCarouselElement = document.querySelector('.hero-carousel');
+const heroIndicatorsContainer = document.querySelector('.hero-indicators');
+const heroPrevButton = document.querySelector('.hero-nav-prev');
+const heroNextButton = document.querySelector('.hero-nav-next');
+
+if (heroCarouselElement) {
+  if (!heroCarouselElement.hasAttribute('tabindex')) {
+    heroCarouselElement.setAttribute('tabindex', '0');
+  }
+  if (!heroCarouselElement.hasAttribute('role')) {
+    heroCarouselElement.setAttribute('role', 'region');
+    heroCarouselElement.setAttribute('aria-roledescription', 'carousel');
+    heroCarouselElement.setAttribute('aria-label', 'Featured toy collections carousel');
+  }
+
+  heroCarouselElement.addEventListener('mouseenter', () => {
+    if (heroCarousel) {
+      heroCarousel.stopAutoPlay();
+    }
+  });
+  heroCarouselElement.addEventListener('mouseleave', () => {
+    if (heroCarousel) {
+      heroCarousel.startAutoPlay();
+    }
+  });
+  heroCarouselElement.addEventListener('keydown', (event) => {
+    if (!heroCarousel) {
+      return;
+    }
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      heroCarousel.prev();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      heroCarousel.next();
+    }
+  });
+}
+
+if (heroIndicatorsContainer) {
+  heroIndicatorsContainer.addEventListener('click', (event) => {
+    const target = event.target.closest('.hero-indicator');
+    if (!target || !heroCarousel) {
+      return;
+    }
+    const index = Number.parseInt(target.dataset.index || '', 10);
+    if (!Number.isNaN(index)) {
+      heroCarousel.goToSlide(index);
+    }
+  });
+}
+
+if (heroPrevButton) {
+  heroPrevButton.addEventListener('click', () => {
+    if (heroCarousel) {
+      heroCarousel.prev();
+    }
+  });
+}
+
+if (heroNextButton) {
+  heroNextButton.addEventListener('click', () => {
+    if (heroCarousel) {
+      heroCarousel.next();
+    }
+  });
+}
 
 // Expose product data globally for search system
 window.inkjetPrinterProducts = inkjetPrinterProducts;
@@ -4908,4 +5389,80 @@ window.loadDoubleSideDirectPrinting = function() {
 
 // Export double side printer functions for global access
 window.getAllDoubleSidePrinters = getAllDoubleSidePrinters;
+
+// --- Toy dataset overrides for legacy loaders ---
+function loadToyNavDisplay(displayName) {
+  if (typeof window.loadSpecificCategory === 'function') {
+    window.loadSpecificCategory(displayName);
+    return;
+  }
+
+  if (typeof loadNavGroup === 'function') {
+    loadNavGroup(displayName);
+  }
+}
+
+window.loadPrintheadProducts = function() {
+  loadToyNavDisplay('Print Heads');
+};
+
+window.loadAllPrintheadProducts = function() {
+  loadToyNavDisplay('Print Heads');
+};
+
+window.loadPrintSpareParts = function() {
+  loadToyNavDisplay('Print Spare Parts');
+};
+
+window.loadAllPrintSpareParts = function() {
+  loadToyNavDisplay('Print Spare Parts');
+};
+
+window.loadUpgradingKitProducts = function() {
+  loadToyNavDisplay('Upgrading Kit');
+};
+
+window.loadAllUpgradingKitProducts = function() {
+  loadToyNavDisplay('Upgrading Kit');
+};
+
+window.loadMaterialProducts = function() {
+  loadToyNavDisplay('Material');
+};
+
+window.loadAllMaterialProducts = function() {
+  loadToyNavDisplay('Material');
+};
+
+window.loadLedLcdProducts = function() {
+  loadToyNavDisplay('LED & LCD');
+};
+
+window.loadAllLedLcdProducts = function() {
+  loadToyNavDisplay('LED & LCD');
+};
+
+window.loadChannelLetterProducts = function() {
+  loadToyNavDisplay('Channel Letter');
+};
+
+window.loadAllChannelLetterProducts = function() {
+  loadToyNavDisplay('Channel Letter');
+};
+
+window.loadOtherProducts = function() {
+  loadToyNavDisplay('Other');
+};
+
+window.loadAllOtherProducts = function() {
+  loadToyNavDisplay('Other');
+};
+
+window.loadAllDoubleSidePrinters = function() {
+  loadToyNavDisplay('Action Figures & Role Play');
+};
+
+window.loadDoubleSideDirectPrinting = function() {
+  loadToyNavDisplay('Action Figures & Role Play');
+};
 

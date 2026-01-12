@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Initialize sidebar functionality after HTML is loaded
         setTimeout(() => {
+          populateSidebarMenus();
           initializeSidebar();
         }, 100);
       })
@@ -18,6 +19,76 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
 });
+
+function getToyDataAPI() {
+  if (window.toyData && typeof window.toyData.getGroupList === 'function') {
+    return window.toyData;
+  }
+  return null;
+}
+
+function populateSidebarMenus() {
+  const toyAPI = getToyDataAPI();
+  if (!toyAPI || typeof toyAPI.getCategoriesForGroup !== 'function') {
+    setTimeout(populateSidebarMenus, 100);
+    return;
+  }
+
+  const processed = new Set();
+  document.querySelectorAll('.department-group[data-toy-group]').forEach((groupElement) => {
+    const groupKey = groupElement.getAttribute('data-toy-group');
+    if (!groupKey || processed.has(groupKey)) {
+      return;
+    }
+
+    const container = groupElement.querySelector('.js-sidebar-submenu');
+    if (!container) {
+      return;
+    }
+
+    const categories = toyAPI.getCategoriesForGroup(groupKey) || [];
+
+    container.innerHTML = '';
+    container.classList.add('submenu-grid');
+    container.setAttribute('role', 'menu');
+
+    if (categories.length === 0) {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'submenu-empty';
+      placeholder.textContent = 'Categories coming soon';
+      container.appendChild(placeholder);
+    } else {
+      const fragment = document.createDocumentFragment();
+      categories.forEach((category) => {
+        const link = document.createElement('a');
+        link.className = 'submenu-item';
+        link.href = 'javascript:void(0)';
+        link.textContent = category.name;
+        link.setAttribute('role', 'menuitem');
+        link.addEventListener('click', () => {
+          if (typeof window.handleCategoryClick === 'function') {
+            window.handleCategoryClick(category.name);
+          }
+        });
+        fragment.appendChild(link);
+      });
+
+      const viewAll = document.createElement('a');
+      viewAll.className = 'submenu-item view-all-link';
+      viewAll.href = 'javascript:void(0)';
+      viewAll.textContent = 'Shop Entire Collection';
+      viewAll.setAttribute('role', 'menuitem');
+      viewAll.addEventListener('click', () => {
+        window.handleNavigationClick(`group:${groupKey}`);
+      });
+      fragment.appendChild(viewAll);
+
+      container.appendChild(fragment);
+    }
+
+    processed.add(groupKey);
+  });
+}
 
 // Sidebar initialization function
 function initializeSidebar() {

@@ -78,105 +78,24 @@
           <!-- Navigation Arrows -->
           <button
             class="hero-nav-arrow hero-nav-prev"
-            onclick="heroCarousel.prev()"
             aria-label="Previous slide"
+            type="button"
           >
             <span>‹</span>
           </button>
           <button
             class="hero-nav-arrow hero-nav-next"
-            onclick="heroCarousel.next()"
             aria-label="Next slide"
+            type="button"
           >
             <span>›</span>
           </button>
 
           <!-- Carousel Container -->
-          <div class="hero-container">
-            <div class="hero-slide active" data-index="0">
-              <div
-                class="hero-card hero-card-wide"
-                onclick="window.loadAllPrintheadProducts && window.loadAllPrintheadProducts(); window.location.hash = 'print-heads'"
-              >
-                <div class="hero-image-wrapper">
-                  <img
-                    src="images/home/All Printheads home img.jpg"
-                    alt="All Printheads"
-                    class="hero-image"
-                  />
-                  <div class="hero-overlay">
-                    <h3 class="hero-title">All Printheads</h3>
-                    <p class="hero-description">
-                      Discover our complete range of high-quality printheads
-                    </p>
-                    <span class="hero-cta">Explore Collection →</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="hero-slide" data-index="1">
-              <div
-                class="hero-card hero-card-wide"
-                onclick="window.loadSpecificCategory && window.loadSpecificCategory('Upgrading Kit')"
-              >
-                <div class="hero-image-wrapper">
-                  <img
-                    src="images/home/Upgrading Kit-Xp600 img.jpg"
-                    alt="Upgrading Kit"
-                    class="hero-image"
-                  />
-                  <div class="hero-overlay">
-                    <h3 class="hero-title">Upgrading Kit</h3>
-                    <p class="hero-description">
-                      Professional upgrade solutions for your printing needs
-                    </p>
-                    <span class="hero-cta">View Upgrades →</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="hero-slide" data-index="2">
-              <div
-                class="hero-card hero-card-wide"
-                onclick="window.loadSpecificCategory && window.loadSpecificCategory('Inkjet Printers')"
-              >
-                <div class="hero-image-wrapper">
-                  <img
-                    src="images/home/Inkjet Printers home img.jpg"
-                    alt="Action Figures & Role Play"
-                    class="hero-image"
-                  />
-                  <div class="hero-overlay">
-                    <h3 class="hero-title">Action Figures & Role Play (Total: 60)</h3>
-                    <p class="hero-description">
-                      Advanced inkjet printing solutions for every application
-                    </p>
-                    <span class="hero-cta">Browse Printers →</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div class="hero-container"></div>
 
           <!-- Carousel Indicators -->
-          <div class="hero-indicators">
-            <button
-              class="hero-indicator active"
-              onclick="heroCarousel.goToSlide(0)"
-              aria-label="Go to slide 1"
-            ></button>
-            <button
-              class="hero-indicator"
-              onclick="heroCarousel.goToSlide(1)"
-              aria-label="Go to slide 2"
-            ></button>
-            <button
-              class="hero-indicator"
-              onclick="heroCarousel.goToSlide(2)"
-              aria-label="Go to slide 3"
-            ></button>
-          </div>
+          <div class="hero-indicators"></div>
         </div>
       </section>
 

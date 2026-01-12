@@ -5,876 +5,267 @@ function getToyDataAPI() {
   return null;
 }
 
-function resolveToyTargetFromHash(hash) {
-  const toyAPI = getToyDataAPI();
-  if (!toyAPI || !hash) {
-    return null;
+function isIndexPage() {
+  if (window.UrlUtils && typeof window.UrlUtils.isIndexPage === 'function') {
+    return window.UrlUtils.isIndexPage();
   }
-
-  const cleaned = hash.replace(/^#/, '');
-  const category = toyAPI.resolveCategoryByHash(cleaned);
-  if (category) {
-    return { type: 'category', category };
-  }
-
-  const group = toyAPI.resolveGroupByHash(cleaned);
-  if (group) {
-    return { type: 'group', group };
-  }
-
-  return null;
+  return window.location.pathname.includes('index');
 }
 
-// Sub-header navigation functionality
-class SubHeaderNavigation {
-  constructor() {
-    this.activeSubmenu = null;
-    this.submenuTimeout = null;
-    this.initializeEventListeners();
+function navigateToIndex(hashValue) {
+  if (window.UrlUtils && typeof window.UrlUtils.navigateToIndex === 'function') {
+    window.UrlUtils.navigateToIndex(hashValue ? `#${hashValue}` : '');
+    return;
   }
-
-  initializeEventListeners() {
-    // Add event listeners to all sub-header links with submenus
-    const subHeaderLinks = document.querySelectorAll('.sub-header-link[data-submenu]');
-    const submenus = document.querySelectorAll('.sub-header-submenu');
-    
-    subHeaderLinks.forEach(link => {
-      // Mouse enter - show submenu
-      link.addEventListener('mouseenter', (event) => {
-        this.showSubmenu(event.target);
-      });
-      
-      // Mouse leave - hide submenu with delay
-      link.addEventListener('mouseleave', (event) => {
-        this.hideSubmenuWithDelay();
-      });      // Click event for both submenu toggle and navigation
-      link.addEventListener('click', (event) => {
-        const submenuId = link.getAttribute('data-submenu');
-        const linkText = link.textContent.trim();
-        
-        // Check if submenu is currently active and hide it if clicked again
-        if (submenuId) {
-          const submenu = document.getElementById(`submenu-${submenuId}`);
-          if (submenu && submenu.classList.contains('active')) {
-            this.hideAllSubmenus();
-            return; // Don't proceed with navigation if we're just hiding the menu
-          }
-        }
-        
-        // Check if we're on the index page by looking for product grid or if load functions exist
-        const isIndexPage = window.loadSpecificCategory && window.loadAllPrintheadProducts && window.loadAllMaterialProducts && window.loadAllLedLcdProducts;// Handle navigation based on the category
-        let hash = '';
-        if (linkText === 'Inkjet Printers') {
-            hash = '#inkjet-printers';
-        } else if (linkText === 'Print Heads') {
-            hash = '#print-heads';
-        } else if (linkText === 'Print Spare Parts') {
-            hash = '#print-spare-parts';
-        } else if (linkText === 'Upgrading Kit') {
-            hash = '#upgrading-kit';
-        } else if (linkText === 'Material') {
-            hash = '#material';
-        } else if (linkText === 'LED & LCD') {
-            hash = '#led-lcd';
-        } else if (linkText === 'Laser') {
-            hash = '#laser';
-        } else if (linkText === 'Cutting') {
-            hash = '#cutting';
-        } else if (linkText === 'Channel Letter') {
-            hash = '#channel-letter';
-        } else if (linkText === 'CNC') {
-            hash = '#cnc';
-        } else if (linkText === 'Displays') {
-            hash = '#displays';
-        } else if (linkText === 'Other') {
-            hash = '#other';
-        }
-
-        if (isIndexPage) {
-          // We're on index page - use existing category loading functions
-          if (linkText === 'Inkjet Printers' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('Inkjet Printers');
-            this.setActiveCategory('Inkjet Printers');
-            window.location.hash = hash;
-          } else if (linkText === 'Print Heads' && window.loadAllPrintheadProducts) {
-            window.loadAllPrintheadProducts();
-            this.setActiveCategory('Print Heads');
-            window.location.hash = hash;
-          } else if (linkText === 'Print Spare Parts' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('Print Spare Parts');
-            this.setActiveCategory('Print Spare Parts');
-            window.location.hash = hash;          } else if (linkText === 'Upgrading Kit' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('Upgrading Kit');
-            this.setActiveCategory('Upgrading Kit');
-            window.location.hash = hash;          }          else if (linkText === 'Material' && window.loadAllMaterialProducts) {
-            window.loadAllMaterialProducts();
-            this.setActiveCategory('Material');
-            window.location.hash = hash;
-          } else if (linkText === 'LED & LCD' && window.loadAllLedLcdProducts) {
-            window.loadAllLedLcdProducts();
-            this.setActiveCategory('LED & LCD');
-            window.location.hash = hash;
-          } else if (linkText === 'Laser' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('Laser');
-            this.setActiveCategory('Laser');
-            window.location.hash = hash;          } else if (linkText === 'Cutting' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('Cutting');
-            this.setActiveCategory('Cutting');
-            window.location.hash = hash;
-          } else if (linkText === 'Channel Letter' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('Channel Letter');
-            this.setActiveCategory('Channel Letter');
-            window.location.hash = hash;
-          } else if (linkText === 'CNC' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('CNC');
-            this.setActiveCategory('CNC');
-            window.location.hash = hash;          } else if (linkText === 'Displays' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('Displays');
-            this.setActiveCategory('Displays');
-            window.location.hash = hash;
-          } else if (linkText === 'Other' && window.loadSpecificCategory) {
-            window.loadSpecificCategory('Other');
-            this.setActiveCategory('Other');
-            window.location.hash = hash;
-          }
-        } else {
-          // We're on a different page - navigate to index page with hash
-          event.preventDefault();
-          
-          if (linkText === 'Inkjet Printers') {
-            hash = '#inkjet-printers';
-          } else if (linkText === 'Print Heads') {
-            hash = '#print-heads';
-          } else if (linkText === 'Print Spare Parts') {
-            hash = '#print-spare-parts';
-          } else if (linkText === 'Upgrading Kit') {
-            hash = '#upgrading-kit';
-          } else if (linkText === 'Material') {
-            hash = '#material';
-          } else if (linkText === 'LED & LCD') {
-            hash = '#led-lcd';
-          } else if (linkText === 'Laser') {
-            hash = '#laser';
-          } else if (linkText === 'Cutting') {
-            hash = '#cutting';
-          } else if (linkText === 'Channel Letter') {
-            hash = '#channel-letter';
-          } else if (linkText === 'CNC') {
-            hash = '#cnc';
-          } else if (linkText === 'Displays') {
-            hash = '#displays';
-          } else if (linkText === 'Other') {
-            hash = '#other';
-          }          // Navigate to index page with the appropriate hash
-          if (hash) {
-            UrlUtils.navigateToIndex(hash);
-            return;
-          }        }
-        
-        // Show submenu for this link if it has one
-        if (submenuId) {
-          this.showSubmenu(event.target);
-        }
-        
-        // Don't prevent default to allow any additional onclick handlers
-        return true;
-      });
-    });
-    
-    // Add event listeners to submenus themselves
-    submenus.forEach(submenu => {
-      submenu.addEventListener('mouseenter', () => {
-        this.clearSubmenuTimeout();
-      });
-      
-      submenu.addEventListener('mouseleave', () => {
-        this.hideSubmenuWithDelay();
-      });
-    });
-    
-    // Hide submenu when clicking outside
-    document.addEventListener('click', (event) => {
-      if (!event.target.closest('.sub-header') && !event.target.closest('.sub-header-submenu')) {
-        this.hideAllSubmenus();
-      }
-    });
-      // Handle "See All Departments" link separately
-    const allProductsLink = document.querySelector('.all-products-link');
-    if (allProductsLink) {
-      allProductsLink.addEventListener('click', (event) => {
-        event.preventDefault();
-        this.hideAllSubmenus();
-        
-        // Check if we're on the index page
-        const isIndexPage = window.loadAllProducts && typeof window.loadAllProducts === 'function';
-          if (isIndexPage) {
-          // We're on index page - use existing function
-          this.setActiveCategory('See All Departments');
-          window.loadAllProducts();        } else {
-          // We're on a different page - navigate to index page
-          UrlUtils.navigateToIndex();
-        }
-      });
-    }
-  }
-
-  showSubmenu(link) {
-    this.clearSubmenuTimeout();
-    const submenuId = link.getAttribute('data-submenu');
-    
-    if (submenuId) {
-      // Hide all other submenus
-      this.hideAllSubmenus();
-      
-      // Show the target submenu
-      const submenu = document.getElementById(`submenu-${submenuId}`);
-      if (submenu) {
-        submenu.classList.add('active');
-        this.activeSubmenu = submenu;
-      }
-      
-      // Update active state
-      this.setActiveCategory(link.textContent.trim());
-    }
-  }
-
-  hideSubmenuWithDelay() {
-    this.submenuTimeout = setTimeout(() => {
-      this.hideAllSubmenus();
-    }, 300); // 300ms delay
-  }
-
-  clearSubmenuTimeout() {
-    if (this.submenuTimeout) {
-      clearTimeout(this.submenuTimeout);
-      this.submenuTimeout = null;
-    }
-  }
-
-  toggleSubmenu(link) {
-    const submenuId = link.getAttribute('data-submenu');
-    
-    if (submenuId) {
-      const submenu = document.getElementById(`submenu-${submenuId}`);
-      
-      if (submenu && submenu.classList.contains('active')) {
-        this.hideAllSubmenus();
-      } else {
-        this.showSubmenu(link);
-      }
-    }
-  }
-  hideAllSubmenus() {
-    this.clearSubmenuTimeout();
-    const activeSubmenus = document.querySelectorAll('.sub-header-submenu.active');
-    activeSubmenus.forEach(submenu => {
-      submenu.classList.remove('active');
-    });
-    this.activeSubmenu = null;
-  }
-
-  // Method to set active link based on current page/category
-  setActiveCategory(category) {
-    document.querySelectorAll('.sub-header-link').forEach(link => {
-      link.classList.remove('active');
-      if (link.textContent.trim() === category) {
-        link.classList.add('active');
-      }
-    });
-  }
-
-  // Methods to expand sidebar menus (for navigation compatibility)
-  expandPrintHeadsMenu() {
-    // Find and expand the print heads menu in the sidebar if it exists
-    const printHeadsLink = document.querySelector('[onclick*="loadAllPrintheadProducts"]');
-    if (printHeadsLink) {
-      const submenu = printHeadsLink.nextElementSibling;
-      if (submenu && submenu.classList.contains('submenu')) {
-        printHeadsLink.classList.add('expanded');
-        submenu.style.display = 'block';
-      }
-    }
-  }
-
-  expandInkjetPrintersMenu() {
-    // Find and expand the inkjet printers menu in the sidebar if it exists
-    const inkjetLink = document.querySelector('[onclick*="loadSpecificCategory"][onclick*="Inkjet Printers"]:not([onclick*="Eco-Solvent"]):not([onclick*="UV"]):not([onclick*="Solvent"])');
-    if (inkjetLink) {
-      const submenu = inkjetLink.nextElementSibling;
-      if (submenu && submenu.classList.contains('submenu')) {
-        inkjetLink.classList.add('expanded');
-        submenu.style.display = 'block';
-      }
-    }
-  }  expandPrintSparePartsMenu() {
-    // Find and expand the print spare parts menu in the sidebar if it exists
-    const sparePartsLink = document.querySelector('[onclick*="loadAllPrintSpareParts"]');
-    if (sparePartsLink) {
-      const submenu = sparePartsLink.nextElementSibling;
-      if (submenu && submenu.classList.contains('submenu')) {
-        sparePartsLink.classList.add('expanded');
-        submenu.style.display = 'block';
-      }
-    }
-  }
-  expandUpgradingKitMenu() {
-    // Find and expand the upgrading kit menu in the sidebar if it exists
-    const upgradingKitLink = document.querySelector('[onclick*="loadAllUpgradingKitProducts"]');
-    if (upgradingKitLink) {
-      const submenu = upgradingKitLink.nextElementSibling;
-      if (submenu && submenu.classList.contains('submenu')) {
-        upgradingKitLink.classList.add('expanded');
-        submenu.style.display = 'block';
-      }
-    }
-  }
-  expandMaterialMenu() {
-    // Find and expand the material menu in the sidebar if it exists
-    const materialLink = document.querySelector('[onclick*="loadAllMaterialProducts"]');
-    if (materialLink) {
-      const submenu = materialLink.nextElementSibling;
-      if (submenu && submenu.classList.contains('submenu')) {
-        materialLink.classList.add('expanded');
-        submenu.style.display = 'block';
-      }
-    }
-  }
-
-  expandLedLcdMenu() {
-    // Find and expand the LED & LCD menu in the sidebar if it exists
-    const ledLcdLink = document.querySelector('[onclick*="loadAllLedLcdProducts"]');
-    if (ledLcdLink) {
-      const submenu = ledLcdLink.nextElementSibling;
-      if (submenu && submenu.classList.contains('submenu')) {
-        ledLcdLink.classList.add('expanded');
-        submenu.style.display = 'block';
-      }
-    }
-  }
-  expandChannelLetterMenu() {
-    // Find and expand the Channel Letter menu in the sidebar if it exists
-    const channelLetterLink = document.querySelector('[onclick*="loadAllChannelLetterProducts"]');
-    if (channelLetterLink) {
-      const submenu = channelLetterLink.nextElementSibling;
-      if (submenu && submenu.classList.contains('submenu')) {
-        channelLetterLink.classList.add('expanded');
-        submenu.style.display = 'block';
-      }
-    }
-  }
-  expandOtherMenu() {
-    // Find and expand the Other menu in the sidebar if it exists
-    const otherLink = document.querySelector('[onclick*="loadAllOtherProducts"]');
-    if (otherLink) {
-      const submenu = otherLink.nextElementSibling;
-      if (submenu && submenu.classList.contains('submenu')) {
-        otherLink.classList.add('expanded');
-        submenu.style.display = 'block';
-      }
-    }
-  }
-  // Handle hash navigation - called from external scripts
-  handleHashNavigation(hash) {
-    if (!hash) return;
-
-    // Ensure percent-encoded hashes are decoded (e.g. Chinese characters encoded in URL)
-    try {
-      hash = decodeURIComponent(hash);
-    } catch (e) {
-      // If decoding fails, continue with the original value
-    }
-
-    // Handle special category prefixes
-    if (hash.startsWith('category-')) {
-      hash = hash.replace('category-', '');
-    }
-
-    const toyTarget = resolveToyTargetFromHash(hash);
-    if (toyTarget && window.loadSpecificCategory) {
-      const targetLabel = toyTarget.type === 'group'
-        ? (toyTarget.group.label || toyTarget.group.key)
-        : toyTarget.category.name;
-
-      // Prevent recursive hash updates while we load the target
-      const resetPrevent = () => {
-        window.preventHashUpdate = false;
-      };
-      window.preventHashUpdate = true;
-      window.loadSpecificCategory(targetLabel);
-      setTimeout(resetPrevent, 100);
-
-      if (toyTarget.type === 'group') {
-        this.setActiveCategory(toyTarget.group.label || targetLabel);
-      } else {
-        this.setActiveCategory(toyTarget.category.groupLabel || 'Action Figures & Role Play');
-      }
-      return;
-    }
-    
-    // Handle printhead-specific hashes
-    if (hash === 'print-heads' || hash === 'printheads') {
-      if (window.loadAllPrintheadProducts) {
-        window.loadAllPrintheadProducts();
-        this.setActiveCategory('Print Heads');
-        this.expandPrintHeadsMenu();
-      }
-      return;
-    }
-    
-    // Direct handling for eco-solvent printer categories to ensure first-click functionality
-    if (hash === 'eco-solvent-xp600-printers') {
-      if (window.loadSpecificCategory) {
-        window.loadSpecificCategory('Eco-Solvent Inkjet Printers - With XP600 Printhead');
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'eco-solvent-i1600-printers') {
-      if (window.loadSpecificCategory) {
-        window.loadSpecificCategory('Eco-Solvent Inkjet Printers - With I1600 Printhead');
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'eco-solvent-i3200-printers') {
-      // Make sure we're not in the middle of loading sublimation printers
-      if (window.updatingHashFromCategory) {
-        return;
-      }
-      if (window.loadSpecificCategory) {
-        window.loadSpecificCategory('Eco-Solvent Inkjet Printers - With I3200 Printhead');
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    // Direct handling for solvent printer categories
-    if (hash === 'solvent-inkjet-printers') {
-      if (window.loadAllSolventPrinters) {
-        window.loadAllSolventPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'solvent-km512i-printers') {
-      if (window.loadSolventKM512iPrinters) {
-        window.loadSolventKM512iPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'solvent-km1024i-printers') {
-      if (window.loadSolventKM1024iPrinters) {
-        window.loadSolventKM1024iPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    // Direct handling for UV printer categories
-    if (hash === 'uv-inkjet-printers') {
-      if (window.loadAllUvInkjetPrinters) {
-        window.loadAllUvInkjetPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'uv-inkjet-printers---with-ricoh-gen6-printhead') {
-      if (window.loadUvRicohGen6Printers) {
-        window.loadUvRicohGen6Printers();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'uv-konica-km1024i-printers') {
-      if (window.loadUvKonica1024iPrinters) {
-        window.loadUvKonica1024iPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    // Direct handling for UV Hybrid printer categories
-    if (hash === 'uv-hybrid-inkjet-printers') {
-      if (window.loadAllUvHybridPrinters) {
-        window.loadAllUvHybridPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'uv-hybrid-konica-km1024i-printers') {
-      if (window.loadSpecificCategory) {
-        window.loadSpecificCategory('UV Hybrid Inkjet Printer - With Konica KM1024i Printhead');
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'uv-hybrid-ricoh-gen6-printers') {
-      if (window.loadSpecificCategory) {
-        window.loadSpecificCategory('UV Hybrid Inkjet Printer - With Ricoh Gen6 Printhead');
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }      return;
-    }
-    
-    // Direct handling for double side printer categories
-    if (hash === 'double-side-printers') {
-      if (window.loadAllDoubleSidePrinters) {
-        window.loadAllDoubleSidePrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'double-side-printers---direct-printing') {
-      if (window.loadDoubleSideDirectPrinting) {
-        window.loadDoubleSideDirectPrinting();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-
-    // Handle print spare parts specific hashes
-    if (hash === 'print-spare-parts') {
-      if (window.loadAllPrintSpareParts) {
-        window.loadAllPrintSpareParts();
-        this.setActiveCategory('Print Spare Parts');
-        this.expandPrintSparePartsMenu();
-      }
-      return;
-    }
-      if (hash === 'epson-printer-spare-parts') {
-      if (window.loadEpsonPrinterSpareParts) {
-        window.loadEpsonPrinterSpareParts();
-        this.setActiveCategory('Print Spare Parts');
-        this.expandPrintSparePartsMenu();
-      }
-      return;
-    }
-      if (hash === 'roland-printer-spare-parts') {
-      if (window.loadRolandPrinterSpareParts) {
-        window.loadRolandPrinterSpareParts();
-        this.setActiveCategory('Print Spare Parts');
-        this.expandPrintSparePartsMenu();
-      }
-      return;
-    }
-      if (hash === 'canon-printer-spare-parts') {
-      if (window.loadCanonPrinterSpareParts) {
-        window.loadCanonPrinterSpareParts();
-        this.setActiveCategory('Print Spare Parts');
-        this.expandPrintSparePartsMenu();
-      }
-      return;
-    }
-    
-    if (hash === 'ricoh-printer-spare-parts') {
-      if (window.loadRicohPrinterSpareParts) {
-        window.loadRicohPrinterSpareParts();
-        this.setActiveCategory('Print Spare Parts');
-        this.expandPrintSparePartsMenu();
-      }
-      return;
-    }
-      if (hash.startsWith('printheads-')) {
-      const brand = hash.replace('printheads-', '');
-      if (window.loadPrintheadProducts) {
-        window.loadPrintheadProducts(brand);
-        this.setActiveCategory('Print Heads');
-        this.expandPrintHeadsMenu();
-      }
-      return;
-    }
-
-    if (hash.startsWith('upgrading-kit-')) {
-      const kitType = hash.replace('upgrading-kit-', '');
-      let brandKey = kitType;
-      
-      // Map hash names to data keys
-      if (kitType === 'roll-to-roll') {
-        brandKey = 'roll_to_roll_style';
-      } else if (kitType === 'uv-flatbed') {
-        brandKey = 'uv_flatbed';
-      } else if (kitType === 'without-cable') {
-        brandKey = 'without_cable_work';
-      }
-      
-      if (window.loadUpgradingKitProducts) {
-        window.loadUpgradingKitProducts(brandKey);
-        this.setActiveCategory('Upgrading Kit');
-        this.expandUpgradingKitMenu();      }
-      return;
-    }
-
-    if (hash === 'material') {
-      if (window.loadAllMaterialProducts) {
-        window.loadAllMaterialProducts();
-        this.setActiveCategory('Material');
-        this.expandMaterialMenu();
-      }
-      return;
-    }    if (hash.startsWith('material-')) {
-      const materialCategory = hash.replace('material-', '');
-      
-      if (window.loadMaterialProducts) {
-        window.loadMaterialProducts(materialCategory);
-        this.setActiveCategory('Material');
-        this.expandMaterialMenu();
-      }
-      return;
-    }
-
-    if (hash === 'led-lcd') {
-      if (window.loadAllLedLcdProducts) {
-        window.loadAllLedLcdProducts();
-        this.setActiveCategory('LED & LCD');
-        this.expandLedLcdMenu();
-      }
-      return;
-    }    if (hash.startsWith('led-lcd-')) {
-      const ledLcdCategory = hash.replace('led-lcd-', '');
-      
-      if (window.loadLedLcdProducts) {
-        window.loadLedLcdProducts(ledLcdCategory);
-        this.setActiveCategory('LED & LCD');
-        this.expandLedLcdMenu();
-      }
-      return;
-    }
-
-    if (hash === 'channel-letter') {
-      if (window.loadAllChannelLetterProducts) {
-        window.loadAllChannelLetterProducts();
-        this.setActiveCategory('Channel Letter');
-        this.expandChannelLetterMenu();
-      }
-      return;
-    }    if (hash.startsWith('channel-letter-')) {
-      const channelLetterCategory = hash.replace('channel-letter-', '');
-      
-      if (window.loadChannelLetterProducts) {
-        window.loadChannelLetterProducts(channelLetterCategory);
-        this.setActiveCategory('Channel Letter');
-        this.expandChannelLetterMenu();
-      }
-      return;
-    }
-
-    if (hash === 'other') {
-      if (window.loadAllOtherProducts) {
-        window.loadAllOtherProducts();
-        this.setActiveCategory('Other');
-        this.expandOtherMenu();
-      }
-      return;
-    }
-
-    if (hash.startsWith('other-')) {
-      const otherCategory = hash.replace('other-', '');
-      
-      if (window.loadOtherProducts) {
-        window.loadOtherProducts(otherCategory);
-        this.setActiveCategory('Other');
-        this.expandOtherMenu();
-      }
-      return;
-    }
-
-    // Handle DTF printer specific hashes
-    if (hash === 'direct-to-fabric-film') {
-      if (window.loadDirectToFabricFilmPrinters) {
-        window.loadDirectToFabricFilmPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-
-    if (hash === 'dtf-printers') {
-      if (window.loadDTFPrinters) {
-        window.loadDTFPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-
-    if (hash === 'uv-dtf-printer' || hash === 'uv-dtf-printers') {
-      if (window.loadUVDTFPrinters) {
-        window.loadUVDTFPrinters();
-        this.setActiveCategory('Inkjet Printers');
-        this.expandInkjetPrintersMenu();
-      }
-      return;
-    }
-
-// Handle other category hashes
-    const categoryMap = {
-      'inkjet-printers': 'Inkjet Printers',
-      'inkjetprinters-ecosolvent': 'Eco-Solvent Inkjet Printers',
-      'direct-to-fabric-film': 'Direct to Fabric & Film',
-      'dtf-printers': 'DTF Printers',
-      'uv-dtf-printer': 'UV DTF Printer',
-      'uv-dtf-printers': 'UV DTF Printers',
-      'eco-solvent-xp600-printers': 'Eco-Solvent Inkjet Printers - With XP600 Printhead',
-      'eco-solvent-i1600-printers': 'Eco-Solvent Inkjet Printers - With I1600 Printhead',
-      'eco-solvent-i3200-printers': 'Eco-Solvent Inkjet Printers - With I3200 Printhead',
-      'eco-solvent-inkjet-printers---with-xp600-printhead': 'Eco-Solvent Inkjet Printers - With XP600 Printhead',
-      'eco-solvent-inkjet-printers---with-i1600-printhead': 'Eco-Solvent Inkjet Printers - With I1600 Printhead',
-      'eco-solvent-inkjet-printers---with-i3200-printhead': 'Eco-Solvent Inkjet Printers - With I3200 Printhead',
-      'solvent-inkjet-printers': 'Solvent Inkjet Printers',
-      'solvent-km512i-printers': 'Solvent Inkjet Printers - With Konica KM512i Printhead',
-      'solvent-km1024i-printers': 'Solvent Inkjet Printers - With Konica KM1024i Printhead',
-      'uv-inkjet-printers': 'UV Inkjet Printers',
-      'uv-inkjet-printers---with-ricoh-gen6-printhead': 'UV Inkjet Printers - With Ricoh Gen6 Printhead',
-      'uv-konica-km1024i-printers': 'UV Inkjet Printers - With Konica KM1024i Printhead',
-      'sublimation-printers': 'Sublimation Printers',
-      'sublimation-xp600-printers': 'Sublimation Printers - With XP600 Printhead',
-      'sublimation-i1600-printers': 'Sublimation Printers - With I1600 Printhead',
-      'sublimation-i3200-printers': 'Sublimation Printers - With I3200 Printhead',
-      'sublimation-printers---with-xp600-printhead': 'Sublimation Printers - With XP600 Printhead',
-      'sublimation-printers---with-i1600-printhead': 'Sublimation Printers - With I1600 Printhead',
-      'sublimation-printers---with-i3200-printhead': 'Sublimation Printers - With I3200 Printhead',
-      'print-spare-parts': 'Print Spare Parts',
-      'upgrading-kit': 'Upgrading Kit',
-      'material': 'Material',
-      'led-lcd': 'LED & LCD',
-      'laser': 'Laser',
-      'cutting': 'Cutting',
-      'channel-letter': 'Channel Letter',
-      'cnc': 'CNC',
-      'displays': 'Displays',
-      'other': 'Other'
-    };
-    
-    const categoryName = categoryMap[hash];
-    if (categoryName && window.loadSpecificCategory) {
-      window.loadSpecificCategory(categoryName);
-      this.setActiveCategory(categoryName);
-      // Expand appropriate sidebar menu
-      if (categoryName === 'Inkjet Printers' || categoryName.startsWith('Sublimation Printers')) {
-        this.expandInkjetPrintersMenu();
-      } else if (categoryName === 'Print Spare Parts') {
-        this.expandPrintSparePartsMenu();
-      } else if (categoryName === 'Upgrading Kit') {
-        this.expandUpgradingKitMenu();
-      } else if (categoryName === 'Material') {
-        this.expandMaterialMenu();
-      } else if (categoryName === 'LED & LCD') {
-        this.expandLedLcdMenu();
-      }
-      return;
-    }
-
-    // Fallback: if hash doesn't match a known mapping (e.g. non-English or custom category slugs),
-    // attempt to treat the raw hash as a category name and load it directly. This enables
-    // navigation from other pages (detail.html) where the index is opened with a hash
-    // such as '#仿真餐具'. If a specific loader exists, use it.
-    if (hash && window.loadSpecificCategory) {
-      window.loadSpecificCategory(hash);
-      // Ensure the main "Inkjet Printers" header is marked active for these subcategories
-      this.setActiveCategory('Inkjet Printers');
-      this.expandInkjetPrintersMenu();
-      return;
-    }
+  if (hashValue) {
+    window.location.href = `index.html#${hashValue}`;
+  } else {
+    window.location.href = 'index.html';
   }
 }
 
-// Helper function to check if we should avoid scrolling based on URL
 function shouldAvoidScroll() {
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.has('noscroll');
+  return urlParams.has('noscroll') || urlParams.get('noscroll') === 'true';
 }
 
-// Initialize sub-header navigation when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if we're using shared subheader (placeholder exists)
-  const hasSharedSubheader = document.getElementById('shared-subheader-placeholder');
-  
-  // Only auto-initialize if NOT using shared subheader
-  if (!hasSharedSubheader) {
-    window.subHeaderNav = new SubHeaderNavigation();
-    
-    // Handle URL hash navigation on initial page load
-    let hash = window.location.hash.substring(1);
-    
-    // Check if the hash contains parameters to prevent scrolling
-    const shouldSkipScroll = window.location.search.includes('noscroll=true') || 
-                            hash.includes('noscroll=true');
-    
-    // Clean up the hash by removing any parameters
-    if (hash.includes('?')) {
-      hash = hash.split('?')[0];
+class SubHeaderNavigation {
+  constructor() {
+    this.activeLink = null;
+    this.activeSubmenu = null;
+    this.hideTimeout = null;
+    this.navRoot = document.querySelector('.sub-header');
+    this.links = Array.from(document.querySelectorAll('.sub-header-link[data-submenu]'));
+    this.submenus = Array.from(document.querySelectorAll('.sub-header-submenu'));
+    this.handleDocumentClick = this.handleDocumentClick.bind(this);
+    this.handleHashChange = this.handleHashChange.bind(this);
+    this.init();
+  }
+
+  init() {
+    if (!this.navRoot) {
+      return;
     }
-    
-    if (hash) {
-      // If we should skip scrolling, temporarily disable the scroll function
-      if (shouldSkipScroll && window.scrollToProducts) {
-        const originalScrollToProducts = window.scrollToProducts;
-        window.scrollToProducts = function() { /* do nothing */ };
-        
-        // Process the hash navigation
-        window.subHeaderNav.handleHashNavigation(hash);
-        
-        // Restore the original function after a delay
-        setTimeout(() => {
-          window.scrollToProducts = originalScrollToProducts;
-        }, 1000);
-      } else {
-        // Normal hash navigation
-        window.subHeaderNav.handleHashNavigation(hash);
-      }
+    this.attachLinkListeners();
+    this.attachSubmenuListeners();
+    document.addEventListener('click', this.handleDocumentClick, true);
+    window.addEventListener('hashchange', this.handleHashChange);
+  }
+
+  attachLinkListeners() {
+    this.links.forEach((link) => {
+      link.addEventListener('mouseenter', () => {
+        this.showSubmenu(link);
+      });
+
+      link.addEventListener('mouseleave', () => {
+        this.scheduleHide();
+      });
+
+      link.addEventListener('focus', () => {
+        this.showSubmenu(link);
+      });
+
+      link.addEventListener('blur', () => {
+        this.scheduleHide();
+      });
+
+      link.addEventListener('click', (event) => {
+        const submenu = this.getSubmenuForLink(link);
+        if (!submenu) {
+          this.hideAllSubmenus();
+          return;
+        }
+
+        if (window.innerWidth > 900) {
+          this.hideAllSubmenus();
+          return;
+        }
+
+        if (!submenu.classList.contains('active')) {
+          event.preventDefault();
+          this.showSubmenu(link);
+          return;
+        }
+
+        this.hideAllSubmenus();
+      });
+    });
+  }
+
+  attachSubmenuListeners() {
+    this.submenus.forEach((submenu) => {
+      submenu.addEventListener('mouseenter', () => {
+        this.clearHideTimer();
+        submenu.classList.add('active');
+        if (this.activeLink) {
+          this.activeLink.classList.add('active');
+        }
+      });
+
+      submenu.addEventListener('mouseleave', () => {
+        this.scheduleHide();
+      });
+    });
+  }
+
+  handleDocumentClick(event) {
+    if (!this.navRoot) {
+      return;
+    }
+    if (!this.navRoot.contains(event.target)) {
+      this.hideAllSubmenus();
     }
   }
-  
-  // Always listen for hash changes while on the page
-  window.addEventListener('hashchange', function() {
-    // Check if hash is being updated by category loading to prevent conflicts
+
+  handleHashChange() {
     if (window.updatingHashFromCategory) {
       return;
     }
-    
-    let newHash = window.location.hash.substring(1);
-    
-    // Clean up the hash by removing any parameters
-    if (newHash.includes('?')) {
-      newHash = newHash.split('?')[0];
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      this.handleHashNavigation(hash);
+    } else {
+      this.resetActiveState();
     }
-    
-    // Prevent conflicting navigation for sublimation printer subcategories
-    if (newHash.startsWith('sublimation-')) {
-      // Let the sublimation navigation handle this
+  }
+
+  getSubmenuForLink(link) {
+    const submenuId = link.getAttribute('data-submenu');
+    if (!submenuId) {
+      return null;
+    }
+    return document.getElementById(`submenu-${submenuId}`);
+  }
+
+  showSubmenu(link) {
+    const submenu = this.getSubmenuForLink(link);
+    if (!submenu) {
       return;
     }
-    
-    if (newHash && window.subHeaderNav && window.subHeaderNav.handleHashNavigation) {
-      window.subHeaderNav.handleHashNavigation(newHash);
-    }
-  });
-});
+    this.clearHideTimer();
+    this.hideAllSubmenus();
+    link.classList.add('active');
+    submenu.classList.add('active');
+    this.activeLink = link;
+    this.activeSubmenu = submenu;
+  }
 
-// Export for use in other scripts
+  scheduleHide() {
+    this.clearHideTimer();
+    this.hideTimeout = window.setTimeout(() => {
+      this.hideAllSubmenus();
+    }, 120);
+  }
+
+  clearHideTimer() {
+    if (this.hideTimeout) {
+      window.clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
+    }
+  }
+
+  hideAllSubmenus() {
+    this.clearHideTimer();
+    this.links.forEach((link) => link.classList.remove('active'));
+    this.submenus.forEach((submenu) => submenu.classList.remove('active'));
+    this.activeLink = null;
+    this.activeSubmenu = null;
+  }
+
+  resetActiveState() {
+    this.hideAllSubmenus();
+    const allLink = document.querySelector('.sub-header-link.all-products-link');
+    if (allLink) {
+      allLink.classList.add('active');
+    }
+  }
+
+  setActiveGroup(groupKey) {
+    if (!groupKey) {
+      this.resetActiveState();
+      return;
+    }
+    const normalized = String(groupKey).toLowerCase();
+    const targetLink = this.links.find((link) => {
+      const linkGroup = link.getAttribute('data-toy-group');
+      return linkGroup && linkGroup.toLowerCase() === normalized;
+    });
+
+    this.links.forEach((link) => link.classList.remove('active'));
+    const allLink = document.querySelector('.sub-header-link.all-products-link');
+    if (allLink) {
+      allLink.classList.remove('active');
+    }
+
+    if (targetLink) {
+      targetLink.classList.add('active');
+    }
+  }
+
+  handleHashNavigation(rawHash) {
+    const toyAPI = getToyDataAPI();
+    if (!rawHash) {
+      this.resetActiveState();
+      if (isIndexPage() && typeof window.loadAllProducts === 'function') {
+        window.loadAllProducts();
+      }
+      return true;
+    }
+
+    const cleanedHash = rawHash.replace(/^#/, '');
+    const sanitizedHash = cleanedHash.split('?')[0];
+
+    if (!toyAPI) {
+      window.setTimeout(() => {
+        this.handleHashNavigation(sanitizedHash);
+      }, 100);
+      return false;
+    }
+
+    const categoryInfo = toyAPI.resolveCategoryByHash(sanitizedHash);
+    if (categoryInfo) {
+      this.setActiveGroup(categoryInfo.groupKey);
+      if (isIndexPage() && typeof window.loadSpecificCategory === 'function') {
+        if (shouldAvoidScroll() && typeof window.scrollToProducts === 'function') {
+          const originalScroll = window.scrollToProducts;
+          window.scrollToProducts = function noop() {};
+          window.loadSpecificCategory(categoryInfo.name);
+          window.setTimeout(() => {
+            window.scrollToProducts = originalScroll;
+          }, 800);
+        } else {
+          window.loadSpecificCategory(categoryInfo.name);
+        }
+      } else if (!isIndexPage()) {
+        navigateToIndex(sanitizedHash);
+      }
+      return true;
+    }
+
+    const groupInfo = toyAPI.resolveGroupByHash(sanitizedHash);
+    if (groupInfo) {
+      this.setActiveGroup(groupInfo.key);
+      const displayName = typeof toyAPI.resolveNavDisplay === 'function'
+        ? toyAPI.resolveNavDisplay(groupInfo.key)
+        : groupInfo.label;
+      if (isIndexPage() && displayName && typeof window.loadSpecificCategory === 'function') {
+        window.loadSpecificCategory(displayName);
+      } else if (!isIndexPage()) {
+        navigateToIndex(groupInfo.hash || groupInfo.slug || sanitizedHash);
+      }
+      return true;
+    }
+
+    if (typeof window.handleHashFallback === 'function') {
+      window.handleHashFallback(sanitizedHash);
+      return true;
+    }
+
+    return false;
+  }
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = SubHeaderNavigation;
 }

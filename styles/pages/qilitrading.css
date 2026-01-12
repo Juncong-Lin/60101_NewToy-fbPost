@@ -637,6 +637,17 @@ body.has-sidebar .main {
   transform: scale(1.03);
 }
 
+.hero-card-toy .hero-image {
+  object-fit: cover;
+  filter: saturate(1.1) contrast(1.05);
+}
+
+.hero-card-toy .hero-image-wrapper {
+  background: radial-gradient(circle at 20% 20%, rgba(255, 231, 158, 0.45), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(120, 191, 255, 0.35), transparent 60%),
+    linear-gradient(135deg, #0b1d33 0%, #122b45 100%);
+}
+
 .hero-overlay {
   position: absolute;
   bottom: 0;
@@ -651,6 +662,22 @@ body.has-sidebar .main {
 
 .hero-card:hover .hero-overlay {
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9));
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  margin-bottom: 18px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0b1d33;
+  background: rgba(255, 224, 163, 0.92);
+  box-shadow: 0 6px 18px rgba(255, 224, 163, 0.45);
 }
 
 .hero-title {
@@ -689,6 +716,10 @@ body.has-sidebar .main {
   border-color: rgba(255, 255, 255, 0.6);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.hero-image-fallback {
+  background: linear-gradient(135deg, #13293d 0%, #24476c 45%, #3d6c9f 100%);
 }
 
 /* Navigation Arrows */
