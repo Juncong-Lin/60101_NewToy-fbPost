@@ -304,14 +304,15 @@
 
 .sub-header-submenu-item.view-all-link {
   font-weight: 600;
-  color: #ffe0a3;
-  border: 1px solid rgba(255, 224, 163, 0.35);
-  background: rgba(255, 198, 110, 0.12);
+  color: #f5f7fb;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .sub-header-submenu-item.view-all-link:hover {
   color: #0d1b2a;
-  background: rgba(255, 224, 163, 0.92);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .sub-header-submenu-empty {

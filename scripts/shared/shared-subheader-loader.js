@@ -212,6 +212,107 @@ function populateToySubmenus() {
   });
 }
 
+function setupSubHeaderAutoScroll() {
+  const scrollContainer = document.querySelector('.sub-header-content');
+  if (!scrollContainer) {
+    return;
+  }
+
+  let scrollSpeed = 0;
+  let rafId = null;
+
+  const stopAutoScroll = () => {
+    scrollSpeed = 0;
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  };
+
+  const step = () => {
+    if (scrollSpeed === 0) {
+      rafId = null;
+      return;
+    }
+
+    const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+    if (maxScroll <= 0) {
+      stopAutoScroll();
+      return;
+    }
+
+    const nextScroll = Math.max(0, Math.min(maxScroll, scrollContainer.scrollLeft + scrollSpeed));
+    scrollContainer.scrollLeft = nextScroll;
+
+    if ((scrollSpeed < 0 && nextScroll === 0) || (scrollSpeed > 0 && nextScroll === maxScroll)) {
+      stopAutoScroll();
+      return;
+    }
+
+    rafId = requestAnimationFrame(step);
+  };
+
+  const updateScrollSpeed = (speed) => {
+    if (speed === scrollSpeed) {
+      return;
+    }
+    scrollSpeed = speed;
+    if (scrollSpeed === 0) {
+      stopAutoScroll();
+      return;
+    }
+    if (rafId === null) {
+      rafId = requestAnimationFrame(step);
+    }
+  };
+
+  const SCROLL_ZONE_MIN = 32;
+  const SCROLL_ZONE_RATIO = 0.12;
+  const MAX_SPEED = 16;
+
+  const handlePointerMove = (event) => {
+    const rect = scrollContainer.getBoundingClientRect();
+    const relativeX = event.clientX - rect.left;
+    const zoneWidth = Math.max(SCROLL_ZONE_MIN, rect.width * SCROLL_ZONE_RATIO);
+    const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+
+    if (maxScroll <= 0) {
+      updateScrollSpeed(0);
+      return;
+    }
+
+    if (relativeX < zoneWidth && scrollContainer.scrollLeft > 0) {
+      const intensity = (zoneWidth - relativeX) / zoneWidth;
+      const speed = -Math.max(2, Math.min(MAX_SPEED, intensity * MAX_SPEED));
+      updateScrollSpeed(speed);
+      return;
+    }
+
+    if (relativeX > rect.width - zoneWidth && scrollContainer.scrollLeft < maxScroll) {
+      const distance = relativeX - (rect.width - zoneWidth);
+      const intensity = distance / zoneWidth;
+      const speed = Math.max(2, Math.min(MAX_SPEED, intensity * MAX_SPEED));
+      updateScrollSpeed(speed);
+      return;
+    }
+
+    updateScrollSpeed(0);
+  };
+
+  const handleScroll = () => {
+    const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+    if ((scrollSpeed < 0 && scrollContainer.scrollLeft <= 0) ||
+        (scrollSpeed > 0 && scrollContainer.scrollLeft >= maxScroll)) {
+      updateScrollSpeed(0);
+    }
+  };
+
+  scrollContainer.addEventListener('mousemove', handlePointerMove, { passive: true });
+  scrollContainer.addEventListener('mouseleave', () => updateScrollSpeed(0));
+  scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+  window.addEventListener('resize', stopAutoScroll);
+}
+
 function initializeSubHeaderAfterLoad() {
   setTimeout(() => {
     populateToySubmenus();
@@ -219,6 +320,8 @@ function initializeSubHeaderAfterLoad() {
     if (typeof SubHeaderNavigation !== 'undefined') {
       window.subHeaderNav = new SubHeaderNavigation();
     }
+
+    setupSubHeaderAutoScroll();
 
     const hash = window.location.hash ? window.location.hash.substring(1) : '';
     if (hash && window.subHeaderNav && typeof window.subHeaderNav.handleHashNavigation === 'function') {

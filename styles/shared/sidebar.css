@@ -2,13 +2,13 @@ body.has-sidebar .departments-sidebar {
   position: fixed;
   top: 92px; /* 60px (main header) + 32px (sub-header) */
   bottom: 0;
-  left: 0;  width: 166px;
-  background-color: #1A252F;
+  left: 0;
+  width: 210px;
+  background-color: #131a22;
   color: white;
-  z-index: 1;
   overflow-y: auto;
-  /* Ensure sidebar doesn't appear above footer */
-  z-index: 1;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
 }
 
 .departments-heading {
@@ -18,21 +18,34 @@ body.has-sidebar .departments-sidebar {
 }
 
 .department-link {
-  display: block;
-  padding: 8px 25px; /* Match submenu padding */
-  text-decoration: none;
-  color: white;
-  font-size: 14px;
-  position: relative;
-  transition: background-color 0.2s ease;
-  height: 36px; /* Fixed height for consistent alignment */
-  box-sizing: border-box;
   display: flex;
   align-items: center;
+  padding: 10px 24px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  position: relative;
+  transition: all 0.2s ease;
+  min-height: 42px;
+  box-sizing: border-box;
+  border-left: 3px solid transparent;
 }
 
 .department-link:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-left-color: #ffa724;
+}
+
+.department-link.selected-brand,
+.department-link.active {
+  background-color: rgba(255, 167, 36, 0.16);
+  color: #fff;
+  border-left-color: #ffa724;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  font-weight: 600;
 }
 
 .department-group {
@@ -43,19 +56,20 @@ body.has-sidebar .departments-sidebar {
   visibility: hidden;
   opacity: 0;
   position: fixed;
-  left: 166px; /* Same as sidebar width */
-  top: 92px; /* Adjusted: 60px (main header) + 32px (sub-header) */
+  left: 210px; /* Sidebar width */
+  top: 92px; /* 60px (main header) + 32px (sub-header) */
   bottom: 0;
   width: 320px;
-  background-color: #232F3E;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-  z-index: 100; /* Adjusted: to be above sub-header (z-index: 99) */
+  background-color: #182430;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.22);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 100; /* Above sub-header (z-index: 99) */
   transition: visibility 0s 0.2s, opacity 0.2s ease;
-  padding: 0;
+  padding: 16px 0;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-  max-height: calc(100vh - 92px); /* Adjusted: Ensure it doesn\'t overflow viewport */
+  max-height: calc(100vh - 92px); /* Ensure it doesn\'t overflow viewport */
 }
 
 .department-subgroup {
@@ -64,8 +78,8 @@ body.has-sidebar .departments-sidebar {
 
 .department-subgroup > .submenu {
   position: fixed;
-  left: 426px; /* parent submenu width (320px) + sidebar width (150px) */
-  background-color: #37475A;
+  left: 530px; /* sidebar width (210px) + first submenu width (320px) */
+  background-color: #1e2d3c;
 }
 
 /* Ensure nested submenus don't create multiple scrollbars */
@@ -96,35 +110,37 @@ body.has-sidebar .departments-sidebar {
 
 .submenu .submenu-content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 8px 12px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 14px;
+  padding: 0 26px;
 }
 
 .submenu .submenu-item {
   display: block;
-  padding: 10px 14px;
-  color: #e6eef7;
+  padding: 10px 18px;
+  color: rgba(230, 238, 247, 0.92);
   text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
   border-radius: 6px;
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .submenu .submenu-item:hover {
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.14);
   color: #fff;
   transform: translateX(4px);
 }
 
 .submenu .view-all-link {
   font-weight: 600;
-  color: #ffb347;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid transparent;
 }
 
 .submenu .view-all-link:hover {
-  background-color: rgba(255, 180, 71, 0.18);
-  color: #ffe3b0;
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .submenu .submenu-empty {
@@ -134,14 +150,15 @@ body.has-sidebar .departments-sidebar {
 }
 
 .submenu .department-link {
-  padding: 8px 25px; /* Match the main sidebar height */
-  font-size: 13px;
+  padding: 10px 24px;
+  font-size: 14px;
   white-space: nowrap;
   transition: all 0.2s ease;
-  height: 36px; /* Fixed height to match main sidebar links */
+  min-height: 40px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
+  border-left: 3px solid transparent;
 }
 
 .submenu .department-link:last-child {
@@ -149,14 +166,22 @@ body.has-sidebar .departments-sidebar {
 }
 
 .submenu .department-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.14);
   padding-left: 30px; /* Keep the slide effect */
+  border-left-color: #ffa724;
+}
+
+.submenu .department-link.selected-brand,
+.submenu .department-link.active {
+  background-color: rgba(255, 180, 71, 0.16);
+  border-left-color: #ffa724;
+  color: #fff;
 }
 
 /* Ensure consistent height for all submenu levels */
 .department-subgroup .submenu .department-link {
-  padding: 8px 25px; /* Same as second-level submenu */
-  height: 36px; /* Fixed height to match all other links */
+  padding: 10px 24px;
+  min-height: 40px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -173,7 +198,7 @@ body.has-sidebar .departments-sidebar {
 .expandable::after {
   content: "›";
   position: absolute;
-  right: 15px;
+  right: 20px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 18px;
@@ -206,32 +231,32 @@ body.has-sidebar .departments-sidebar {
   }
   
   body.has-sidebar .submenu .department-link {
-    padding: 8px 25px; /* Adjusted from 8px 40px */
-    height: 36px;
+    padding: 10px 24px;
+    min-height: 38px;
     display: flex;
     align-items: center;
   }
 
   body.has-sidebar .department-link {
-    padding: 8px 25px;
-    height: 36px;
+    padding: 10px 24px;
+    min-height: 38px;
   }
 
   body.has-sidebar .submenu .department-link:hover {
-    padding-left: 30px; /* Adjusted from 45px */
+    padding-left: 30px; /* Adjusted for mobile */
   }
   
   /* Mobile styling for All Products link */
   body.has-sidebar .department-link[href="javascript:void(0)"][onclick="loadAllProducts()"] {
-    padding: 8px 25px;
-    height: 36px;     
+    padding: 10px 24px;
+    min-height: 38px;     
   }
 }
 
 /* Special styling for "All Products" link to align with other items */
 body.has-sidebar .department-link[href="javascript:void(0)"][onclick="loadAllProducts()"] {
-  padding: 8px 25px;   /* Match other links */
-  height: 36px;        /* Match other links */
+  padding: 10px 24px;
+  min-height: 42px;
 }
 
 body.has-sidebar .department-subgroup:hover > .submenu,

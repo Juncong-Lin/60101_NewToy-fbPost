@@ -21,7 +21,7 @@ import {
   resolveNavGroupKey,
   resolveNavDisplay,
 } from '../shared/toy-data.js';
-import { formatCurrency, formatPriceRange } from '../shared/money.js';
+import { formatPriceRange } from '../shared/money.js';
 
 // Early search parameter detection to prevent hero banner flash
 // Check immediately if this is a search request and hide hero banner
@@ -358,7 +358,91 @@ function loadToyCategoryView(identifier, presetInfo, navDisplayOverride) {
   return categoryInfo;
 }
 
-const HERO_GROUP_LIMIT = 4;
+function shuffleArray(items) {
+  const array = items.slice();
+  for (let index = array.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    const temp = array[index];
+    array[index] = array[swapIndex];
+    array[swapIndex] = temp;
+  }
+  return array;
+}
+
+function pickRandomProduct(products) {
+  if (!Array.isArray(products) || products.length === 0) {
+    return null;
+  }
+  const randomIndex = Math.floor(Math.random() * products.length);
+  return products[randomIndex];
+}
+
+function extractMarkdownSnippet(markdownText, { productName, groupLabel } = {}) {
+  if (!markdownText) {
+    return '';
+  }
+  const lines = markdownText.split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    const trimmed = lines[index].trim();
+    if (!trimmed || trimmed.startsWith('![')) {
+      continue;
+    }
+    const normalized = trimmed.replace(/^#+\s*/, '').trim();
+    if (!normalized) {
+      continue;
+    }
+    const comparable = normalized.toLowerCase();
+    if (productName && comparable === productName.toLowerCase()) {
+      continue;
+    }
+    if (groupLabel && comparable === groupLabel.toLowerCase()) {
+      continue;
+    }
+    return normalized.length > 200 ? `${normalized.slice(0, 197)}...` : normalized;
+  }
+  return '';
+}
+
+function hydrateHeroDescription(markdownPath, descriptionElement, { productName, groupLabel } = {}) {
+  if (!markdownPath || !descriptionElement || descriptionElement.dataset.snippetLoaded === 'true') {
+    return;
+  }
+
+  fetch(markdownPath)
+    .then((response) => (response.ok ? response.text() : null))
+    .then((markdownText) => {
+      if (!markdownText) {
+        return;
+      }
+      const snippet = extractMarkdownSnippet(markdownText, { productName, groupLabel });
+      if (snippet) {
+        descriptionElement.textContent = snippet;
+        descriptionElement.dataset.snippetLoaded = 'true';
+      }
+    })
+    .catch(() => {
+      // Silently ignore markdown fetch issues to avoid blocking the hero carousel
+    });
+}
+
+function formatHeroPriceDisplay(product) {
+  if (!product) {
+    return '';
+  }
+  if (product.priceValue !== null && !Number.isNaN(product.priceValue)) {
+    const rounded = Math.ceil(product.priceValue * 10) / 10;
+    return `USD $${rounded.toFixed(1)}`;
+  }
+  if (product.price && Number.isFinite(Number(product.price))) {
+    const priceValue = Number(product.price);
+    const rounded = Math.ceil(priceValue * 10) / 10;
+    return `USD $${rounded.toFixed(1)}`;
+  }
+  if (typeof product.price === 'string' && product.price.trim()) {
+    return `USD $${product.price.trim()}`;
+  }
+  return '';
+}
 
 function buildHeroSlides() {
   const heroContainer = document.querySelector('.hero-container');
@@ -368,10 +452,8 @@ function buildHeroSlides() {
     return;
   }
 
-  const heroGroups = [...toyGroupsMeta]
-    .filter((meta) => meta && meta.productCount > 0)
-    .sort((a, b) => b.productCount - a.productCount)
-    .slice(0, HERO_GROUP_LIMIT);
+  const heroGroups = shuffleArray([...toyGroupsMeta])
+    .filter((meta) => meta && meta.productCount > 0);
 
   heroContainer.innerHTML = '';
   indicatorContainer.innerHTML = '';
@@ -392,12 +474,16 @@ function buildHeroSlides() {
       return;
     }
 
-    const heroProduct = groupInfo.allProducts.find((product) => product && product.image) || groupInfo.allProducts[0];
+    const candidates = groupInfo.allProducts.filter((product) => product && product.image);
+    if (candidates.length === 0) {
+      return;
+    }
+
+    const heroProduct = pickRandomProduct(candidates) || candidates[0];
     const heroImage = heroProduct && heroProduct.image ? heroProduct.image : null;
-    const categoryHighlights = (groupInfo.categories || [])
-      .slice(0, 3)
-      .map((category) => category.name)
-      .join(' | ');
+    const detailUrl = heroProduct && heroProduct.id
+      ? `detail.html?productId=${encodeURIComponent(heroProduct.id)}`
+      : null;
 
     const slide = document.createElement('div');
     slide.className = 'hero-slide';
@@ -406,17 +492,24 @@ function buildHeroSlides() {
 
     const card = document.createElement('div');
     card.className = 'hero-card hero-card-wide hero-card-toy';
-    card.setAttribute('role', 'button');
+    card.setAttribute('role', 'link');
     card.setAttribute('tabindex', '0');
-    card.setAttribute('aria-label', `Shop ${groupMeta.label}`);
-    const navigateToGroup = () => {
-      window.handleNavigationClick(`group:${groupMeta.key}`);
+    const ariaLabel = heroProduct && heroProduct.name
+      ? `View ${heroProduct.name}`
+      : `View ${groupMeta.label}`;
+    card.setAttribute('aria-label', ariaLabel);
+    const navigateToProduct = () => {
+      if (detailUrl) {
+        window.location.href = detailUrl;
+      } else {
+        window.handleNavigationClick(`group:${groupMeta.key}`);
+      }
     };
-    card.addEventListener('click', navigateToGroup);
+    card.addEventListener('click', navigateToProduct);
     card.addEventListener('keypress', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        navigateToGroup();
+        navigateToProduct();
       }
     });
 
@@ -427,7 +520,9 @@ function buildHeroSlides() {
       const image = document.createElement('img');
       image.className = 'hero-image';
       image.src = heroImage;
-      image.alt = `${groupMeta.label} highlight product`;
+      image.alt = heroProduct && heroProduct.name
+        ? `${heroProduct.name} preview`
+        : `${groupMeta.label} highlight product`;
       imageWrapper.appendChild(image);
     } else {
       imageWrapper.classList.add('hero-image-fallback');
@@ -438,23 +533,57 @@ function buildHeroSlides() {
 
     const badge = document.createElement('span');
     badge.className = 'hero-badge';
-    badge.textContent = `${groupMeta.productCount}+ styles`;
+    badge.textContent = groupMeta.label;
     overlay.appendChild(badge);
 
     const title = document.createElement('h3');
     title.className = 'hero-title';
-    title.textContent = groupMeta.label;
+    title.textContent = heroProduct && heroProduct.name ? heroProduct.name : groupMeta.label;
     overlay.appendChild(title);
+
+    const meta = document.createElement('p');
+    meta.className = 'hero-meta';
+    const categoryLabel = heroProduct && heroProduct.categoryName ? heroProduct.categoryName : 'Featured assortment';
+    meta.textContent = `${categoryLabel} | ${groupMeta.productCount}+ styles`;
+    overlay.appendChild(meta);
+
+    const priceText = formatHeroPriceDisplay(heroProduct);
+    if (priceText) {
+      const price = document.createElement('p');
+      price.className = 'hero-price';
+      price.textContent = priceText;
+      overlay.appendChild(price);
+    }
 
     const description = document.createElement('p');
     description.className = 'hero-description';
-    description.textContent = categoryHighlights || 'Discover imaginative play across our newest arrivals';
+    const fallbackDescription = heroProduct && heroProduct.description
+      ? heroProduct.description
+      : `Handpicked from our ${groupMeta.label} collection.`;
+    if (heroProduct && heroProduct.name && fallbackDescription && fallbackDescription.toLowerCase() === heroProduct.name.toLowerCase()) {
+      description.textContent = `Handpicked from our ${groupMeta.label} collection.`;
+    } else {
+      description.textContent = fallbackDescription;
+    }
     overlay.appendChild(description);
 
-    const cta = document.createElement('span');
-    cta.className = 'hero-cta';
-    cta.textContent = 'Shop the collection >';
-    overlay.appendChild(cta);
+    if (heroProduct && heroProduct.markdown) {
+      hydrateHeroDescription(heroProduct.markdown, description, {
+        productName: heroProduct.name,
+        groupLabel: groupMeta.label,
+      });
+    }
+
+    const secondaryCta = document.createElement('button');
+    secondaryCta.type = 'button';
+    secondaryCta.className = 'hero-cta hero-cta-secondary';
+    secondaryCta.textContent = 'Shop group';
+    secondaryCta.setAttribute('aria-label', `Browse the ${groupMeta.label} collection`);
+    secondaryCta.addEventListener('click', (event) => {
+      event.stopPropagation();
+      window.handleNavigationClick(`group:${groupMeta.key}`);
+    });
+    overlay.appendChild(secondaryCta);
 
     imageWrapper.appendChild(overlay);
     card.appendChild(imageWrapper);
