@@ -48,17 +48,30 @@ function renderProducts(productList, type = 'regular') {
             ${product.name}
           </a>
         </div>        <div class="product-price">
-          ${(() => {
-            if (type === 'regular' && product.getPrice) {
-              return product.getPrice();
-            } else if (product.lower_price !== undefined || product.higher_price !== undefined) {
-              return formatPriceRange(product.lower_price, product.higher_price);
-            } else if (product.price) {
-              return 'USD:$' + formatCurrency(product.price);
-            } else {
-              return 'USD: #NA';
-            }
-          })()}</div>
+              ${(() => {
+                if (type === 'regular' && product.getPrice) {
+                  return product.getPrice();
+                } else if (product.lower_price !== undefined || product.higher_price !== undefined) {
+                  return formatPriceRange(product.lower_price, product.higher_price);
+                } else if (product.price !== undefined && product.price !== null) {
+                  // Flexible handling: product.price may be cents (number) or a dollar string/number
+                  const raw = product.price;
+                  let amount = Number(raw);
+                  if (Number.isNaN(amount)) {
+                    // fallback to show as-is
+                    return `USD:$${raw}`;
+                  }
+                  // If looks like cents, convert to dollars
+                  if (Math.abs(amount) > 1000) {
+                    amount = amount / 100;
+                  }
+                  // Use ceil to 1 decimal place
+                  amount = Math.ceil(amount * 10) / 10;
+                  return `USD:$${amount.toFixed(1)}`;
+                } else {
+                  return 'USD: #NA';
+                }
+              })()}</div>
         <!-- Temporarily commented out quantity section - not needed for View Details -->
         <!--
         <div class="product-quantity-section">

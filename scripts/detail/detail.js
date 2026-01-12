@@ -364,7 +364,7 @@ if (product) {
   // Update the product details on the page
   document.querySelector('.js-product-image').src = product.image;
   document.querySelector('.js-product-name').textContent = product.name;
-    // For printer products, hide the product description (red box)
+  // For printer products, hide the product description (red box)
   if (productType === 'printer') {
     const descriptionElement = document.querySelector('.js-product-description');
     if (descriptionElement) {
@@ -386,16 +386,30 @@ if (product) {
     // For printhead products or products without ratings, hide rating elements
     const ratingContainer = document.querySelector('.product-rating-container');
     if (ratingContainer) ratingContainer.style.display = 'none';
-  }  // Handle price display - different product types have different price formats
+  }
+  // Handle price display - different product types have different price formats
   let priceText;
   if (product.getPrice) {
     // Regular products with getPrice() method
     priceText = product.getPrice();
   } else if (product.lower_price !== undefined || product.higher_price !== undefined) {
     // Products with new price range format (printhead, printer, print spare parts)
-    priceText = formatPriceRange(product.lower_price, product.higher_price);  } else if (product.price) {
-    // Fallback for products still using old price format
-    priceText = `USD:$${(product.price / 100).toFixed(0)}`;
+    priceText = formatPriceRange(product.lower_price, product.higher_price);
+  } else if (product.price !== undefined && product.price !== null) {
+    // Fallback for products still using old price format — support cents or dollar-strings
+    const raw = product.price;
+    let amount = Number(raw);
+    if (Number.isNaN(amount)) {
+      priceText = `USD:$${raw}`;
+    } else {
+      // If amount looks like cents (large number), convert to dollars
+      if (Math.abs(amount) > 1000) {
+        amount = amount / 100;
+      }
+      // Use ceil to 1 decimal place and show one decimal
+      amount = Math.ceil(amount * 10) / 10;
+      priceText = `USD:$${amount.toFixed(1)}`;
+    }
   } else {
     priceText = 'USD: #NA';
   }
@@ -453,12 +467,11 @@ if (product) {
   }
   // Set up the product image gallery
   setupImageGallery(product);
-  
+
   // Set up product information tabs
   setupProductTabs();
-    // Initialize cart quantity display on page load - temporarily disabled
+  // Initialize cart quantity display on page load - temporarily disabled
   // updateCartQuantity();
-  
 } else {
   // Handle case when product is not found
   document.querySelector('.product-detail-grid').innerHTML = `
