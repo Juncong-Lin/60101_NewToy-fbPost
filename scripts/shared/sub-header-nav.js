@@ -349,7 +349,14 @@ class SubHeaderNavigation {
   // Handle hash navigation - called from external scripts
   handleHashNavigation(hash) {
     if (!hash) return;
-    
+
+    // Ensure percent-encoded hashes are decoded (e.g. Chinese characters encoded in URL)
+    try {
+      hash = decodeURIComponent(hash);
+    } catch (e) {
+      // If decoding fails, continue with the original value
+    }
+
     // Handle special category prefixes
     if (hash.startsWith('category-')) {
       hash = hash.replace('category-', '');
@@ -715,17 +722,32 @@ class SubHeaderNavigation {
     const categoryName = categoryMap[hash];
     if (categoryName && window.loadSpecificCategory) {
       window.loadSpecificCategory(categoryName);
-      this.setActiveCategory(categoryName);        // Expand appropriate sidebar menu
+      this.setActiveCategory(categoryName);
+      // Expand appropriate sidebar menu
       if (categoryName === 'Inkjet Printers' || categoryName.startsWith('Sublimation Printers')) {
         this.expandInkjetPrintersMenu();
       } else if (categoryName === 'Print Spare Parts') {
         this.expandPrintSparePartsMenu();
-      } else if (categoryName === 'Upgrading Kit') {        this.expandUpgradingKitMenu();
+      } else if (categoryName === 'Upgrading Kit') {
+        this.expandUpgradingKitMenu();
       } else if (categoryName === 'Material') {
         this.expandMaterialMenu();
       } else if (categoryName === 'LED & LCD') {
         this.expandLedLcdMenu();
       }
+      return;
+    }
+
+    // Fallback: if hash doesn't match a known mapping (e.g. non-English or custom category slugs),
+    // attempt to treat the raw hash as a category name and load it directly. This enables
+    // navigation from other pages (detail.html) where the index is opened with a hash
+    // such as '#仿真餐具'. If a specific loader exists, use it.
+    if (hash && window.loadSpecificCategory) {
+      window.loadSpecificCategory(hash);
+      // Ensure the main "Inkjet Printers" header is marked active for these subcategories
+      this.setActiveCategory('Inkjet Printers');
+      this.expandInkjetPrintersMenu();
+      return;
     }
   }
 }
