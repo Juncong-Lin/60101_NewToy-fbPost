@@ -82,6 +82,7 @@ const categoryIndexByGroup = new Map();
 const categoryIndexGlobal = new Map();
 const productIndex = new Map();
 let allProductsCache = null;
+let groupsInitialized = false;
 
 function ensureAssetPath(relativePath) {
   if (!relativePath) {
@@ -362,7 +363,18 @@ function initGroup(groupKey) {
   return groupInfo;
 }
 
+function ensureAllGroupsLoaded() {
+  if (groupsInitialized) {
+    return;
+  }
+  GROUP_DEFINITIONS.forEach((definition) => {
+    initGroup(definition.key);
+  });
+  groupsInitialized = true;
+}
+
 function getGroupList() {
+  ensureAllGroupsLoaded();
   return GROUP_DEFINITIONS.map((definition) => {
     const info = initGroup(definition.key);
     if (!info) {
@@ -387,10 +399,12 @@ function getGroupList() {
 }
 
 function getGroupInfo(groupKey) {
+  ensureAllGroupsLoaded();
   return initGroup(groupKey);
 }
 
 function getCategoriesForGroup(groupKey) {
+  ensureAllGroupsLoaded();
   const groupInfo = initGroup(groupKey);
   if (!groupInfo) {
     return [];
@@ -404,6 +418,7 @@ function getCategoriesForGroup(groupKey) {
 }
 
 function resolveCategory(groupKey, identifier) {
+  ensureAllGroupsLoaded();
   if (!groupKey || !identifier) {
     return null;
   }
@@ -445,6 +460,7 @@ function resolveCategory(groupKey, identifier) {
 }
 
 function resolveCategoryByHash(hash, groupKey) {
+  ensureAllGroupsLoaded();
   if (!hash) {
     return null;
   }
@@ -472,6 +488,7 @@ function resolveCategoryByHash(hash, groupKey) {
 }
 
 function resolveGroupByHash(hash) {
+  ensureAllGroupsLoaded();
   if (!hash) {
     return null;
   }
@@ -491,6 +508,7 @@ function resolveGroupByHash(hash) {
 }
 
 function getProductsForGroup(groupKey) {
+  ensureAllGroupsLoaded();
   const groupInfo = initGroup(groupKey);
   if (!groupInfo) {
     return [];
@@ -499,6 +517,7 @@ function getProductsForGroup(groupKey) {
 }
 
 function getProductsForCategory(groupKey, identifier) {
+  ensureAllGroupsLoaded();
   const category = resolveCategory(groupKey, identifier);
   if (!category) {
     return [];
@@ -507,6 +526,7 @@ function getProductsForCategory(groupKey, identifier) {
 }
 
 function getAllProducts() {
+  ensureAllGroupsLoaded();
   if (allProductsCache) {
     return allProductsCache.slice();
   }
@@ -544,6 +564,7 @@ function searchProducts(searchTerm) {
   if (!searchTerm) {
     return [];
   }
+  ensureAllGroupsLoaded();
   const normalizedTerm = searchTerm.trim().toLowerCase();
   if (!normalizedTerm) {
     return [];
@@ -571,6 +592,7 @@ function findProductById(productId) {
   if (!productId) {
     return null;
   }
+  ensureAllGroupsLoaded();
   const normalizedId = String(productId).trim().toLowerCase();
   if (!normalizedId) {
     return null;
@@ -586,10 +608,12 @@ function findProductById(productId) {
 }
 
 function getNavGroupMap() {
+  ensureAllGroupsLoaded();
   return { ...NAV_GROUP_MAP };
 }
 
 function getNavEntries() {
+  ensureAllGroupsLoaded();
   return Object.keys(NAV_GROUP_MAP);
 }
 
@@ -597,10 +621,12 @@ function resolveNavGroupKey(displayName) {
   if (!displayName) {
     return null;
   }
+  ensureAllGroupsLoaded();
   return NAV_GROUP_MAP[displayName] || LEGACY_NAV_ALIASES[displayName] || null;
 }
 
 function getLegacyNavAliases() {
+  ensureAllGroupsLoaded();
   return { ...LEGACY_NAV_ALIASES };
 }
 
@@ -608,6 +634,7 @@ function resolveNavDisplay(groupKey) {
   if (!groupKey) {
     return null;
   }
+  ensureAllGroupsLoaded();
   return GROUP_TO_NAV[groupKey] || null;
 }
 
@@ -616,6 +643,7 @@ function getGroupInfoForNav(displayName) {
   if (!groupKey) {
     return null;
   }
+  ensureAllGroupsLoaded();
   return getGroupInfo(groupKey);
 }
 

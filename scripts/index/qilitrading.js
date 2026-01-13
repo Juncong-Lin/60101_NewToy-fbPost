@@ -1,128 +1,107 @@
-// Temporarily commented out cart imports - preserved for future reuse
-// import {cart, addToCart} from '../../data/cart.js'; 
-import {products} from '../../data/products.js';
-import {printheadProducts} from '../../data/printhead-products.js';
-import {inkjetPrinterProducts} from '../../data/inkjetPrinter-products.js';
-import {printSparePartProducts} from '../../data/printsparepart-products.js';
-import {upgradingKitProducts} from '../../data/upgradingkit-products.js';
-import {materialProducts} from '../../data/material-products.js';
-import {ledAndLcdProducts} from '../../data/ledAndLcd-products.js';
-import {channelLetterBendingMechineProducts} from '../../data/channelLetterBendingMechine-products.js';
-import {otherProducts} from '../../data/other-products.js';
 import {
   getGroupList,
   getGroupInfo,
   getProductsForGroup,
   getProductsForCategory,
+  getAllProducts,
   resolveCategory,
   resolveCategoryByHash,
+  resolveGroupByHash,
+  resolveNavDisplay,
   getNavGroupMap,
   getLegacyNavAliases,
-  resolveNavGroupKey,
-  resolveNavDisplay,
 } from '../shared/toy-data.js';
 import { formatPriceRange } from '../shared/money.js';
+import { parseMarkdown } from '../shared/markdown-parser.js';
 
-// Early search parameter detection to prevent hero banner flash
-// Check immediately if this is a search request and hide hero banner
 const urlParams = new URLSearchParams(window.location.search);
 const isSearchRequest = urlParams.has('search');
 
-// If this is a search request, immediately hide the hero banner to prevent flash
-if (isSearchRequest) {
-  // Add CSS to immediately hide hero banner before it renders
-  const style = document.createElement('style');
-  style.textContent = `
-    .hero-banner {
-      display: none !important;
-    }
-  `;
-  document.head.appendChild(style);
-  
-  // Also set a flag for the search system to know this is an early detection
-  window.isEarlySearchDetection = true;
-}
-
-// Unified product rendering function with optional type parameter
-function renderProducts(productList, type = 'regular') {
-  let productsHTML = '';
-  productList.forEach((product) => {
-    productsHTML += `
-      <div class="product-container">        
-        <div class="product-image-container">
-          <a href="detail.html?productId=${product.id}" class="product-image-link">
-            <img class="product-image" src="${product.image}">
-          </a>
-        </div>
-        <div class="product-name limit-text-to-3-lines">
-          <a href="detail.html?productId=${product.id}" class="product-link">
-            ${product.name}
-          </a>
-        </div>        <div class="product-price">
-              ${(() => {
-                if (type === 'regular' && product.getPrice) {
-                  return product.getPrice();
-                } else if (product.lower_price !== undefined || product.higher_price !== undefined) {
-                  return formatPriceRange(product.lower_price, product.higher_price);
-                } else if (product.price !== undefined && product.price !== null) {
-                  // Flexible handling: product.price may be cents (number) or a dollar string/number
-                  const raw = product.price;
-                  let amount = Number(raw);
-                  if (Number.isNaN(amount)) {
-                    // fallback to show as-is
-                    return `USD:$${raw}`;
-                  }
-                  // If looks like cents, convert to dollars
-                  if (Math.abs(amount) > 1000) {
-                    amount = amount / 100;
-                  }
-                  // Use ceil to 1 decimal place
-                  amount = Math.ceil(amount * 10) / 10;
-                  return `USD:$${amount.toFixed(1)}`;
-                } else {
-                  return 'USD: #NA';
-                }
-              })()}</div>
-        <!-- Temporarily commented out quantity section - not needed for View Details -->
-        <!--
-        <div class="product-quantity-section">
-          <div class="product-quantity-container">
-            <select>
-              <option selected value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-          <div class="added-message">Added</div>
-        </div>
-        --><div class="product-spacer"></div>
-        <a class="add-to-cart-button button-primary" href="detail.html?productId=${product.id}">
-          View Details
-        </a>
-      </div>`;
-  });
-  return productsHTML;
-}
-
 const toyGroupsMeta = getGroupList();
-const navGroupMap = getNavGroupMap();
-const legacyNavAliases = getLegacyNavAliases();
-const toyGroupAliasMap = {};
-const toyNavSlugToDisplay = {};
-const toyNavDisplayByGroup = {};
+const navGroupMap = getNavGroupMap() || {};
+const legacyNavAliases = getLegacyNavAliases() || {};
+
+const toyGroupAliasMap = Object.create(null);
+const toyGroupKeyToDisplay = Object.create(null);
+const toyGroupKeys = new Set();
+
+registerGroupAliases();
+
+function registerGroupAliases() {
+  toyGroupsMeta.forEach((meta) => {
+    if (!meta || !meta.key) {
+      return;
+    }
+    const displayName = meta.label || meta.key;
+    registerAlias(meta.key, meta.key, displayName);
+    if (meta.slug) {
+      registerAlias(meta.slug, meta.key, displayName);
+    }
+    if (meta.hash) {
+      registerAlias(meta.hash, meta.key, displayName);
+    }
+    registerAlias(displayName, meta.key, displayName);
+  });
+
+  Object.entries(navGroupMap).forEach(([displayName, groupKey]) => {
+    registerAlias(displayName, groupKey, displayName);
+  });
+
+  Object.entries(legacyNavAliases).forEach(([displayName, groupKey]) => {
+    registerAlias(displayName, groupKey, displayName);
+  });
+}
+
+function registerAlias(value, groupKey, displayNameOverride) {
+  if (!value || !groupKey) {
+    return;
+  }
+
+  toyGroupKeys.add(groupKey);
+
+  const displayName = displayNameOverride || resolveNavDisplay(groupKey) || value;
+  if (displayName && !toyGroupKeyToDisplay[groupKey]) {
+    toyGroupKeyToDisplay[groupKey] = displayName;
+  }
+
+  const variants = collectAliasVariants(value);
+  variants.forEach((alias) => {
+    toyGroupAliasMap[alias] = groupKey;
+  });
+
+  if (displayName) {
+    const displayVariants = collectAliasVariants(displayName);
+    displayVariants.forEach((alias) => {
+      toyGroupAliasMap[alias] = groupKey;
+    });
+  }
+}
+
+function collectAliasVariants(value) {
+  const variants = new Set();
+  const raw = String(value);
+  const trimmed = raw.trim();
+  const lower = trimmed.toLowerCase();
+  const slug = createNavSlug(trimmed);
+  variants.add(raw);
+  variants.add(trimmed);
+  variants.add(lower);
+  if (slug) {
+    variants.add(slug);
+    if (slug.includes('-and-')) {
+      variants.add(slug.replace(/-and-/g, '-'));
+    }
+  }
+  const encoded = encodeURIComponent(trimmed);
+  variants.add(encoded);
+  variants.add(encoded.toLowerCase());
+  return variants;
+}
 
 function createNavSlug(value) {
   if (!value) {
     return '';
   }
-
   return String(value)
     .trim()
     .toLowerCase()
@@ -131,143 +110,32 @@ function createNavSlug(value) {
     .replace(/^-+|-+$/g, '');
 }
 
-function registerDisplayAlias(displayName, groupKey, { primary = false } = {}) {
-  if (!displayName || !groupKey) {
-    return;
-  }
-  const navDisplay = resolveNavDisplay(groupKey) || displayName;
-
-  const registerAliasKey = (key) => {
-    if (!key) {
-      return;
-    }
-    toyGroupAliasMap[key] = groupKey;
-  };
-
-  registerAliasKey(displayName);
-  registerAliasKey(displayName.toLowerCase());
-
-  const slugFromDisplay = createNavSlug(displayName);
-  const registerSlug = (slug) => {
-    if (!slug) {
-      return;
-    }
-    toyGroupAliasMap[slug] = groupKey;
-    toyNavSlugToDisplay[slug] = navDisplay;
-  };
-
-  if (slugFromDisplay) {
-    registerSlug(slugFromDisplay);
-    registerSlug(slugFromDisplay.toLowerCase());
-    if (slugFromDisplay.includes('-and-')) {
-      const legacySlug = slugFromDisplay.replace(/-and-/g, '-');
-      registerSlug(legacySlug);
-      registerSlug(legacySlug.toLowerCase());
-    }
-  }
-
-  if (primary && navDisplay) {
-    toyNavDisplayByGroup[groupKey] = navDisplay;
-  }
-}
-
-const registeredGroupKeys = new Set();
-
-Object.entries(navGroupMap).forEach(([displayName, groupKey]) => {
-  registerDisplayAlias(displayName, groupKey, { primary: true });
-  registeredGroupKeys.add(groupKey);
-});
-
-Object.entries(legacyNavAliases).forEach(([displayName, groupKey]) => {
-  registerDisplayAlias(displayName, groupKey);
-  registeredGroupKeys.add(groupKey);
-});
-
-registeredGroupKeys.forEach((groupKey) => {
-  const groupInfo = getGroupInfo(groupKey);
-  const navDisplay = toyNavDisplayByGroup[groupKey] || resolveNavDisplay(groupKey) || (groupInfo ? groupInfo.label : null);
-
-  if (groupInfo) {
-    const aliasCandidates = new Set([
-      groupInfo.label,
-      groupInfo.slug,
-      groupInfo.hash,
-    ]);
-    aliasCandidates.forEach((aliasCandidate) => {
-      if (!aliasCandidate) {
-        return;
-      }
-      toyGroupAliasMap[aliasCandidate] = groupKey;
-      const lowerAlias = aliasCandidate.toLowerCase();
-      toyGroupAliasMap[lowerAlias] = groupKey;
-    });
-
-    if (groupInfo.hash) {
-      try {
-        const decodedHash = decodeURIComponent(groupInfo.hash);
-        toyGroupAliasMap[decodedHash] = groupKey;
-        toyGroupAliasMap[decodedHash.toLowerCase()] = groupKey;
-      } catch (error) {
-        // Ignore decode errors and continue
-      }
-    }
-
-    const slugCandidates = new Set([
-      groupInfo.slug,
-      groupInfo.hash,
-    ]);
-
-    slugCandidates.forEach((slugCandidate) => {
-      if (!slugCandidate) {
-        return;
-      }
-      toyNavSlugToDisplay[slugCandidate] = navDisplay;
-      toyNavSlugToDisplay[slugCandidate.toLowerCase()] = navDisplay;
-      try {
-        const decodedSlug = decodeURIComponent(slugCandidate);
-        toyNavSlugToDisplay[decodedSlug] = navDisplay;
-        toyNavSlugToDisplay[decodedSlug.toLowerCase()] = navDisplay;
-      } catch (error) {
-        // Ignore decode errors and continue
-      }
-    });
-  }
-});
-
-if (!toyGroupAliasMap['Inkjet Printers']) {
-  toyGroupAliasMap['Inkjet Printers'] = resolveNavGroupKey('Action Figures & Role Play') || 'ActionFiguresRolePlay';
+function safeLower(value) {
+  return typeof value === 'string' ? value.toLowerCase() : '';
 }
 
 function getNavDisplayForGroup(groupKey) {
   if (!groupKey) {
+    return '';
+  }
+  const display = resolveNavDisplay(groupKey);
+  if (display) {
+    return display;
+  }
+  return toyGroupKeyToDisplay[groupKey] || groupKey;
+}
+
+function resolveGroupKeyFromAlias(identifier) {
+  if (!identifier) {
     return null;
   }
-  if (toyNavDisplayByGroup[groupKey]) {
-    return toyNavDisplayByGroup[groupKey];
-  }
-  const computedDisplay = resolveNavDisplay(groupKey);
-  if (computedDisplay) {
-    toyNavDisplayByGroup[groupKey] = computedDisplay;
-    return computedDisplay;
-  }
-  const groupInfo = getGroupInfo(groupKey);
-  if (groupInfo && groupInfo.label) {
-    toyNavDisplayByGroup[groupKey] = groupInfo.label;
-    return groupInfo.label;
+  const variants = collectAliasVariants(identifier);
+  for (const variant of variants) {
+    if (toyGroupAliasMap[variant]) {
+      return toyGroupAliasMap[variant];
+    }
   }
   return null;
-}
-
-function loadNavGroup(displayName) {
-  const groupKey = resolveNavGroupKey(displayName);
-  if (!groupKey) {
-    return false;
-  }
-  return !!loadToyGroupView(groupKey, { displayName });
-}
-
-function safeLower(value) {
-  return typeof value === 'string' ? value.toLowerCase() : '';
 }
 
 function resolveToyCategory(identifier) {
@@ -295,806 +163,495 @@ function resolveToyCategory(identifier) {
   return null;
 }
 
-function loadToyGroupView(groupKey, { displayName } = {}) {
-  if (!groupKey) {
-    return false;
-  }
-
-  const products = getProductsForGroup(groupKey);
-  if (!products || products.length === 0) {
-    return false;
-  }
-
-  const productsGrid = document.querySelector('.js-prodcts-grid');
-  const productsHTML = renderProducts(products, 'regular');
-  productsGrid.innerHTML = productsHTML;
-  productsGrid.classList.remove('showing-coming-soon');
-  attachAddToCartListeners();
-
-  const groupInfo = getGroupInfo(groupKey);
-  const headerTitle = displayName || (groupInfo ? groupInfo.label : 'Products');
-  updatePageHeader(headerTitle, products.length);
-  updateToyBreadcrumb({
-    navDisplayName: displayName || getNavDisplayForGroup(groupKey) || headerTitle,
-    groupInfo,
-    categoryInfo: null,
-  });
-  scrollToProducts();
-  if (groupInfo) {
-    return groupInfo;
-  }
-  return {
-    key: groupKey,
-    label: headerTitle,
-    hash: null,
-  };
-}
-
-function loadToyCategoryView(identifier, presetInfo, navDisplayOverride) {
-  const categoryInfo = presetInfo || resolveToyCategory(identifier);
-  if (!categoryInfo) {
-    return false;
-  }
-
-  const products = getProductsForCategory(categoryInfo.groupKey, categoryInfo.hash);
-  if (!products || products.length === 0) {
-    return false;
-  }
-
-  const productsGrid = document.querySelector('.js-prodcts-grid');
-  const productsHTML = renderProducts(products, 'regular');
-  productsGrid.innerHTML = productsHTML;
-  productsGrid.classList.remove('showing-coming-soon');
-  attachAddToCartListeners();
-
-  updatePageHeader(categoryInfo.name, products.length);
-  const groupInfo = getGroupInfo(categoryInfo.groupKey);
-  updateToyBreadcrumb({
-    navDisplayName: navDisplayOverride || getNavDisplayForGroup(categoryInfo.groupKey),
-    groupInfo,
-    categoryInfo,
-  });
-  scrollToProducts();
-  return categoryInfo;
-}
-
-function shuffleArray(items) {
-  const array = items.slice();
-  for (let index = array.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    const temp = array[index];
-    array[index] = array[swapIndex];
-    array[swapIndex] = temp;
-  }
-  return array;
-}
-
-function pickRandomProduct(products) {
-  if (!Array.isArray(products) || products.length === 0) {
-    return null;
-  }
-  const randomIndex = Math.floor(Math.random() * products.length);
-  return products[randomIndex];
-}
-
-function extractMarkdownSnippet(markdownText, { productName, groupLabel } = {}) {
-  if (!markdownText) {
+function escapeHTML(value) {
+  if (value === null || value === undefined) {
     return '';
   }
-  const lines = markdownText.split(/\r?\n/);
-  for (let index = 0; index < lines.length; index += 1) {
-    const trimmed = lines[index].trim();
-    if (!trimmed || trimmed.startsWith('![')) {
-      continue;
-    }
-    const normalized = trimmed.replace(/^#+\s*/, '').trim();
-    if (!normalized) {
-      continue;
-    }
-    const comparable = normalized.toLowerCase();
-    if (productName && comparable === productName.toLowerCase()) {
-      continue;
-    }
-    if (groupLabel && comparable === groupLabel.toLowerCase()) {
-      continue;
-    }
-    return normalized.length > 200 ? `${normalized.slice(0, 197)}...` : normalized;
-  }
-  return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
-function hydrateHeroDescription(markdownPath, descriptionElement, { productName, groupLabel } = {}) {
-  if (!markdownPath || !descriptionElement || descriptionElement.dataset.snippetLoaded === 'true') {
-    return;
+function buildAssetUrl(value) {
+  if (!value) {
+    return '';
   }
-
-  fetch(markdownPath)
-    .then((response) => (response.ok ? response.text() : null))
-    .then((markdownText) => {
-      if (!markdownText) {
-        return;
-      }
-      const snippet = extractMarkdownSnippet(markdownText, { productName, groupLabel });
-      if (snippet) {
-        descriptionElement.textContent = snippet;
-        descriptionElement.dataset.snippetLoaded = 'true';
-      }
-    })
-    .catch(() => {
-      // Silently ignore markdown fetch issues to avoid blocking the hero carousel
-    });
+  const trimmed = String(value).trim();
+  if (!trimmed) {
+    return '';
+  }
+  const encoded = encodeURI(trimmed).replace(/#/g, '%23');
+  return encoded;
 }
 
-function formatHeroPriceDisplay(product) {
+function safeDecodeURIComponent(value) {
+  if (!value) {
+    return '';
+  }
+  try {
+    return decodeURIComponent(value);
+  } catch (error) {
+    return value;
+  }
+}
+
+function buildDetailUrl(product) {
+  const params = new URLSearchParams();
+  params.set('productId', product.id);
+  params.set('productType', 'toy');
+  if (product.groupKey) {
+    params.set('group', product.groupKey);
+  }
+  let categoryToken = product.categorySlug;
+  if (!categoryToken && product.categoryHash) {
+    categoryToken = safeDecodeURIComponent(product.categoryHash);
+  }
+  if (!categoryToken && product.categoryName) {
+    categoryToken = product.categoryName;
+  }
+  if (categoryToken) {
+    params.set('category', categoryToken);
+  }
+  return `detail.html?${params.toString()}`;
+}
+
+function derivePriceDisplay(product) {
+  if (!product) {
+    return 'Contact for price';
+  }
+
+  if (product.lower_price && product.higher_price) {
+    return formatPriceRange(product.lower_price, product.higher_price);
+  }
+
+  const priceCandidates = [product.priceValue, product.price];
+  for (let index = 0; index < priceCandidates.length; index += 1) {
+    const candidate = priceCandidates[index];
+    if (candidate === undefined || candidate === null) {
+      continue;
+    }
+    const numeric = Number(candidate);
+    if (!Number.isNaN(numeric) && numeric > 0) {
+      return `USD $${numeric.toFixed(2)}`;
+    }
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return `USD $${candidate.trim()}`;
+    }
+  }
+
+  if (product.priceRight) {
+    return `MOQ ${product.priceRight}`;
+  }
+
+  return 'Contact for price';
+}
+
+function createProductCard(product) {
+  const detailUrl = buildDetailUrl(product);
+  const priceDisplay = derivePriceDisplay(product);
+  const sku = product.sku || product.id;
+  const badges = [];
+  if (product.categoryName) {
+    badges.push(`<span class="product-badge">${escapeHTML(product.categoryName)}</span>`);
+  }
+  if (product.marketTag) {
+    badges.push(`<span class="product-badge badge-accent">${escapeHTML(product.marketTag)}</span>`);
+  }
+
+  const imageUrl = buildAssetUrl(product.image);
+  const imageHTML = imageUrl
+    ? `<img class="product-image" src="${escapeHTML(imageUrl)}" alt="${escapeHTML(product.name)} preview">`
+    : `<div class="product-image product-image-placeholder" role="img" aria-label="Image coming soon"></div>`;
+
+  return `
+    <div class="product-container" data-product-id="${escapeHTML(product.id)}">
+      <div class="product-image-container">
+        <a href="${detailUrl}" class="product-image-link">
+          ${imageHTML}
+        </a>
+      </div>
+      <div class="product-name limit-text-to-3-lines">
+        <a href="${detailUrl}" class="product-link">${escapeHTML(product.name || 'Toy product')}</a>
+      </div>
+      <div class="product-meta">
+        ${badges.join(' ')}
+        <span class="product-sku">SKU: ${escapeHTML(sku)}</span>
+      </div>
+      <div class="product-price">${priceDisplay}</div>
+      <div class="product-spacer"></div>
+      <a class="add-to-cart-button button-primary" href="${detailUrl}" aria-label="View details for ${escapeHTML(product.name || sku)}">
+        View Details
+      </a>
+    </div>
+  `;
+}
+
+function renderProducts(products, context = 'regular') {
+  if (!Array.isArray(products) || products.length === 0) {
+    return `
+      <div class="coming-soon">
+        <h2>Products coming soon</h2>
+        <p>We are curating toys for this collection.</p>
+      </div>
+    `;
+  }
+  return products.map((product) => createProductCard(product, context)).join('');
+}
+
+function truncateText(value, maxLength = 160) {
+  if (!value) {
+    return '';
+  }
+  const text = String(value).trim();
+  if (!text) {
+    return '';
+  }
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return `${text.slice(0, maxLength - 1).trim()}…`;
+}
+
+function buildHeroDescription(product, snippet) {
+  if (snippet) {
+    return truncateText(snippet, 220);
+  }
   if (!product) {
     return '';
   }
-  if (product.priceValue !== null && !Number.isNaN(product.priceValue)) {
-    const rounded = Math.ceil(product.priceValue * 10) / 10;
-    return `USD $${rounded.toFixed(1)}`;
+  if (product.description && product.description.trim()) {
+    return truncateText(product.description, 220);
   }
-  if (product.price && Number.isFinite(Number(product.price))) {
-    const priceValue = Number(product.price);
-    const rounded = Math.ceil(priceValue * 10) / 10;
-    return `USD $${rounded.toFixed(1)}`;
+  if (Array.isArray(product.tags) && product.tags.length > 0) {
+    return truncateText(product.tags.slice(0, 3).join(', '), 220);
   }
-  if (typeof product.price === 'string' && product.price.trim()) {
-    return `USD $${product.price.trim()}`;
+  if (product.marketTag) {
+    return truncateText(product.marketTag, 220);
   }
-  return '';
+  return 'Discover the latest arrivals from this collection.';
 }
 
-function buildHeroSlides() {
-  const heroContainer = document.querySelector('.hero-container');
-  const indicatorContainer = document.querySelector('.hero-indicators');
-
-  if (!heroContainer || !indicatorContainer) {
-    return;
+function extractPlainTextFromHtml(html) {
+  if (!html) {
+    return '';
   }
-
-  const heroGroups = shuffleArray([...toyGroupsMeta])
-    .filter((meta) => meta && meta.productCount > 0);
-
-  heroContainer.innerHTML = '';
-  indicatorContainer.innerHTML = '';
-  heroContainer.classList.remove('hero-empty');
-
-  if (heroGroups.length === 0) {
-    heroContainer.classList.add('hero-empty');
-    return;
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  const paragraph = temp.querySelector('p, li');
+  if (paragraph && paragraph.textContent) {
+    return paragraph.textContent.trim();
   }
+  return temp.textContent.trim();
+}
 
-  const slideFragment = document.createDocumentFragment();
-  const indicatorFragment = document.createDocumentFragment();
-  let slidePosition = 0;
+async function loadProductHeroSnippet(product) {
+  if (!product || !product.markdown) {
+    return '';
+  }
+  try {
+    const markdownUrl = buildAssetUrl(product.markdown);
+    if (!markdownUrl) {
+      return '';
+    }
+    const response = await fetch(markdownUrl);
+    if (!response.ok) {
+      return '';
+    }
+    const markdownText = await response.text();
+    const renderedHtml = parseMarkdown(markdownText);
+    const plainText = extractPlainTextFromHtml(renderedHtml);
+    return truncateText(plainText, 260);
+  } catch (error) {
+    console.warn('Failed to load hero markdown snippet', error);
+    return '';
+  }
+}
 
-  heroGroups.forEach((groupMeta) => {
-    const groupInfo = getGroupInfo(groupMeta.key);
+function chooseRandomProduct(products) {
+  if (!Array.isArray(products) || products.length === 0) {
+    return null;
+  }
+  const index = Math.floor(Math.random() * products.length);
+  return products[index];
+}
+
+async function selectHeroHighlights(limit = toyGroupsMeta.length) {
+  const highlightPromises = toyGroupsMeta.map(async (meta) => {
+    const groupInfo = getGroupInfo(meta.key);
     if (!groupInfo || !Array.isArray(groupInfo.allProducts) || groupInfo.allProducts.length === 0) {
-      return;
+      return null;
     }
 
     const candidates = groupInfo.allProducts.filter((product) => product && product.image);
     if (candidates.length === 0) {
-      return;
+      return null;
     }
 
-    const heroProduct = pickRandomProduct(candidates) || candidates[0];
-    const heroImage = heroProduct && heroProduct.image ? heroProduct.image : null;
-    const detailUrl = heroProduct && heroProduct.id
-      ? `detail.html?productId=${encodeURIComponent(heroProduct.id)}`
-      : null;
+    const product = chooseRandomProduct(candidates);
+    if (!product) {
+      return null;
+    }
 
-    const slide = document.createElement('div');
-    slide.className = 'hero-slide';
-    const slideIndex = slidePosition;
-    slide.dataset.index = String(slideIndex);
+    const imageUrl = buildAssetUrl(product.image);
+    if (!imageUrl) {
+      return null;
+    }
 
-    const card = document.createElement('div');
-    card.className = 'hero-card hero-card-wide hero-card-toy';
-    card.setAttribute('role', 'link');
-    card.setAttribute('tabindex', '0');
-    const ariaLabel = heroProduct && heroProduct.name
-      ? `View ${heroProduct.name}`
-      : `View ${groupMeta.label}`;
-    card.setAttribute('aria-label', ariaLabel);
-    const navigateToProduct = () => {
-      if (detailUrl) {
-        window.location.href = detailUrl;
-      } else {
-        window.handleNavigationClick(`group:${groupMeta.key}`);
-      }
+    const snippet = await loadProductHeroSnippet(product);
+    return {
+      product,
+      groupInfo,
+      snippet,
+      imageUrl,
     };
-    card.addEventListener('click', navigateToProduct);
-    card.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        navigateToProduct();
-      }
-    });
-
-    const imageWrapper = document.createElement('div');
-    imageWrapper.className = 'hero-image-wrapper';
-
-    if (heroImage) {
-      const image = document.createElement('img');
-      image.className = 'hero-image';
-      image.src = heroImage;
-      image.alt = heroProduct && heroProduct.name
-        ? `${heroProduct.name} preview`
-        : `${groupMeta.label} highlight product`;
-      imageWrapper.appendChild(image);
-    } else {
-      imageWrapper.classList.add('hero-image-fallback');
-    }
-
-    const overlay = document.createElement('div');
-    overlay.className = 'hero-overlay';
-
-    const badge = document.createElement('span');
-    badge.className = 'hero-badge';
-    badge.textContent = groupMeta.label;
-    overlay.appendChild(badge);
-
-    const title = document.createElement('h3');
-    title.className = 'hero-title';
-    title.textContent = heroProduct && heroProduct.name ? heroProduct.name : groupMeta.label;
-    overlay.appendChild(title);
-
-    const meta = document.createElement('p');
-    meta.className = 'hero-meta';
-    const categoryLabel = heroProduct && heroProduct.categoryName ? heroProduct.categoryName : 'Featured assortment';
-    meta.textContent = `${categoryLabel} | ${groupMeta.productCount}+ styles`;
-    overlay.appendChild(meta);
-
-    const priceText = formatHeroPriceDisplay(heroProduct);
-    if (priceText) {
-      const price = document.createElement('p');
-      price.className = 'hero-price';
-      price.textContent = priceText;
-      overlay.appendChild(price);
-    }
-
-    const description = document.createElement('p');
-    description.className = 'hero-description';
-    const fallbackDescription = heroProduct && heroProduct.description
-      ? heroProduct.description
-      : `Handpicked from our ${groupMeta.label} collection.`;
-    if (heroProduct && heroProduct.name && fallbackDescription && fallbackDescription.toLowerCase() === heroProduct.name.toLowerCase()) {
-      description.textContent = `Handpicked from our ${groupMeta.label} collection.`;
-    } else {
-      description.textContent = fallbackDescription;
-    }
-    overlay.appendChild(description);
-
-    if (heroProduct && heroProduct.markdown) {
-      hydrateHeroDescription(heroProduct.markdown, description, {
-        productName: heroProduct.name,
-        groupLabel: groupMeta.label,
-      });
-    }
-
-    const secondaryCta = document.createElement('button');
-    secondaryCta.type = 'button';
-    secondaryCta.className = 'hero-cta hero-cta-secondary';
-    secondaryCta.textContent = 'Shop group';
-    secondaryCta.setAttribute('aria-label', `Browse the ${groupMeta.label} collection`);
-    secondaryCta.addEventListener('click', (event) => {
-      event.stopPropagation();
-      window.handleNavigationClick(`group:${groupMeta.key}`);
-    });
-    overlay.appendChild(secondaryCta);
-
-    imageWrapper.appendChild(overlay);
-    card.appendChild(imageWrapper);
-    slide.appendChild(card);
-    slideFragment.appendChild(slide);
-
-    const indicator = document.createElement('button');
-    indicator.className = 'hero-indicator';
-    indicator.type = 'button';
-    indicator.dataset.index = String(slideIndex);
-    indicator.setAttribute('aria-label', `Go to ${groupMeta.label}`);
-    indicatorFragment.appendChild(indicator);
-
-    slidePosition += 1;
   });
 
-  heroContainer.appendChild(slideFragment);
-  indicatorContainer.appendChild(indicatorFragment);
+  const results = await Promise.all(highlightPromises);
+  const highlights = results.filter((value) => !!value);
 
-  if (heroCarousel) {
-    heroCarousel.stopAutoPlay();
+  const truncated = highlights.slice(0, limit);
+  for (let i = truncated.length - 1; i > 0; i -= 1) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+    const temp = truncated[i];
+    truncated[i] = truncated[randomIndex];
+    truncated[randomIndex] = temp;
   }
-  heroCarousel = null;
-  window.heroCarousel = null;
+
+  return truncated;
 }
 
-// Function to load printhead products for a specific brand
-window.loadPrintheadProducts = function(brand) {
-  const brandProducts = printheadProducts[brand];
-  if (brandProducts) {
-    // Hide the submenu after selection
-    hideActiveSubmenus();
-    
-    // Hide hero banner for specific category views
-    hideHeroBanner();
-    
-    // Highlight selected menu item(brand);
-    highlightSelectedMenuItem(brand);
-      // Add loading animation
-    showLoadingState();
-    
-    // Small delay for smooth transition
-    setTimeout(() => {      const productsHTML = renderProducts(brandProducts, 'printhead');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();        // Update page title or add a header to show which brand is selected
-      updatePageHeader(`${brand.charAt(0).toUpperCase() + brand.slice(1)} Printheads`, brandProducts.length);
-          // Update breadcrumb navigation
-    updateBreadcrumb(brand);
-      
-      // Scroll to top of products
-      scrollToProducts();
-    }, 200);
-  }
-};
+function createHeroIndicatorMarkup(index, label = null) {
+  const indicatorLabel = label ? `Go to ${label}` : `Go to slide ${index + 1}`;
+  return `
+    <button
+      type="button"
+      class="hero-indicator${index === 0 ? ' active' : ''}"
+      data-index="${index}"
+      aria-label="${escapeHTML(indicatorLabel)}"
+    ></button>
+  `;
+}
 
-// Function to load all printhead products from all brands
-window.loadAllPrintheadProducts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Print Heads') {
-      link.classList.add('active');
+function createHeroSlideMarkup(product, groupInfo, index, snippet, imageUrlOverride) {
+  if (!product) {
+    return '';
+  }
+
+  const imageUrl = imageUrlOverride || buildAssetUrl(product.image);
+  if (!imageUrl) {
+    return '';
+  }
+
+  const slideClasses = ['hero-slide'];
+  if (index === 0) {
+    slideClasses.push('active');
+  }
+
+  const detailUrl = buildDetailUrl(product);
+  const badgeText = (groupInfo && groupInfo.label) || product.groupLabel || 'Featured Toys';
+
+  const metaParts = [];
+  if (badgeText) {
+    metaParts.push(badgeText);
+  }
+  if (product.categoryName) {
+    metaParts.push(product.categoryName);
+  }
+  if (product.sku) {
+    metaParts.push(`SKU ${product.sku}`);
+  }
+  const metaText = metaParts.join(' • ');
+
+  const priceText = derivePriceDisplay(product);
+  const description = buildHeroDescription(product, snippet);
+  const inlineStyle = index === 0 ? ' style="opacity:1;transform:translateX(0);z-index:2;"' : '';
+
+  return `
+    <div class="${slideClasses.join(' ')}" data-index="${index}"${inlineStyle}>
+      <article class="hero-card hero-card-toy">
+        <a class="hero-card-link" href="${detailUrl}" aria-label="View ${escapeHTML(product.name || 'toy product')}">
+          <div class="hero-image-wrapper">
+            <img class="hero-image" src="${escapeHTML(imageUrl)}" alt="${escapeHTML(product.name || badgeText)} showcase image">
+          </div>
+          <div class="hero-overlay">
+            <div class="hero-badge">${escapeHTML(badgeText)}</div>
+            <h3 class="hero-title">${escapeHTML(product.name || 'Toy highlight')}</h3>
+            ${metaText ? `<p class="hero-meta">${escapeHTML(metaText)}</p>` : ''}
+            ${priceText ? `<p class="hero-price">${escapeHTML(priceText)}</p>` : ''}
+            ${description ? `<p class="hero-description">${escapeHTML(description)}</p>` : ''}
+            <span class="hero-cta">
+              <span>Explore product</span>
+              <span class="hero-cta-icon" aria-hidden="true">&rarr;</span>
+            </span>
+          </div>
+        </a>
+      </article>
+    </div>
+  `;
+}
+
+async function renderHeroSlides() {
+  const heroContainer = document.querySelector('.hero-container');
+  const heroIndicatorsContainer = document.querySelector('.hero-indicators');
+  if (!heroContainer || !heroIndicatorsContainer) {
+    return [];
+  }
+
+  heroContainer.innerHTML = `
+    <div class="hero-loading">
+      <div class="loading-spinner"></div>
+      <p>Curating featured collections...</p>
+    </div>
+  `;
+  heroIndicatorsContainer.innerHTML = '';
+
+  const highlights = await selectHeroHighlights();
+
+  if (highlights.length === 0) {
+    heroContainer.innerHTML = '';
+    heroIndicatorsContainer.innerHTML = '';
+    heroIndicatorsContainer.style.display = 'none';
+    const navButtons = document.querySelectorAll('.hero-nav-arrow');
+    navButtons.forEach((button) => {
+      button.style.display = 'none';
+      button.disabled = true;
+    });
+    return [];
+  }
+
+  const renderedEntries = [];
+  highlights.forEach((highlight, index) => {
+    const markup = createHeroSlideMarkup(highlight.product, highlight.groupInfo, renderedEntries.length, highlight.snippet, highlight.imageUrl);
+    if (markup) {
+      renderedEntries.push({ markup, highlight });
     }
   });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Combine all printhead products from all brands
-    let allPrintheadProducts = [];
-    for (const brand in printheadProducts) {
-      allPrintheadProducts = allPrintheadProducts.concat(printheadProducts[brand]);
-    }      const productsHTML = renderProducts(allPrintheadProducts, 'printhead');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-      // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();      // Update page title or add a header to show print heads category
-    updatePageHeader('Print Heads', allPrintheadProducts.length);
-      // Update breadcrumb navigation
-    updateBreadcrumb('printHeads');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
 
-// Function to load all regular products (default view)
-window.loadAllProducts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Highlight selected menu item
-  highlightSelectedMenuItem('all');
-  buildHeroSlides();
+  heroContainer.innerHTML = renderedEntries.map((entry) => entry.markup).join('');
 
-  // Show hero banner for main homepage view
-  showHeroBanner();
-  const slideCount = document.querySelectorAll('.hero-slide').length;
-  if (slideCount > 0) {
-    heroCarousel = new HeroCarousel();
-    window.heroCarousel = heroCarousel;
+  if (renderedEntries.length > 1) {
+    heroIndicatorsContainer.innerHTML = renderedEntries
+      .map((entry, index) => createHeroIndicatorMarkup(index, entry.highlight.product.name))
+      .join('');
+    heroIndicatorsContainer.style.display = 'flex';
+    const navButtons = document.querySelectorAll('.hero-nav-arrow');
+    navButtons.forEach((button) => {
+      button.style.display = '';
+      button.disabled = false;
+    });
   } else {
-    heroCarousel = null;
-    window.heroCarousel = null;
+    heroIndicatorsContainer.innerHTML = '';
+    heroIndicatorsContainer.style.display = 'none';
+    const navButtons = document.querySelectorAll('.hero-nav-arrow');
+    navButtons.forEach((button) => {
+      button.style.display = 'none';
+      button.disabled = true;
+    });
   }
-  
-  // Clear products grid for homepage - just show hero banner
-  const productsGrid = document.querySelector('.js-prodcts-grid');
-  productsGrid.innerHTML = '';
-  productsGrid.classList.remove('showing-coming-soon');
-  
-  // Remove page header for clean homepage
-  const pageHeader = document.querySelector('.page-header');
-  if (pageHeader) {
-    pageHeader.remove();
-  }
-  
-  // Remove breadcrumb for clean homepage
-  const breadcrumbElement = document.querySelector('.breadcrumb-nav');
-  if (breadcrumbElement) {
-    breadcrumbElement.remove();
-  }
-};
 
-// Function to load XP600 printer products
-window.loadXP600Printers = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item
-  highlightSelectedMenuItem('xp600-printers');
-  
-  // Add loading animation
-  showLoadingState();
-    // Small delay for smooth transition
-  setTimeout(() => {
-    const xp600Printers = getEcoSolventXP600Printers();
-    const productsHTML = renderProducts(xp600Printers, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-      // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title
-    updatePageHeader('XP600 Inkjet Printers', xp600Printers.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('xp600-printers');
-    
-    // Scroll to top of products
-    scrollToProducts();
-  }, 200);
-};
+  return renderedEntries.map((entry) => entry.highlight);
+}
 
-// Function to load I1600 printer products
-window.loadI1600Printers = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item
-  highlightSelectedMenuItem('i1600-printers');
-  
-  // Add loading animation
-  showLoadingState();
-    // Small delay for smooth transition
-  setTimeout(() => {
-    const i1600Printers = getEcoSolventI1600Printers();
-    const productsHTML = renderProducts(i1600Printers, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-      // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title
-    updatePageHeader('Printers with I1600 Printhead', i1600Printers.length);
-      // Update breadcrumb navigation
-    updateBreadcrumb('i1600-printers');
-    
-    // Scroll to top of products
-    scrollToProducts();
-  }, 200);
-};
+function attachAddToCartListeners() {
+  // Cart is disabled while we focus on catalog navigation.
+}
 
-// Function to load I3200 printer products
-window.loadI3200Printers = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item
-  highlightSelectedMenuItem('i3200-printers');
-  
-  // Show "Coming Soon" message briefly for smooth transition  showComingSoonMessage();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    const i3200Printers = getEcoSolventI3200Printers();
-    const productsHTML = renderProducts(i3200Printers, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-      // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title
-    updatePageHeader('Printers with I3200 Printhead', i3200Printers.length);
-      // Update breadcrumb navigation
-    updateBreadcrumb('i3200-printers');
-    
-    // Scroll to top of products
-    scrollToProducts();
-  }, 200);
-};
-
-// Function to load upgrading kit products for a specific brand
-window.loadUpgradingKitProducts = function(brand) {
-  const brandProducts = upgradingKitProducts[brand];
-  if (brandProducts) {
-    // Hide the submenu after selection
-    hideActiveSubmenus();
-    
-    // Hide hero banner for specific category views
-    hideHeroBanner();
-    
-    // Highlight selected menu item
-    highlightSelectedMenuItem(brand);
-    
-    // Add loading animation
-    showLoadingState();
-    
-    // Small delay for smooth transition
-    setTimeout(() => {
-      const productsHTML = renderProducts(brandProducts, 'upgradingkit');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-        // Update page title or add a header to show which brand is selected
-      updatePageHeader(`${brand.charAt(0).toUpperCase() + brand.slice(1)} Upgrading Kit`, brandProducts.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb(brand, 'upgradingkit');
-      
-      // Scroll to top of products
-      scrollToProducts();
-    }, 200);
-  }
-};
-
-// Function to load all upgrading kit products from all brands
-window.loadAllUpgradingKitProducts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Upgrading Kit') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Combine all upgrading kit products from all brands
-    let allUpgradingKitProducts = [];
-    for (const brand in upgradingKitProducts) {
-      allUpgradingKitProducts = allUpgradingKitProducts.concat(upgradingKitProducts[brand]);
-    }
-    
-    const productsHTML = renderProducts(allUpgradingKitProducts, 'upgradingkit');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show upgrading kit category
-    updatePageHeader('Upgrading Kit', allUpgradingKitProducts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('upgradingKit');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load LED & LCD products for a specific category
-window.loadLedLcdProducts = function(category) {
-  const categoryProducts = ledAndLcdProducts[category];
-  if (categoryProducts) {
-    // Hide the submenu after selection
-    hideActiveSubmenus();
-    
-    // Hide hero banner for specific category views
-    hideHeroBanner();
-    
-    // Highlight selected menu item
-    highlightSelectedMenuItem(category);
-    
-    // Add loading animation
-    showLoadingState();
-    
-    // Small delay for smooth transition
-    setTimeout(() => {
-      const productsHTML = renderProducts(categoryProducts, 'ledlcd');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-        // Update page title or add a header to show which category is selected
-      updatePageHeader(`${category.charAt(0).toUpperCase() + category.slice(1)} LED & LCD`, categoryProducts.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb(`led-lcd-${category}`);
-      
-      // Scroll to top of products
-      scrollToProducts();
-    }, 200);
-  }
-};
-
-// Function to load all LED & LCD products from all categories
-window.loadAllLedLcdProducts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'LED & LCD') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Combine all LED & LCD products from all categories
-    let allLedLcdProducts = [];
-    for (const category in ledAndLcdProducts) {
-      allLedLcdProducts = allLedLcdProducts.concat(ledAndLcdProducts[category]);
-    }
-    
-    const productsHTML = renderProducts(allLedLcdProducts, 'ledlcd');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show LED & LCD category
-    updatePageHeader('LED & LCD', allLedLcdProducts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('led-lcd');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to hide all active submenus
 function hideActiveSubmenus() {
-  document.querySelectorAll('.submenu.active').forEach(submenu => {
+  document.querySelectorAll('.submenu.active').forEach((submenu) => {
     submenu.classList.remove('active');
   });
-  document.querySelectorAll('.expandable.active').forEach(link => {
+  document.querySelectorAll('.expandable.active').forEach((link) => {
     link.classList.remove('active');
   });
 }
 
-// Function to show loading state
 function showLoadingState() {
   const productsGrid = document.querySelector('.js-prodcts-grid');
+  if (!productsGrid) {
+    return;
+  }
   productsGrid.innerHTML = `
     <div class="loading-container">
       <div class="loading-spinner"></div>
       <p>Loading products...</p>
     </div>
   `;
+  productsGrid.style.display = '';
   productsGrid.classList.remove('showing-coming-soon');
 }
 
-// Function to show hero banner
+function clearProductsGrid() {
+  const productsGrid = document.querySelector('.js-prodcts-grid');
+  if (productsGrid) {
+    productsGrid.innerHTML = '';
+    productsGrid.style.display = 'none';
+    productsGrid.classList.remove('showing-coming-soon');
+  }
+
+  const pageHeader = document.querySelector('.page-header');
+  if (pageHeader && pageHeader.parentNode) {
+    pageHeader.parentNode.removeChild(pageHeader);
+  }
+
+  const breadcrumb = document.querySelector('.breadcrumb-nav');
+  if (breadcrumb && breadcrumb.parentNode) {
+    breadcrumb.parentNode.removeChild(breadcrumb);
+  }
+}
+
 function showHeroBanner() {
   const heroBanner = document.querySelector('.hero-banner');
-  if (heroBanner) {
-    heroBanner.style.display = 'block';
-    // Add the show class for CSS transition
-    setTimeout(() => {
-      heroBanner.classList.add('show');
-    }, 10);
+  if (!heroBanner) {
+    return;
   }
+  heroBanner.style.display = 'block';
+  window.setTimeout(() => {
+    heroBanner.classList.add('show');
+    if (window.heroCarousel) {
+      window.heroCarousel.startAutoPlay();
+    }
+  }, 10);
 }
 
-// Function to hide hero banner
 function hideHeroBanner() {
   const heroBanner = document.querySelector('.hero-banner');
-  if (heroBanner) {
-    if (heroCarousel) {
-      heroCarousel.stopAutoPlay();
-    }
-    heroBanner.classList.remove('show');
-    // Hide after transition completes
-    setTimeout(() => {
-      heroBanner.style.display = 'none';
-    }, 600);
+  if (!heroBanner) {
+    return;
   }
+  if (window.heroCarousel) {
+    window.heroCarousel.stopAutoPlay();
+  }
+  heroBanner.classList.remove('show');
+  window.setTimeout(() => {
+    heroBanner.style.display = 'none';
+  }, 320);
 }
 
-// Function to show coming soon message
-function showComingSoonMessage() {
-  const productsGrid = document.querySelector('.js-prodcts-grid');
-  productsGrid.innerHTML = `
-    <div class="coming-soon">
-      <h2>Loading Products...</h2>
-      <p>Please wait while we load the products for you.</p>
-    </div>
-  `;
-  productsGrid.classList.add('showing-coming-soon');
-}
-
-// Function to scroll to products section
 function scrollToProducts() {
-  // Get the main container to scroll to
   const mainElement = document.querySelector('.main');
-  
-  if (mainElement) {
-    // Scroll to the main section with a slight offset to show the header
-    window.scrollTo({
-      top: mainElement.offsetTop - 120, // Reduce the scroll distance with an offset
-      behavior: 'smooth'
-    });
+  if (!mainElement) {
+    return;
   }
+  window.scrollTo({
+    top: Math.max(mainElement.offsetTop - 120, 0),
+    behavior: 'smooth',
+  });
 }
 
-// Function to update page header with optional product count
 function updatePageHeader(title, productCount = null) {
   let headerElement = document.querySelector('.page-header');
   if (!headerElement) {
-    // Create header if it doesn't exist
     headerElement = document.createElement('h2');
     headerElement.className = 'page-header';
-    headerElement.style.margin = '20px 0';
-    headerElement.style.textAlign = 'center';
-    headerElement.style.fontSize = '24px';
-    headerElement.style.fontWeight = 'bold';
-    
     const mainElement = document.querySelector('.main');
-    mainElement.insertBefore(headerElement, mainElement.firstChild);
+    if (mainElement) {
+      mainElement.insertBefore(headerElement, mainElement.firstChild);
+    }
   }
-  
-  // Format title with product count if provided
+
   if (productCount !== null && productCount !== undefined) {
     headerElement.textContent = `${title} (Total: ${productCount})`;
   } else {
@@ -1102,13 +659,11 @@ function updatePageHeader(title, productCount = null) {
   }
 }
 
-// Function to update breadcrumb navigation
 function ensureBreadcrumbContainer() {
   let breadcrumbElement = document.querySelector('.breadcrumb-nav');
   if (!breadcrumbElement) {
     breadcrumbElement = document.createElement('div');
     breadcrumbElement.className = 'breadcrumb-nav';
-
     const mainElement = document.querySelector('.main');
     if (mainElement) {
       mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
@@ -1120,7 +675,7 @@ function ensureBreadcrumbContainer() {
 function createBreadcrumbSeparator() {
   const separator = document.createElement('span');
   separator.className = 'breadcrumb-separator';
-  separator.textContent = '>'; // ASCII arrow for compatibility
+  separator.textContent = '>';
   return separator;
 }
 
@@ -1136,22 +691,16 @@ function createBreadcrumbNode({ text, href, onClick, isCurrent }) {
   link.className = 'breadcrumb-link';
   link.textContent = text;
   link.href = href || 'javascript:void(0)';
-
   if (typeof onClick === 'function') {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       onClick();
     });
   }
-
   return link;
 }
 
-function updateToyBreadcrumb({
-  navDisplayName,
-  groupInfo,
-  categoryInfo,
-}) {
+function updateToyBreadcrumb({ navDisplayName, groupInfo, categoryInfo }) {
   const breadcrumbElement = ensureBreadcrumbContainer();
   if (!breadcrumbElement) {
     return;
@@ -1174,7 +723,10 @@ function updateToyBreadcrumb({
   });
   nodes.push(homeNode);
 
-  const groupSlug = groupInfo && (groupInfo.slug || groupInfo.hash) ? (groupInfo.slug || groupInfo.hash) : '';
+  const groupSlug = groupInfo && (groupInfo.slug || groupInfo.hash)
+    ? (groupInfo.slug || groupInfo.hash)
+    : '';
+
   if (navDisplayName) {
     nodes.push(createBreadcrumbSeparator());
     const navNode = createBreadcrumbNode({
@@ -1211,3108 +763,235 @@ function updateToyBreadcrumb({
   });
 }
 
-function updateBreadcrumb(brand) {
-  let breadcrumbElement = document.querySelector('.breadcrumb-nav');
-  if (!breadcrumbElement) {
-    // Create breadcrumb if it doesn't exist
-    breadcrumbElement = document.createElement('div');
-    breadcrumbElement.className = 'breadcrumb-nav';
-    
-    const mainElement = document.querySelector('.main');
-    mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
-  }
-  
-  // Check if we're on the detail page
-  const isDetailPage = window.location.pathname.includes('detail.html');
-    if (brand && brand !== 'all') {
-    // Special case for 'printHeads' which is the main category
-    if (brand === 'printHeads') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Print Heads</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Print Heads</span>
-        `;
-      }
-    } else if (brand === 'inkjetPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Action Figures & Role Play</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Action Figures & Role Play</span>
-        `;
-      }
-    } else if (brand === 'printSpareParts') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Print Spare Parts</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Print Spare Parts</span>
-        `;
-      }
-    } else if (brand === 'economicVersionPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Eco-Solvent Inkjet Printers</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Eco-Solvent Inkjet Printers</span>
-        `;
-      }
-    } else if (brand === 'xp600-printers' || brand === 'xp600Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjetprinters-ecosolvent" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With XP600 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Eco-Solvent Inkjet Printers')" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With XP600 Printhead</span>
-        `;
-      }
-    } else if (brand === 'i1600-printers' || brand === 'i1600Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjetprinters-ecosolvent" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I1600 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Eco-Solvent Inkjet Printers')" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I1600 Printhead</span>
-        `;
-      }
-    } else if (brand === 'i3200-printers' || brand === 'i3200Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjetprinters-ecosolvent" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I3200 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Eco-Solvent Inkjet Printers')" class="breadcrumb-link">Eco-Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I3200 Printhead</span>
-        `;
-      }
-    } else if (brand === 'directToFabricFilm') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Direct to Fabric & Film</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Direct to Fabric & Film</span>
-        `;
-      }
-    } else if (brand === 'dtfPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadDirectToFabricFilmPrinters()" class="breadcrumb-link">Direct to Fabric & Film</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">DTF Printer</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadDirectToFabricFilmPrinters()" class="breadcrumb-link">Direct to Fabric & Film</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">DTF Printer</span>
-        `;
-      }
-    } else if (brand === 'uvDtfPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadDirectToFabricFilmPrinters()" class="breadcrumb-link">Direct to Fabric & Film</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">UV DTF Printer</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Action Figures & Role Play</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadDirectToFabricFilmPrinters()" class="breadcrumb-link">Direct to Fabric & Film</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">UV DTF Printer</span>
-        `;
-      }
-    } else if (brand === 'solventPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Solvent Inkjet Printers</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Solvent Inkjet Printers</span>
-        `;
-      }
-    } else if (brand === 'solventKM512iPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllSolventPrinters && window.loadAllSolventPrinters()" class="breadcrumb-link">Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM512i Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllSolventPrinters && window.loadAllSolventPrinters()" class="breadcrumb-link">Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM512i Printhead</span>
-        `;
-      }
-    } else if (brand === 'solventKM1024iPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllSolventPrinters && window.loadAllSolventPrinters()" class="breadcrumb-link">Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM1024i Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllSolventPrinters && window.loadAllSolventPrinters()" class="breadcrumb-link">Solvent Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM1024i Printhead</span>
-        `;
-      }
-    } else if (brand === 'sublimationPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Sublimation Printers</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Sublimation Printers</span>
-        `;
-      }
-    } else if (brand === 'sublimationXP600Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#sublimation-printers" class="breadcrumb-link">Sublimation Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With XP600 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Sublimation Printers')" class="breadcrumb-link">Sublimation Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With XP600 Printhead</span>
-        `;
-      }
-    } else if (brand === 'sublimationI1600Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#sublimation-printers" class="breadcrumb-link">Sublimation Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I1600 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Sublimation Printers')" class="breadcrumb-link">Sublimation Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I1600 Printhead</span>
-        `;
-      }
-    } else if (brand === 'sublimationI3200Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#sublimation-printers" class="breadcrumb-link">Sublimation Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I3200 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Sublimation Printers')" class="breadcrumb-link">Sublimation Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I3200 Printhead</span>
-        `;
-      }
-    } else if (brand === 'epsonPrinterSpareParts') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#print-spare-parts" class="breadcrumb-link">Print Spare Parts</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Epson Printer Spare Parts</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllPrintSpareParts()" class="breadcrumb-link">Print Spare Parts</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Epson Printer Spare Parts</span>        `;
-      }    } else if (brand === 'rolandPrinterSpareParts') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#print-spare-parts" class="breadcrumb-link">Print Spare Parts</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Roland Printer Spare Parts</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllPrintSpareParts()" class="breadcrumb-link">Print Spare Parts</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Roland Printer Spare Parts</span>
-        `;
-      }    } else if (brand === 'canonPrinterSpareParts') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#print-spare-parts" class="breadcrumb-link">Print Spare Parts</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Canon Printer Spare Parts</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllPrintSpareParts()" class="breadcrumb-link">Print Spare Parts</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Canon Printer Spare Parts</span>
-        `;
-      }    } else if (brand === 'ricohPrinterSpareParts') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#print-spare-parts" class="breadcrumb-link">Print Spare Parts</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Ricoh Printer Spare Parts</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllPrintSpareParts()" class="breadcrumb-link">Print Spare Parts</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Ricoh Printer Spare Parts</span>
-        `;
-      }
-    } else if (brand === 'upgradingKit') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Upgrading Kit</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Upgrading Kit</span>
-        `;
-      }
-    } else if (brand === 'hoson' || brand === 'mimaki' || brand === 'mutoh' || brand === 'roll_to_roll_style' || brand === 'uv_flatbed' || brand === 'without_cable_work') {
-      // These are upgrading kit brands
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#upgrading-kit" class="breadcrumb-link">Upgrading Kit</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" class="breadcrumb-link" onclick="loadUpgradingKitProducts('${brand}')">${brand.charAt(0).toUpperCase() + brand.slice(1).replace(/_/g, ' ')} Products</a>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllUpgradingKitProducts()" class="breadcrumb-link">Upgrading Kit</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">${brand.charAt(0).toUpperCase() + brand.slice(1).replace(/_/g, ' ')} Products</span>        `;
-      }
-    } else if (brand === 'material') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Material</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Material</span>
-        `;
-      }
-    } else if (brand.startsWith('material-')) {
-      // These are material categories like material-adhevie, material-flex, etc.
-      const materialCategory = brand.substring(9); // Remove 'material-' prefix
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#material" class="breadcrumb-link">Material</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" class="breadcrumb-link" onclick="loadMaterialProducts('${materialCategory}')">${materialCategory.charAt(0).toUpperCase() + materialCategory.slice(1)} Materials</a>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllMaterialProducts()" class="breadcrumb-link">Material</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">${materialCategory.charAt(0).toUpperCase() + materialCategory.slice(1)} Materials</span>        `;
-      }
-    } else if (brand.startsWith('led-lcd-')) {
-      // These are LED & LCD categories like led-lcd-display, led-lcd-outdoor, etc.
-      const ledLcdCategory = brand.substring(8); // Remove 'led-lcd-' prefix
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#led-lcd" class="breadcrumb-link">LED & LCD</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" class="breadcrumb-link" onclick="loadLedLcdProducts('${ledLcdCategory}')">${ledLcdCategory.charAt(0).toUpperCase() + ledLcdCategory.slice(1)} LED & LCD</a>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllLedLcdProducts()" class="breadcrumb-link">LED & LCD</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">${ledLcdCategory.charAt(0).toUpperCase() + ledLcdCategory.slice(1)} LED & LCD</span>        `;
-      }
-    } else if (brand.startsWith('channel-letter-')) {
-      // These are Channel Letter categories like channel-letter-aluminum, channel-letter-automatic, etc.
-      const channelLetterCategory = brand.substring(15); // Remove 'channel-letter-' prefix
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#channel-letter" class="breadcrumb-link">Channel Letter</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">${channelLetterCategory.charAt(0).toUpperCase() + channelLetterCategory.slice(1)} Channel Letter</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" class="breadcrumb-link" onclick="loadChannelLetterProducts('${channelLetterCategory}')">${channelLetterCategory.charAt(0).toUpperCase() + channelLetterCategory.slice(1)} Channel Letter</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllChannelLetterProducts()" class="breadcrumb-link">Channel Letter</a>        `;
-      }
-    } else if (brand.startsWith('other-')) {
-      // These are Other categories like other-spectrophotometer, etc.
-      const otherCategory = brand.substring(6); // Remove 'other-' prefix
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#other" class="breadcrumb-link">Other</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">${otherCategory.charAt(0).toUpperCase() + otherCategory.slice(1)} Other Products</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" class="breadcrumb-link" onclick="loadOtherProducts('${otherCategory}')">${otherCategory.charAt(0).toUpperCase() + otherCategory.slice(1)} Other Products</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllOtherProducts()" class="breadcrumb-link">Other</a>
-        `;
-      }
-    } else if (brand === 'other') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Other</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Other</span>
-        `;
-      }
-    } else if (brand === 'channel-letter') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Channel Letter</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Channel Letter</span>
-        `;
-      }
-    } else if (brand === 'uvInkjetPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">UV Inkjet Printers</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">UV Inkjet Printers</span>
-        `;
-      }
-    } else if (brand === 'uvRicohGen6Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-inkjet-printers" class="breadcrumb-link">UV Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Ricoh Gen6 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvInkjetPrinters && window.loadAllUvInkjetPrinters()" class="breadcrumb-link">UV Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Ricoh Gen6 Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvInkjetKonica1024iPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-inkjet-printers" class="breadcrumb-link">UV Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM1024i Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvInkjetPrinters && window.loadAllUvInkjetPrinters()" class="breadcrumb-link">UV Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM1024i Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvFlatbedRicohGen6Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Ricoh Gen6 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvFlatbedPrinters && window.loadAllUvFlatbedPrinters()" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Ricoh Gen6 Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvFlatbedRicohGen5Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Ricoh Gen5 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvFlatbedPrinters && window.loadAllUvFlatbedPrinters()" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Ricoh Gen5 Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvFlatbedI3200Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I3200 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvFlatbedPrinters && window.loadAllUvFlatbedPrinters()" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With I3200 Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvFlatbedXP600Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With XP600 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvFlatbedPrinters && window.loadAllUvFlatbedPrinters()" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With XP600 Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvKonica1024iPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-flatbed-printers" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM1024i Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvFlatbedPrinters && window.loadAllUvFlatbedPrinters()" class="breadcrumb-link">UV Flatbed Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM1024i Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvFlatbedPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">UV Flatbed Printers</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">UV Flatbed Printers</span>
-        `;
-      }
-    } else if (brand === 'uvHybridKonica1024iPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-hybrid-inkjet-printers" class="breadcrumb-link">Hybrid UV Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM1024i Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvHybridPrinters && window.loadAllUvHybridPrinters()" class="breadcrumb-link">Hybrid UV Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Konica KM1024i Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvHybridRicohGen6Printers') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#uv-hybrid-inkjet-printers" class="breadcrumb-link">Hybrid UV Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Ricoh Gen6 Printhead</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllUvHybridPrinters && window.loadAllUvHybridPrinters()" class="breadcrumb-link">Hybrid UV Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">With Ricoh Gen6 Printhead</span>
-        `;
-      }
-    } else if (brand === 'uvHybridPrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Hybrid UV Printers</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Hybrid UV Printers</span>
-        `;
-      }
-    } else if (brand === 'doubleSidePrinters') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Double Side Printers</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Double Side Printers</span>
-        `;
-      }
-    } else if (brand === 'doubleSideDirectPrinting') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#inkjet-printers" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#double-side-printers" class="breadcrumb-link">Double Side Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Direct Printing</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadInkjetPrinters()" class="breadcrumb-link">Inkjet Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="window.loadAllDoubleSidePrinters && window.loadAllDoubleSidePrinters()" class="breadcrumb-link">Double Side Printers</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">Direct Printing</span>
-        `;
-      }
-    } else if (brand === 'led-lcd') {
-      if (isDetailPage) {
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">LED & LCD</span>
-        `;
-      } else {
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">LED & LCD</span>
-        `;
-      }
-    } else {
-      if (isDetailPage) {
-        // On detail page, make brand level clickable to go back to brand listings
-        breadcrumbElement.innerHTML = `
-          <a href="index.html" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="index.html#printheads" class="breadcrumb-link">Print Heads</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" class="breadcrumb-link" onclick="loadPrintheadProducts('${brand}')">${brand.charAt(0).toUpperCase() + brand.slice(1)} Printheads</a>
-        `;
-      } else {
-        // On index page, brand level is current/non-clickable
-        breadcrumbElement.innerHTML = `
-          <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <a href="javascript:void(0)" onclick="loadAllPrintheadProducts()" class="breadcrumb-link">Print Heads</a>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">${brand.charAt(0).toUpperCase() + brand.slice(1)} Printheads</span>
-        `;
-      }
-    }  } else {
-    // For homepage (all products), remove breadcrumb completely for clean look
-    if (breadcrumbElement) {
-      breadcrumbElement.remove();
-    }
-  }
-}
-
-// Function to attach add to cart event listeners
-// Temporarily disabled since we're using "View Details" instead of "Add to Cart"
-function attachAddToCartListeners() {
-  // No-op function - cart functionality is temporarily disabled
-  // Original cart functionality is preserved in comments for future reuse
-  /*
-  document.querySelectorAll('.js-add-to-cart')
-    .forEach((button) => {
-      button.addEventListener('click', () => {
-        const productId = button.dataset.productId;
-        
-        // Get the quantity from the dropdown
-        const productContainer = button.closest('.product-container');
-        const quantitySelect = productContainer.querySelector('select');
-        const quantity = Number(quantitySelect.value);
-
-        // Call addToCart with the selected quantity
-        addToCart(productId, quantity);
-        updateCartQuantity();
-
-        // Show the 'Added' message
-        const addedMessage = productContainer.querySelector('.added-message');
-        if (addedMessage) {
-          addedMessage.style.display = 'block';
-          setTimeout(() => {
-            addedMessage.style.display = 'none';
-          }, 2000);
-        }
-      });
-    });
-  */
-}
-
-// Load default products on page load
-document.addEventListener('DOMContentLoaded', () => {
-  // Only run on the main index page, not on checkout or other pages
-  const isIndexPage = document.querySelector('.products-grid') || document.querySelector('#products-grid');
-    if (isIndexPage) {
-    // Initialize cart quantity display on page load immediately - temporarily disabled
-    // updateCartQuantity();
-      // Small delay to ensure sub-header navigation is initialized
-    setTimeout(() => {
-      // Check for search parameters first
-      const urlParams = new URLSearchParams(window.location.search);
-      const isSearchRequest = urlParams.has('search');
-      
-      // If this is a search request, don't load default products - let search system handle it
-      if (isSearchRequest) {
-        return;
-      }
-      
-      // Check if there's a hash in the URL that should load specific content
-      const hash = window.location.hash.substring(1);    
-      if (hash) {
-        // If there's a hash, let the sub-header navigation handle it instead of loading all products
-        // Check if sub-header navigation is available and can handle the hash
-        if (window.subHeaderNav && window.subHeaderNav.handleHashNavigation) {
-          // Sub-header nav will handle the hash, don't load all products
-          return;
-        } else {
-          // Fallback: wait a bit more for sub-header to initialize
-          setTimeout(() => {
-            if (window.subHeaderNav && window.subHeaderNav.handleHashNavigation) {
-              return;
-            } else {
-              // If still no sub-header nav, try to handle hash ourselves or load all products
-              handleHashFallback(hash);
-            }
-          }, 200);
-          return;
-        }
-      } else {
-        // Only load all products if there's no hash and no search request
-        loadAllProducts();
-      }
-    }, 100);
-  }
-});
-
-// Initialize hero banner visibility on page load
-document.addEventListener('DOMContentLoaded', () => {
-  // Show hero banner by default on index page when no hash is present and no search request
-  setTimeout(() => {
-    const hash = window.location.hash;
-    const urlParams = new URLSearchParams(window.location.search);
-    const isSearchRequest = urlParams.has('search');
-    const isIndexPage = document.querySelector('.products-grid') || document.querySelector('#products-grid');
-    
-    if (isIndexPage && !hash && !isSearchRequest) {
-      loadAllProducts();
-    }
-  }, 150);
-});
-
-// Fallback function to handle hash navigation when sub-header nav is not available
-function handleHashFallback(hash) {
-  if (!hash) {
-    loadAllProducts();
+function showEmptyCategoryState(label) {
+  const productsGrid = document.querySelector('.js-prodcts-grid');
+  if (!productsGrid) {
     return;
   }
+  productsGrid.innerHTML = `
+    <div class="coming-soon">
+      <h2>${escapeHTML(label || 'Collection')} Products</h2>
+      <p>Products for this collection will be available soon.</p>
+    </div>
+  `;
+  productsGrid.style.display = '';
+  productsGrid.classList.add('showing-coming-soon');
+  updatePageHeader(label || 'Collection');
+}
 
-  const normalizedHash = typeof hash === 'string' ? hash.toLowerCase() : '';
-  let navDisplayMatch = toyNavSlugToDisplay[hash] || toyNavSlugToDisplay[normalizedHash];
-  if (!navDisplayMatch) {
-    try {
-      const decodedHash = decodeURIComponent(hash);
-      navDisplayMatch = toyNavSlugToDisplay[decodedHash] || toyNavSlugToDisplay[decodedHash.toLowerCase()];
-    } catch (error) {
-      // Ignore decode errors and continue
-    }
-  }
-
-  if (navDisplayMatch && typeof window.loadSpecificCategory === 'function') {
-    window.loadSpecificCategory(navDisplayMatch);
+function updateSubHeaderActiveState(groupKey) {
+  const links = document.querySelectorAll('.sub-header-link');
+  links.forEach((link) => {
+    link.classList.remove('active');
+  });
+  const allLink = document.querySelector('.sub-header-link.all-products-link');
+  if (!groupKey && allLink) {
+    allLink.classList.add('active');
     return;
   }
-
-  if (hash === 'print-heads' || hash === 'printheads') {
-    if (window.loadAllPrintheadProducts) {
-      window.loadAllPrintheadProducts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'print-spare-parts') {
-    if (window.loadAllPrintSpareParts) {
-      window.loadAllPrintSpareParts();
-    } else {
-      loadAllProducts();
-    }  } else if (hash === 'epson-printer-spare-parts') {
-    if (window.loadEpsonPrinterSpareParts) {
-      window.loadEpsonPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }  } else if (hash === 'roland-printer-spare-parts') {
-    if (window.loadRolandPrinterSpareParts) {
-      window.loadRolandPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }  } else if (hash === 'canon-printer-spare-parts') {
-    if (window.loadCanonPrinterSpareParts) {
-      window.loadCanonPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'ricoh-printer-spare-parts') {
-    if (window.loadRicohPrinterSpareParts) {
-      window.loadRicohPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'infiniti-challenger-printer-spare-parts') {
-    if (window.loadInfinitiChallengerPrinterSpareParts) {
-      window.loadInfinitiChallengerPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'flora-printer-spare-parts') {
-    if (window.loadFloraPrinterSpareParts) {
-      window.loadFloraPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'galaxy-printer-spare-parts') {
-    if (window.loadGalaxyPrinterSpareParts) {
-      window.loadGalaxyPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'mimaki-printer-spare-parts') {
-    if (window.loadMimakiPrinterSpareParts) {
-      window.loadMimakiPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'mutoh-printer-spare-parts') {
-    if (window.loadMutohPrinterSpareParts) {
-      window.loadMutohPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'wit-color-printer-spare-parts') {
-    if (window.loadWitColorPrinterSpareParts) {
-      window.loadWitColorPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'gongzheng-printer-spare-parts') {
-    if (window.loadGongzhengPrinterSpareParts) {
-      window.loadGongzhengPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'human-printer-spare-parts') {
-    if (window.loadHumanPrinterSpareParts) {
-      window.loadHumanPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'teflon-printer-spare-parts') {
-    if (window.loadTeflonPrinterSpareParts) {
-      window.loadTeflonPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'wiper-printer-spare-parts') {
-    if (window.loadWiperPrinterSpareParts) {
-      window.loadWiperPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'xaar-printer-spare-parts') {
-    if (window.loadXaarPrinterSpareParts) {
-      window.loadXaarPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'toshiba-printer-spare-parts') {
-    if (window.loadToshibaPrinterSpareParts) {
-      window.loadToshibaPrinterSpareParts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'eco-solvent-inkjet-printers') {
-    if (window.loadAllEconomicVersionPrinters) {
-      window.loadAllEconomicVersionPrinters();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'solvent-inkjet-printers') {
-    if (window.loadAllSolventPrinters) {
-      window.loadAllSolventPrinters();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'solvent-km512i-printers') {
-    if (window.loadSolventKM512iPrinters) {
-      window.loadSolventKM512iPrinters();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'solvent-km1024i-printers') {
-    if (window.loadSolventKM1024iPrinters) {
-      window.loadSolventKM1024iPrinters();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'uv-inkjet-printers') {
-    if (window.loadAllUvInkjetPrinters) {
-      window.loadAllUvInkjetPrinters();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'uv-inkjet-printers---with-ricoh-gen6-printhead') {
-    if (window.loadUvRicohGen6Printers) {
-      window.loadUvRicohGen6Printers();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'uv-ricoh-gen6-printers') {
-    // Backward compatibility - redirect to new hash
-    window.location.hash = 'uv-inkjet-printers---with-ricoh-gen6-printhead';
+  if (!groupKey) {
     return;
-  } else if (hash === 'uv-konica-km1024i-printers') {
-    if (window.loadUvKonica1024iPrinters) {
-      window.loadUvKonica1024iPrinters();
-    } else {
-      loadAllProducts();
+  }
+  const normalized = String(groupKey).toLowerCase();
+  links.forEach((link) => {
+    const linkGroup = link.getAttribute('data-toy-group');
+    if (linkGroup && linkGroup.toLowerCase() === normalized) {
+      link.classList.add('active');
     }
-  } else if (hash === 'uv-flatbed-printers') {
-    if (window.loadUvFlatbedPrinters) {
-      window.loadUvFlatbedPrinters();
-    } else {
-      loadAllProducts();
+  });
+}
+
+function applyProductsToGrid(products, context = 'regular') {
+  const productsGrid = document.querySelector('.js-prodcts-grid');
+  if (!productsGrid) {
+    return;
+  }
+  const html = renderProducts(products, context);
+  productsGrid.innerHTML = html;
+  productsGrid.style.display = '';
+  productsGrid.classList.toggle('showing-coming-soon', products.length === 0);
+  attachAddToCartListeners();
+}
+
+function updateHash(hash) {
+  const newUrl = new URL(window.location.href);
+  newUrl.hash = hash ? `#${hash}` : '';
+  window.updatingHashFromCategory = true;
+  window.history.replaceState(null, '', newUrl);
+  window.setTimeout(() => {
+    window.updatingHashFromCategory = false;
+  }, 30);
+}
+
+function showProductsView({
+  products,
+  title,
+  productCount,
+  navDisplayName,
+  groupInfo,
+  categoryInfo,
+  shouldHideHero,
+  context,
+  hashValue,
+}) {
+  if (shouldHideHero) {
+    hideHeroBanner();
+  } else if (!isSearchRequest) {
+    showHeroBanner();
+  }
+
+  if (hashValue !== undefined) {
+    updateHash(hashValue);
+  }
+
+  updatePageHeader(title, productCount);
+  updateToyBreadcrumb({ navDisplayName, groupInfo, categoryInfo });
+  applyProductsToGrid(products, context);
+  scrollToProducts();
+}
+
+function loadAllProducts(options = {}) {
+  const products = getAllProducts();
+  const count = products.length;
+  const displayName = 'All Toys';
+  updateSubHeaderActiveState(null);
+  showProductsView({
+    products,
+    title: displayName,
+    productCount: count,
+    navDisplayName: null,
+    groupInfo: null,
+    categoryInfo: null,
+    shouldHideHero: false,
+    context: 'all',
+    hashValue: options.skipHashUpdate ? undefined : '',
+  });
+  return true;
+}
+
+function loadToyGroupView(groupKey, options = {}) {
+  if (!groupKey || !toyGroupKeys.has(groupKey)) {
+    return false;
+  }
+
+  const groupInfo = getGroupInfo(groupKey);
+  if (!groupInfo) {
+    showEmptyCategoryState(getNavDisplayForGroup(groupKey));
+    return false;
+  }
+
+  const products = getProductsForGroup(groupKey);
+  const navDisplayName = options.displayName || getNavDisplayForGroup(groupKey);
+
+  updateSubHeaderActiveState(groupKey);
+
+  showProductsView({
+    products,
+    title: navDisplayName,
+    productCount: products.length,
+    navDisplayName,
+    groupInfo,
+    categoryInfo: null,
+    shouldHideHero: true,
+    context: 'group',
+    hashValue: options.skipHashUpdate ? undefined : (groupInfo.slug || groupInfo.hash || createNavSlug(groupInfo.label)),
+  });
+
+  return true;
+}
+
+function loadCategoryView(categoryInfo, groupInfo, options = {}) {
+  if (!categoryInfo || !groupInfo) {
+    return false;
+  }
+  const products = getProductsForCategory(groupInfo.key, categoryInfo.name);
+  if (!products || products.length === 0) {
+    showEmptyCategoryState(categoryInfo.name);
+    return false;
+  }
+
+  const navDisplayName = getNavDisplayForGroup(groupInfo.key);
+  updateSubHeaderActiveState(groupInfo.key);
+
+  showProductsView({
+    products,
+    title: categoryInfo.name,
+    productCount: products.length,
+    navDisplayName,
+    groupInfo,
+    categoryInfo,
+    shouldHideHero: true,
+    context: 'category',
+    hashValue: options.skipHashUpdate ? undefined : (categoryInfo.slug || categoryInfo.hash || createNavSlug(categoryInfo.name)),
+  });
+
+  return true;
+}
+
+function loadSpecificCategory(identifier, options = {}) {
+  if (!identifier) {
+    return loadAllProducts(options);
+  }
+
+  const groupAlias = resolveGroupKeyFromAlias(identifier);
+  if (groupAlias) {
+    return loadToyGroupView(groupAlias, options);
+  }
+
+  const categoryInfo = resolveToyCategory(identifier);
+  if (!categoryInfo) {
+    showEmptyCategoryState(identifier);
+    return false;
+  }
+
+  const groupInfo = getGroupInfo(categoryInfo.groupKey);
+  return loadCategoryView(categoryInfo, groupInfo, options);
+}
+
+function handleHashNavigation(rawHash) {
+  const cleanedHash = rawHash ? rawHash.replace(/^#/, '') : '';
+  if (!cleanedHash) {
+    if (!isSearchRequest) {
+      clearProductsGrid();
+      showHeroBanner();
     }
-  } else if (hash === 'double-side-printers') {
-    if (window.loadAllDoubleSidePrinters) {
-      window.loadAllDoubleSidePrinters();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'double-side-printers---direct-printing') {
-    if (window.loadDoubleSideDirectPrinting) {
-      window.loadDoubleSideDirectPrinting();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash.startsWith('printheads-')) {
-    const brand = hash.replace('printheads-', '');
-    if (window.loadPrintheadProducts) {
-      window.loadPrintheadProducts(brand);
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'upgrading-kit') {
-    if (window.loadAllUpgradingKitProducts) {
-      window.loadAllUpgradingKitProducts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'material') {
-    if (window.loadAllMaterialProducts) {
-      window.loadAllMaterialProducts();
-    } else {
-      loadAllProducts();
-    }  } else if (hash.startsWith('material-')) {
-    const materialCategory = hash.replace('material-', '');
-    if (window.loadMaterialProducts) {
-      window.loadMaterialProducts(materialCategory);
-    } else {
-      loadAllProducts();
-    }  } else if (hash === 'led-lcd') {
-    if (window.loadAllLedLcdProducts) {
-      window.loadAllLedLcdProducts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash.startsWith('led-lcd-')) {
-    const ledLcdCategory = hash.replace('led-lcd-', '');
-    if (window.loadLedLcdProducts) {
-      window.loadLedLcdProducts(ledLcdCategory);
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'channel-letter') {
-    if (window.loadAllChannelLetterProducts) {
-      window.loadAllChannelLetterProducts();
-    } else {
-      loadAllProducts();
-    }  } else if (hash.startsWith('channel-letter-')) {
-    const channelLetterCategory = hash.replace('channel-letter-', '');
-    if (window.loadChannelLetterProducts) {
-      window.loadChannelLetterProducts(channelLetterCategory);
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash === 'other') {
-    if (window.loadAllOtherProducts) {
-      window.loadAllOtherProducts();
-    } else {
-      loadAllProducts();
-    }
-  } else if (hash.startsWith('other-')) {
-    const otherCategory = hash.replace('other-', '');
-    if (window.loadOtherProducts) {
-      window.loadOtherProducts(otherCategory);
-    } else {
-      loadAllProducts();
-    }
-  } else if (window.loadSpecificCategory) {
-    // Check if hash is being updated by category loading to prevent conflicts
-    if (window.updatingHashFromCategory) {
-      return;
-    }
-    
-    // Try to handle other category hashes
-    const categoryMap = {
-      'inkjet-printers': 'Inkjet Printers',
-      'inkjetprinters-ecosolvent': 'Eco-Solvent Inkjet Printers',
-      'eco-solvent-inkjet-printers': 'Eco-Solvent Inkjet Printers',
-      'eco-solvent-xp600-printers': 'Eco-Solvent Inkjet Printers - With XP600 Printhead',
-      'eco-solvent-i1600-printers': 'Eco-Solvent Inkjet Printers - With I1600 Printhead',
-      'eco-solvent-i3200-printers': 'Eco-Solvent Inkjet Printers - With I3200 Printhead',
-      'eco-solvent-inkjet-printers---with-xp600-printhead': 'Eco-Solvent Inkjet Printers - With XP600 Printhead',
-      'eco-solvent-inkjet-printers---with-i1600-printhead': 'Eco-Solvent Inkjet Printers - With I1600 Printhead',
-      'eco-solvent-inkjet-printers---with-i3200-printhead': 'Eco-Solvent Inkjet Printers - With I3200 Printhead',
-      'solvent-inkjet-printers': 'Solvent Inkjet Printers',
-      'solvent-km512i-printers': 'Solvent Inkjet Printers - With Konica KM512i Printhead',
-      'solvent-km1024i-printers': 'Solvent Inkjet Printers - With Konica KM1024i Printhead',
-      'solvent-ricoh-gen5-printers': 'Solvent Inkjet Printers - With Ricoh Gen5 Printhead',
-      'solvent-ricoh-gen6-printers': 'Solvent Inkjet Printers - With Ricoh Gen6 Printhead',
-      'uv-inkjet-printers': 'UV Inkjet Printers',
-      'uv-inkjet-printers---with-ricoh-gen6-printhead': 'UV Inkjet Printers - With Ricoh Gen6 Printhead',
-      'uv-konica-km1024i-printers': 'UV Inkjet Printers - With Konica KM1024i Printhead',
-      'uv-flatbed-printers': 'UV Flatbed Printers',
-      'sublimation-printers': 'Sublimation Printers',
-      'sublimation-xp600-printers': 'Sublimation Printers - With XP600 Printhead',
-      'sublimation-i1600-printers': 'Sublimation Printers - With I1600 Printhead',
-      'sublimation-i3200-printers': 'Sublimation Printers - With I3200 Printhead',
-      'sublimation-printers---with-xp600-printhead': 'Sublimation Printers - With XP600 Printhead',
-      'sublimation-printers---with-i1600-printhead': 'Sublimation Printers - With I1600 Printhead',
-      'sublimation-printers---with-i3200-printhead': 'Sublimation Printers - With I3200 Printhead',
-      'print-spare-parts': 'Print Spare Parts',
-      'upgrading-kit': 'Upgrading Kit',
-      'material': 'Material',
-      'led-lcd': 'LED & LCD',
-      'laser': 'Laser',
-      'cutting': 'Cutting',
-      'channel-letter': 'Channel Letter',
-      'cnc': 'CNC',
-      'action-figures-and-role-play': 'Action Figures & Role Play',
-      'displays': 'Displays',
-      'other': 'Other'
-    };
-    
-    if (categoryMap[hash]) {
-      window.loadSpecificCategory(categoryMap[hash]);
-    } else {
-      loadAllProducts();
-    }
-  } else {
-    loadAllProducts();
+    return false;
+  }
+
+  const categoryInfo = resolveCategoryByHash(cleanedHash);
+  if (categoryInfo) {
+    const groupInfo = getGroupInfo(categoryInfo.groupKey);
+    return loadCategoryView(categoryInfo, groupInfo, { skipHashUpdate: true });
+  }
+
+  const groupInfo = resolveGroupByHash(cleanedHash);
+  if (groupInfo) {
+    return loadToyGroupView(groupInfo.key, { skipHashUpdate: true, displayName: getNavDisplayForGroup(groupInfo.key) });
+  }
+
+  const groupAlias = resolveGroupKeyFromAlias(cleanedHash);
+  if (groupAlias) {
+    return loadToyGroupView(groupAlias, { skipHashUpdate: true });
+  }
+
+  const fallbackCategory = resolveToyCategory(cleanedHash);
+  if (fallbackCategory) {
+    const fallbackGroupInfo = getGroupInfo(fallbackCategory.groupKey);
+    return loadCategoryView(fallbackCategory, fallbackGroupInfo, { skipHashUpdate: true });
+  }
+
+  showEmptyCategoryState(cleanedHash);
+  return false;
+}
+
+function handleHashFallback(rawHash) {
+  const handled = handleHashNavigation(rawHash);
+  if (!handled && !rawHash && !isSearchRequest) {
+    clearProductsGrid();
+    showHeroBanner();
   }
 }
 
-function updateCartQuantity() {
-  // Temporarily disabled since cart is hidden from header
-  // Original cart quantity functionality is preserved for future reuse
-  /*
-  let cartQuantity = 0;
-  cart.forEach((cartItem) => {
-    cartQuantity += cartItem.quantity;
-  });
-  
-  const cartQuantityElement = document.querySelector('.js-cart-quantity');
-  if (cartQuantityElement) {
-    cartQuantityElement.innerHTML = cartQuantity;
-  }
-  */
-}
-
-// Function to find any product by ID (regular, printhead, print spare parts, or upgrading kit)
-export function findProductById(productId) {
-  // First check regular products
-  let product = products.find(p => p.id === productId);
-  
-  // If not found, check printhead products
-  if (!product) {
-    for (const brand in printheadProducts) {
-      const brandProducts = printheadProducts[brand];
-      product = brandProducts.find(p => p.id === productId);
-      if (product) break;
-    }
-  }
-  
-  // If not found, check print spare part products
-  if (!product) {
-    for (const brand in printSparePartProducts) {
-      const brandProducts = printSparePartProducts[brand];
-      product = brandProducts.find(p => p.id === productId);
-      if (product) break;
-    }
-  }
-  
-  // If not found, check upgrading kit products
-  if (!product) {
-    for (const brand in upgradingKitProducts) {
-      const brandProducts = upgradingKitProducts[brand];
-      product = brandProducts.find(p => p.id === productId);
-      if (product) break;
-    }
-  }
-  
-  return product;
-}
-
-// Function to highlight selected menu item
-function highlightSelectedMenuItem(brand) {
-  // Remove the 'selected-brand' class from all submenu items
-  document.querySelectorAll('.department-link.selected-brand').forEach(link => {
-    link.classList.remove('selected-brand');
-  });
-
-  // Add the 'selected-brand' class to the currently selected submenu item
-  if (brand && brand !== 'all') {
-    const brandLink = document.querySelector(`[onclick="loadPrintheadProducts('${brand}')"]`);
-    if (brandLink) {
-      brandLink.classList.add('selected-brand');
-    }
-  } else {
-    // Highlight "All Products" if showing all products
-    const allProductsLink = document.querySelector(`[onclick="loadAllProducts()"]`);
-    if (allProductsLink) {
-      allProductsLink.classList.add('selected-brand');
-    }
-  }
-}
-
-// Add click handler for printhead submenu items to auto-collapse
-document.addEventListener('DOMContentLoaded', () => {
-  // Add click listeners to all printhead submenu items
-  const printheadLinks = document.querySelectorAll('[onclick*="loadPrintheadProducts"]');
-  printheadLinks.forEach(link => {
-    link.addEventListener('click', function() {
-      // No direct style changes here! Only rely on .selected-brand class
-    });
-  });
-  
-  // Add click listener to "All Products" link
-  const allProductsLink = document.querySelector('[onclick="loadAllProducts()"]');
-  if (allProductsLink) {
-    allProductsLink.addEventListener('click', function() {
-      // No direct style changes here! Only rely on .selected-brand class
-    });
-  }
-});
-
-// --- Highlight sub-header link when sidebar is clicked (handles nested/child links) ---
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.department-link').forEach(link => {
-    link.addEventListener('click', function(e) {
-      // Find the main sidebar category for this link
-      let sidebarCategory = link.textContent.trim();
-      // If this is a child link, try to get the parent expandable's text
-      const expandableParent = link.closest('.department-group, .department-subgroup');
-      let mainCategory = sidebarCategory;
-      if (expandableParent) {
-        const parentExpandable = expandableParent.querySelector('.expandable');
-        if (parentExpandable && parentExpandable !== link) {
-          mainCategory = parentExpandable.textContent.trim();
-        }
-      }
-      // Map sidebar category names to sub-header link names if needed
-      const categoryMap = {
-        'See All Departments': 'See All Departments',
-        'Inkjet Printers': 'Inkjet Printers',
-        'Print Heads': 'Print Heads',
-        'Print Spare Parts': 'Print Spare Parts',
-        'Upgrading Kit': 'Upgrading Kit',
-        'Material': 'Material',
-        'LED & LCD': 'LED & LCD',
-        'Laser': 'Laser',
-        'Cutting': 'Cutting',
-        'Channel Letter': 'Channel Letter',
-        'CNC': 'CNC',
-        'Dispalys': 'Displays',
-        'Other': 'Other'
-      };
-      // Use mainCategory if it matches a sub-header, else fallback to sidebarCategory
-      const matchCategory = categoryMap[mainCategory] || categoryMap[sidebarCategory];
-      document.querySelectorAll('.sub-header-link').forEach(subLink => {
-        subLink.classList.remove('active');
-        if (matchCategory && subLink.textContent.trim() === matchCategory) {
-          subLink.classList.add('active');
-        }
-      });
-    });
-  });
-});
-
-// Function to handle loading of specific category products
-window.loadSpecificCategory = function(categoryName) {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-    // Add loading animation
-  showLoadingState();
-
-  const categoryNameLower = typeof categoryName === 'string' ? categoryName.toLowerCase() : '';
-  const groupAliasKey = toyGroupAliasMap[categoryName] || toyGroupAliasMap[categoryNameLower];
-  let targetGroupInfo = null;
-  if (groupAliasKey) {
-    targetGroupInfo = getGroupInfo(groupAliasKey);
-  }
-
-  const toyCategoryInfo = resolveToyCategory(categoryName);
-  let preferredHashSegment = null;
-  if (toyCategoryInfo) {
-    preferredHashSegment = toyCategoryInfo.slug || toyCategoryInfo.hash;
-  }
-  if (targetGroupInfo) {
-    preferredHashSegment = targetGroupInfo.slug || targetGroupInfo.hash || preferredHashSegment;
-  }
-
-  const navDisplayName = getNavDisplayForGroup(groupAliasKey) || (toyCategoryInfo ? getNavDisplayForGroup(toyCategoryInfo.groupKey) : null);
-
-  // --- Highlight the corresponding nav item (including special sidebar categories) ---
-  const subHeaderMap = {
-    'Eco-Solvent Inkjet Printers': 'Inkjet Printers',
-    'Solvent Inkjet Printers': 'Inkjet Printers',
-    'Solvent Inkjet Printers': 'Inkjet Printers',
-    'Solvent Inkjet Printers - With Konica KM512i Printhead': 'Inkjet Printers',
-    'Solvent Inkjet Printers - With Konica KM512i Printhead': 'Inkjet Printers',
-    'Solvent Inkjet Printers - With Konica KM1024i Printhead': 'Inkjet Printers',
-    'Solvent Inkjet Printers - With Konica KM1024i Printhead': 'Inkjet Printers',
-    'Solvent Inkjet Printers - With Ricoh Gen5 Printhead': 'Inkjet Printers',
-    'Solvent Inkjet Printers - With Ricoh Gen5 Printhead': 'Inkjet Printers',
-    'Solvent Inkjet Printers - With Ricoh Gen6 Printhead': 'Inkjet Printers',
-    'Solvent Inkjet Printers - With Ricoh Gen6 Printhead': 'Inkjet Printers',
-    'UV Inkjet Printers': 'Inkjet Printers',
-    'UV Inkjet Printers - With Ricoh Gen6 Printhead': 'Inkjet Printers',
-    'UV Inkjet Printers - With Konica KM1024i Printhead': 'Inkjet Printers',
-    'UV Flatbed Printers': 'Inkjet Printers',
-    'UV Flatbed Printers - With Ricoh Gen6 Printhead': 'Inkjet Printers',
-    'UV Flatbed Printers - With Ricoh Gen5 Printhead': 'Inkjet Printers',
-    'UV Flatbed Printers - With I3200 Printhead': 'Inkjet Printers',
-    'UV Flatbed Printers - With XP600 Printhead': 'Inkjet Printers',
-    'UV Flatbed Printers - With Konica KM1024i Printhead': 'Inkjet Printers',
-    'UV Flatbed Printers - With Konica KM1024i Printheads': 'Inkjet Printers',
-    'UV Hybrid Inkjet Printer': 'Inkjet Printers',
-    'UV Hybrid Inkjet Printer - With Konica KM1024i Printheads': 'Inkjet Printers',
-    'UV Hybrid Inkjet Printer - With Konica KM1024i Printhead': 'Inkjet Printers',
-    'UV Hybrid Inkjet Printer - With Ricoh Gen6 Printheads': 'Inkjet Printers',
-    'UV Hybrid Inkjet Printer - With Ricoh Gen6 Printhead': 'Inkjet Printers',
-    'Sublimation Printers': 'Inkjet Printers',
-    'Double Side Printers': 'Inkjet Printers',
-    'Epson Printer Spare Parts': 'Print Spare Parts',
-    'Roland Printer Spare Parts': 'Print Spare Parts',
-    'Canon Printer Spare Parts': 'Print Spare Parts',
-    'Ricoh Printer Spare Parts': 'Print Spare Parts',
-    'Action Figures & Role Play': 'Action Figures & Role Play',
-    '仿真餐具': 'Action Figures & Role Play',
-    '剑龙-雷塔勇士': 'Action Figures & Role Play',
-    '弓弹射猴子粘布套装': 'Action Figures & Role Play',
-    '泡沫飞剑': 'Action Figures & Role Play',
-    '火光烟雾剑': 'Action Figures & Role Play',
-    '火花烟零激光剑': 'Action Figures & Role Play',
-    '火花烟零激光剑双剑': 'Action Figures & Role Play',
-    '烹饪主厨': 'Action Figures & Role Play',
-    '美少女餐具': 'Action Figures & Role Play',
-    '过家家': 'Action Figures & Role Play',
-    // fallback: categoryName itself
-  };
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (
-      link.textContent.trim() === (navDisplayName || subHeaderMap[categoryName] || categoryName)
-    ) {
-      link.classList.add('active');
-    }
-  });
-
-  // Convert category for use in hash navigation
-  const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-').replace(/&/g, '');
-  const hashSegment = preferredHashSegment || categorySlug;
-
-  // Update URL hash without triggering a navigation (unless prevented by flag)
-  if (!window.preventHashUpdate) {
-    // Add a flag to prevent recursive navigation
-    window.updatingHashFromCategory = true;
-    if (history.pushState) {
-      history.pushState(null, null, `#${hashSegment}`);
-    } else {
-      location.hash = `#${hashSegment}`;
-    }
-    // Clear the flag after a short delay
-    setTimeout(() => {
-      window.updatingHashFromCategory = false;
-    }, 100);
-  }
-  // Small delay for smooth transition
-  setTimeout(() => {
-    if (groupAliasKey) {
-      if (loadToyGroupView(groupAliasKey, { displayName: navDisplayName || categoryName })) {
-        return;
-      }
-    }
-
-    const toyLoadResult = toyCategoryInfo
-      ? loadToyCategoryView(categoryName, toyCategoryInfo, navDisplayName)
-      : loadToyCategoryView(categoryName, undefined, navDisplayName);
-    if (toyLoadResult) {
-      return;
-    }
-
-    // Special handling for economic version printers
-    if (categoryName === 'Eco-Solvent Inkjet Printers') {
-      // Use the new economic version printers function
-      if (window.loadAllEconomicVersionPrinters) {
-        window.loadAllEconomicVersionPrinters();
-        return;
-      }
-    }
-    
-    // Special handling for printer categories
-    if (categoryName === 'Eco-Solvent Inkjet Printers - With XP600 Printhead') {
-      // Load XP600 printers instead of showing placeholder
-      const xp600Printers = getEcoSolventXP600Printers();
-      const productsHTML = renderProducts(xp600Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('XP600 Eco-Solvent Inkjet Printers', xp600Printers.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('xp600Printers');    } else if (categoryName === 'Eco-Solvent Inkjet Printers - With I1600 Printhead') {
-      // Load I1600 printers instead of showing placeholder
-      const i1600Printers = getEcoSolventI1600Printers();
-      const productsHTML = renderProducts(i1600Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Printers with I1600 Printhead', i1600Printers.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('i1600Printers');    } else if (categoryName === 'Eco-Solvent Inkjet Printers - With I3200 Printhead') {
-      // Load I3200 printers instead of showing placeholder
-      const i3200Printers = getEcoSolventI3200Printers();
-      const productsHTML = renderProducts(i3200Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Printers with I3200 Printhead', i3200Printers.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('i3200Printers');
-    } else if (categoryName === 'Solvent Inkjet Printers') {
-      // Load all solvent printer products
-      const allSolventPrinters = getAllSolventPrinters();
-      
-      const productsHTML = renderProducts(allSolventPrinters, 'solventprinter');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Solvent Inkjet Printers', allSolventPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('solventPrinters');
-    } else if (categoryName === 'Solvent Inkjet Printers') {
-      // Load all solvent printer products (handle the typo from sidebar)
-      const allSolventPrinters = getAllSolventPrinters();
-      
-      const productsHTML = renderProducts(allSolventPrinters, 'solventprinter');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Solvent Inkjet Printers', allSolventPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('solventPrinters');
-    } else if (categoryName === 'Solvent Inkjet Printers - With Konica KM512i Printhead') {
-      // Load KM512i solvent printers
-      const km512iPrinters = getSolventKM512iPrinters();
-      const productsHTML = renderProducts(km512iPrinters, 'solventprinter');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Solvent Inkjet Printers - With Konica KM512i Printhead', km512iPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('solventKM512iPrinters');
-    } else if (categoryName === 'Solvent Inkjet Printers - With Konica KM1024i Printhead') {
-      // Load KM1024i solvent printers
-      const km1024iPrinters = getSolventKM1024iPrinters();
-      const productsHTML = renderProducts(km1024iPrinters, 'solventprinter');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Solvent Inkjet Printers - With Konica KM1024i Printhead', km1024iPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('solventKM1024iPrinters');
-    } else if (categoryName === 'Solvent Inkjet Printers - With Konica KM512i Printhead') {
-      // Load KM512i solvent printers (corrected spelling)
-      const km512iPrinters = getSolventKM512iPrinters();
-      const productsHTML = renderProducts(km512iPrinters, 'solventprinter');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Solvent Inkjet Printers - With Konica KM512i Printhead', km512iPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('solventKM512iPrinters');
-    } else if (categoryName === 'Solvent Inkjet Printers - With Konica KM1024i Printhead') {
-      // Load KM1024i solvent printers (corrected spelling)
-      const km1024iPrinters = getSolventKM1024iPrinters();
-      const productsHTML = renderProducts(km1024iPrinters, 'solventprinter');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Solvent Inkjet Printers - With Konica KM1024i Printhead', km1024iPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('solventKM1024iPrinters');
-    } else if (categoryName === 'Solvent Inkjet Printers - With Ricoh Gen5 Printhead') {
-      // Load Ricoh Gen5 solvent printers (corrected spelling)
-      const ricohGen5Printers = getSolventRicohGen5Printers();
-      const productsHTML = renderProducts(ricohGen5Printers, 'solventprinter');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Solvent Inkjet Printers - With Ricoh Gen5 Printhead', ricohGen5Printers.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('solventRicohGen5Printers');
-    } else if (categoryName === 'Solvent Inkjet Printers - With Ricoh Gen6 Printhead') {
-      // Load Ricoh Gen6 solvent printers (corrected spelling)
-      const ricohGen6Printers = getSolventRicohGen6Printers();
-      const productsHTML = renderProducts(ricohGen6Printers, 'solventprinter');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Solvent Inkjet Printers - With Ricoh Gen6 Printhead', ricohGen6Printers.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('solventRicohGen6Printers');
-    } else if (categoryName === 'UV Inkjet Printers') {
-      // Load UV inkjet printers
-      const uvPrinters = getAllUvInkjetPrinters();
-      const productsHTML = renderProducts(uvPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Inkjet Printers', uvPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('uvInkjetPrinters');
-    } else if (categoryName === 'UV Inkjet Printers - With Ricoh Gen6 Printhead') {
-      // Load UV inkjet printers with Ricoh Gen6 printhead
-      const uvRicohGen6Printers = getUvRicohGen6Printers();
-      const productsHTML = renderProducts(uvRicohGen6Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Inkjet Printers - With Ricoh Gen6 Printhead', uvRicohGen6Printers.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('uvRicohGen6Printers');
-    } else if (categoryName === 'UV Inkjet Printers - With Konica KM1024i Printhead') {
-      // Load UV inkjet printers with Konica KM1024i printhead
-      const uvInkjetKonica1024iPrinters = getUvInkjetKonica1024iPrinters();
-      const productsHTML = renderProducts(uvInkjetKonica1024iPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Inkjet Printers - With Konica KM1024i Printhead', uvInkjetKonica1024iPrinters.length);
-      
-      // Update breadcrumb navigation (UV Inkjet path)
-      updateBreadcrumb('uvInkjetKonica1024iPrinters');
-    } else if (categoryName === 'UV Flatbed Printers - With Konica KM1024i Printhead' || categoryName === 'UV Flatbed Printers - With Konica KM1024i Printheads') {
-      // Load UV flatbed printers with Konica KM1024i printhead
-      const uvKonica1024iPrinters = getUvKonica1024iPrinters();
-      const productsHTML = renderProducts(uvKonica1024iPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Flatbed Printers - With Konica KM1024i Printhead', uvKonica1024iPrinters.length);
-      
-      // Update breadcrumb navigation (UV Flatbed path)
-      updateBreadcrumb('uvKonica1024iPrinters');
-    } else if (categoryName === 'UV Flatbed Printers - With Ricoh Gen6 Printhead') {
-      // Load UV flatbed printers with Ricoh Gen6 printhead
-      const uvFlatbedRicohGen6Printers = getUvFlatbedRicohGen6Printers();
-      const productsHTML = renderProducts(uvFlatbedRicohGen6Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Flatbed Printers - With Ricoh Gen6 Printhead', uvFlatbedRicohGen6Printers.length);
-      
-      // Update breadcrumb navigation (UV Flatbed path)
-      updateBreadcrumb('uvFlatbedRicohGen6Printers');
-    } else if (categoryName === 'UV Flatbed Printers - With Ricoh Gen5 Printhead') {
-      // Load UV flatbed printers with Ricoh Gen5 printhead
-      const uvFlatbedRicohGen5Printers = getUvFlatbedRicohGen5Printers();
-      const productsHTML = renderProducts(uvFlatbedRicohGen5Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Flatbed Printers - With Ricoh Gen5 Printhead', uvFlatbedRicohGen5Printers.length);
-      
-      // Update breadcrumb navigation (UV Flatbed path)
-      updateBreadcrumb('uvFlatbedRicohGen5Printers');
-    } else if (categoryName === 'UV Flatbed Printers - With I3200 Printhead') {
-      // Load UV flatbed printers with I3200 printhead
-      const uvFlatbedI3200Printers = getUvFlatbedI3200Printers();
-      const productsHTML = renderProducts(uvFlatbedI3200Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Flatbed Printers - With I3200 Printhead', uvFlatbedI3200Printers.length);
-      
-      // Update breadcrumb navigation (UV Flatbed path)
-      updateBreadcrumb('uvFlatbedI3200Printers');
-    } else if (categoryName === 'UV Flatbed Printers - With XP600 Printhead') {
-      // Load UV flatbed printers with XP600 printhead
-      const uvFlatbedXP600Printers = getUvFlatbedXP600Printers();
-      const productsHTML = renderProducts(uvFlatbedXP600Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Flatbed Printers - With XP600 Printhead', uvFlatbedXP600Printers.length);
-      
-      // Update breadcrumb navigation (UV Flatbed path)
-      updateBreadcrumb('uvFlatbedXP600Printers');
-    } else if (categoryName === 'UV Flatbed Printers') {
-      // Load UV flatbed printers
-      const uvFlatbedPrinters = getUvFlatbedPrinters();
-      const productsHTML = renderProducts(uvFlatbedPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV Flatbed Printers', uvFlatbedPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('uvFlatbedPrinters');
-    } else if (categoryName === 'UV Hybrid Inkjet Printer') {
-      // Load all UV hybrid inkjet printers
-      const uvHybridPrinters = getAllUvHybridPrinters();
-      const productsHTML = renderProducts(uvHybridPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Hybrid UV Printers', uvHybridPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('uvHybridPrinters');
-    } else if (categoryName === 'UV Hybrid Inkjet Printer - With Konica KM1024i Printheads' || categoryName === 'UV Hybrid Inkjet Printer - With Konica KM1024i Printhead') {
-      // Load UV hybrid inkjet printers with Konica KM1024i printhead
-      const uvHybridKonica1024iPrinters = getUvHybridKonica1024iPrinters();
-      const productsHTML = renderProducts(uvHybridKonica1024iPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Hybrid UV Printers - With Konica KM1024i Printhead', uvHybridKonica1024iPrinters.length);
-      
-      // Update breadcrumb navigation (UV Hybrid path)
-      updateBreadcrumb('uvHybridKonica1024iPrinters');
-    } else if (categoryName === 'UV Hybrid Inkjet Printer - With Ricoh Gen6 Printheads' || categoryName === 'UV Hybrid Inkjet Printer - With Ricoh Gen6 Printhead') {
-      // Load UV hybrid inkjet printers with Ricoh Gen6 printhead
-      const uvHybridRicohGen6Printers = getUvHybridRicohGen6Printers();
-      const productsHTML = renderProducts(uvHybridRicohGen6Printers, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Hybrid UV Printers - With Ricoh Gen6 Printhead', uvHybridRicohGen6Printers.length);
-      
-      // Update breadcrumb navigation (UV Hybrid path)
-      updateBreadcrumb('uvHybridRicohGen6Printers');
-    } else if (categoryName === 'Print Spare Parts') {
-      // Load all print spare parts
-      let allPrintSpareParts = [];
-      for (const category in printSparePartProducts) {
-        allPrintSpareParts = allPrintSpareParts.concat(printSparePartProducts[category]);
-      }
-      
-      const productsHTML = renderProducts(allPrintSpareParts, 'printsparepart');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Print Spare Parts', allPrintSpareParts.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('printSpareParts');    } else if (categoryName === 'Epson Printer Spare Parts') {
-      // Load Epson printer spare parts specifically
-      const epsonSpareParts = printSparePartProducts.epson || [];
-      
-      const productsHTML = renderProducts(epsonSpareParts, 'printsparepart');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-        // Update page header
-      updatePageHeader('Epson Printer Spare Parts', epsonSpareParts.length);
-      
-      // Update breadcrumb
-      let breadcrumbElement = document.querySelector('.breadcrumb-nav');
-      if (!breadcrumbElement) {
-        breadcrumbElement = document.createElement('div');
-        breadcrumbElement.className = 'breadcrumb-nav';
-
-        const mainElement = document.querySelector('.main');
-        mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
-      }      breadcrumbElement.innerHTML = `
-        <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Print Spare Parts')" class="breadcrumb-link">Print Spare Parts</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <span class="breadcrumb-current">Epson Printer Spare Parts</span>
-      `;    } else if (categoryName === 'Roland Printer Spare Parts') {
-      // Load Roland printer spare parts specifically
-      const rolandSpareParts = printSparePartProducts.roland || [];
-      
-      const productsHTML = renderProducts(rolandSpareParts, 'printsparepart');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the
-      attachAddToCartListeners();
-        // Update page header
-      updatePageHeader('Roland Printer Spare Parts', rolandSpareParts.length);
-      
-      // Update breadcrumb      let breadcrumbElement = document.querySelector('.breadcrumb-nav');
-      if (!breadcrumbElement) {
-        breadcrumbElement = document.createElement('div');
-        breadcrumbElement.className = 'breadcrumb-nav';
-
-        const mainElement = document.querySelector('.main');
-        mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
-      }
-      breadcrumbElement.innerHTML = `
-        <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Print Spare Parts')" class="breadcrumb-link">Print Spare Parts</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <span class="breadcrumb-current">Roland Printer Spare Parts</span>
-      `;    } else if (categoryName === 'Canon Printer Spare Parts') {
-      // Load Canon printer spare parts specifically
-      const canonSpareParts = printSparePartProducts.canon || [];
-      
-      const productsHTML = renderProducts(canonSpareParts, 'printsparepart');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-        // Update page header
-      updatePageHeader('Canon Printer Spare Parts', canonSpareParts.length);
-      
-      // Update breadcrumb
-      let breadcrumbElement = document.querySelector('.breadcrumb-nav');
-      if (!breadcrumbElement) {
-        breadcrumbElement = document.createElement('div');
-        breadcrumbElement.className = 'breadcrumb-nav';
-
-        const mainElement = document.querySelector('.main');
-        mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
-      }      breadcrumbElement.innerHTML = `
-        <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Print Spare Parts')" class="breadcrumb-link">Print Spare Parts</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <span class="breadcrumb-current">Canon Printer Spare Parts</span>
-      `;    } else if (categoryName === 'Ricoh Printer Spare Parts') {
-      // Load Ricoh printer spare parts specifically
-      const ricohSpareParts = printSparePartProducts.ricoh || [];
-      
-      const productsHTML = renderProducts(ricohSpareParts, 'printsparepart');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-        // Update page header
-      updatePageHeader('Ricoh Printer Spare Parts', ricohSpareParts.length);
-      
-      // Update breadcrumb
-      let breadcrumbElement = document.querySelector('.breadcrumb-nav');
-      if (!breadcrumbElement) {
-        breadcrumbElement = document.createElement('div');
-        breadcrumbElement.className = 'breadcrumb-nav';
-
-        const mainElement = document.querySelector('.main');
-        mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
-      }      breadcrumbElement.innerHTML = `
-        <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Print Spare Parts')" class="breadcrumb-link">Print Spare Parts</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <span class="breadcrumb-current">Ricoh Printer Spare Parts</span>
-      `;
-    } else if (categoryName === 'Upgrading Kit') {
-      // Load all upgrading kit products
-      let allUpgradingKitProducts = [];
-      for (const brand in upgradingKitProducts) {
-        allUpgradingKitProducts = allUpgradingKitProducts.concat(upgradingKitProducts[brand]);
-      }
-      
-      const productsHTML = renderProducts(allUpgradingKitProducts, 'upgradingkit');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-        // Update page header
-      updatePageHeader('Upgrading Kit', allUpgradingKitProducts.length);
-      
-      // Update breadcrumb
-      let breadcrumbElement = document.querySelector('.breadcrumb-nav');
-      if (!breadcrumbElement) {
-        breadcrumbElement = document.createElement('div');
-        breadcrumbElement.className = 'breadcrumb-nav';
-
-        const mainElement = document.querySelector('.main');
-        mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
-      }
-      breadcrumbElement.innerHTML = `
-        <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <span class="breadcrumb-current">Upgrading Kit</span>
-      `;
-    } else if (categoryName === 'DTF Printer') {
-      // Load DTF printer products specifically
-      const dtfPrinters = getAllDTFPrinters();
-      
-      const productsHTML = renderProducts(dtfPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('DTF Printers', dtfPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('dtfPrinters');
-    } else if (categoryName === 'UV DTF Printer') {
-      // Load UV DTF printer products specifically
-      const uvDtfPrinters = getAllUVDTFPrinters();
-      
-      const productsHTML = renderProducts(uvDtfPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('UV DTF Printers', uvDtfPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('uvDtfPrinters');
-    } else if (categoryName === 'Direct to Fabric & Film') {
-      // Load all Direct to Fabric & Film printers (DTF + UV DTF)
-      const dtfPrinters = getAllDTFPrinters();
-      const uvDtfPrinters = getAllUVDTFPrinters();
-      const allDirectToFabricFilmPrinters = [...dtfPrinters, ...uvDtfPrinters];
-      
-      const productsHTML = renderProducts(allDirectToFabricFilmPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Direct to Fabric & Film Printers', allDirectToFabricFilmPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('directToFabricFilm');
-    } else if (categoryName === 'Sublimation Printers') {
-      // Load sublimation printer products specifically
-      const sublimationPrinters = inkjetPrinterProducts.sublimation || [];
-      
-      const productsHTML = renderProducts(sublimationPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Sublimation Printers', sublimationPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('sublimationPrinters');
-    } else if (categoryName === 'Sublimation Printers - With XP600 Printhead') {
-      // Filter sublimation printers with XP600 printhead
-      const allSublimationPrinters = inkjetPrinterProducts.sublimation || [];
-      const xp600SublimationPrinters = allSublimationPrinters.filter(printer => 
-        printer.name.toLowerCase().includes('xp600') || 
-        printer.name.toLowerCase().includes('xp-600')
-      );
-      
-      const productsHTML = renderProducts(xp600SublimationPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Sublimation Printers - With XP600 Printhead', xp600SublimationPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('sublimationXP600Printers');
-    } else if (categoryName === 'Sublimation Printers - With I1600 Printhead') {
-      // Filter sublimation printers with I1600 printhead
-      const allSublimationPrinters = inkjetPrinterProducts.sublimation || [];
-      const i1600SublimationPrinters = allSublimationPrinters.filter(printer => 
-        printer.name.toLowerCase().includes('i1600') || 
-        printer.name.toLowerCase().includes('i-1600')
-      );
-      
-      const productsHTML = renderProducts(i1600SublimationPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Sublimation Printers - With I1600 Printhead', i1600SublimationPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('sublimationI1600Printers');
-    } else if (categoryName === 'Sublimation Printers - With I3200 Printhead') {
-      // Filter sublimation printers with I3200 printhead
-      const allSublimationPrinters = inkjetPrinterProducts.sublimation || [];
-      const i3200SublimationPrinters = allSublimationPrinters.filter(printer => 
-        printer.name.toLowerCase().includes('i3200') || 
-        printer.name.toLowerCase().includes('i-3200')
-      );
-      
-      const productsHTML = renderProducts(i3200SublimationPrinters, 'printer');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-      
-      // Update page header
-      updatePageHeader('Sublimation Printers - With I3200 Printhead', i3200SublimationPrinters.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb('sublimationI3200Printers');
-    } else {
-      // For other categories, show placeholder content
-      const message = `<div class="coming-soon">
-        <h2>${categoryName} Products</h2>
-        <p>Products for this category will be available soon!</p>
-      </div>`;
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = message;
-      productsGrid.classList.add('showing-coming-soon');
-
-      // Update page header
-      updatePageHeader(categoryName);
-
-      // Update breadcrumb
-      let breadcrumbElement = document.querySelector('.breadcrumb-nav');
-      if (!breadcrumbElement) {
-        breadcrumbElement = document.createElement('div');
-        breadcrumbElement.className = 'breadcrumb-nav';
-
-        const mainElement = document.querySelector('.main');
-        mainElement.insertBefore(breadcrumbElement, mainElement.firstChild);
-      }
-      breadcrumbElement.innerHTML = `
-        <a href="javascript:void(0)" onclick="loadAllProducts()" class="breadcrumb-link">Home</a>
-        <span class="breadcrumb-separator">&gt;</span>
-        <span class="breadcrumb-current">${categoryName}</span>
-      `;
-    }
-
-    // Scroll to products
-    scrollToProducts();
-  }, 200);
-};
-
-// Function to load Inkjet Printers
-window.loadInkjetPrinters = function() {
-  window.loadSpecificCategory('Inkjet Printers');
-};
-
-// Function to load Print Spare Parts  
-window.loadPrintSpareParts = function() {
-  window.loadSpecificCategory('Print Spare Parts');
-};
-
-// Function to load all print spare parts
-window.loadAllPrintSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Print Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get all print spare parts
-    let allPrintSpareParts = [];
-    for (const category in printSparePartProducts) {
-      allPrintSpareParts = allPrintSpareParts.concat(printSparePartProducts[category]);
-    }
-    
-    const productsHTML = renderProducts(allPrintSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show print spare parts category
-    updatePageHeader('Print Spare Parts', allPrintSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('printSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Epson Printer Spare Parts specifically
-window.loadEpsonPrinterSpareParts = function() {
-  // Hide the submenu after selection
-
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Epson Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {    // Get Epson printer spare parts
-    const epsonSpareParts = printSparePartProducts.epson || [];
-    
-    const productsHTML = renderProducts(epsonSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show Epson printer spare parts category
-    updatePageHeader('Epson Printer Spare Parts', epsonSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('epsonPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Roland Printer Spare Parts specifically
-window.loadRolandPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Roland Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {    // Get Roland printer spare parts
-    const rolandSpareParts = printSparePartProducts.roland || [];
-    
-    const productsHTML = renderProducts(rolandSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show Roland printer spare parts category
-    updatePageHeader('Roland Printer Spare Parts', rolandSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('rolandPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Canon Printer Spare Parts specifically
-window.loadCanonPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Canon Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {    // Get Canon printer spare parts
-    const canonSpareParts = printSparePartProducts.canon || [];
-    
-    const productsHTML = renderProducts(canonSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show Canon printer spare parts category
-    updatePageHeader('Canon Printer Spare Parts', canonSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('canonPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Ricoh Printer Spare Parts specifically
-window.loadRicohPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Ricoh Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {    // Get Ricoh printer spare parts
-    const ricohSpareParts = printSparePartProducts.ricoh || [];
-    
-    const productsHTML = renderProducts(ricohSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show Ricoh printer spare parts category
-    updatePageHeader('Ricoh Printer Spare Parts', ricohSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('ricohPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Infiniti/Challenger Printer Spare Parts specifically
-window.loadInfinitiChallengerPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Infiniti / Challenger Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Infiniti/Challenger printer spare parts
-    const infinitiChallengerSpareParts = printSparePartProducts.infiniti_challenger || [];
-    
-    const productsHTML = renderProducts(infinitiChallengerSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show Infiniti/Challenger printer spare parts category
-    updatePageHeader('Infiniti / Challenger Printer Spare Parts', infinitiChallengerSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('infinitiChallengerPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Flora Printer Spare Parts specifically
-window.loadFloraPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Flora Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Flora printer spare parts
-    const floraSpareParts = printSparePartProducts.flora || [];
-    
-    const productsHTML = renderProducts(floraSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show Flora printer spare parts category
-    updatePageHeader('Flora Printer Spare Parts', floraSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('floraPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Galaxy Printer Spare Parts specifically
-window.loadGalaxyPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Galaxy Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-
-  setTimeout(() => {
-    // Get Galaxy printer spare parts
-    const galaxySpareParts = printSparePartProducts.galaxy || [];
-    
-    const productsHTML = renderProducts(galaxySpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show Galaxy printer spare parts category
-    updatePageHeader('Galaxy Printer Spare Parts', galaxySpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('galaxyPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Mimaki Printer Spare Parts specifically
-window.loadMimakiPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Mimaki Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Mimaki printer spare parts
-    const mimakiSpareParts = printSparePartProducts.mimaki || [];
-    
-    const productsHTML = renderProducts(mimakiSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show Mimaki printer spare parts category
-    updatePageHeader('Mimaki Printer Spare Parts', mimakiSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('mimakiPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Mutoh Printer Spare Parts specifically
-window.loadMutohPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Mutoh Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Mutoh printer spare parts
-    const mutohSpareParts = printSparePartProducts.mutoh || [];
-    
-    const productsHTML = renderProducts(mutohSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show Mutoh printer spare parts category
-    updatePageHeader('Mutoh Printer Spare Parts', mutohSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('mutohPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Wit-color Printer Spare Parts specifically
-window.loadWitColorPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Wit-color Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Wit-color printer spare parts
-    const witcolorSpareParts = printSparePartProducts.witcolor || [];
-    
-    const productsHTML = renderProducts(witcolorSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show Wit-color printer spare parts category
-    updatePageHeader('Wit-color Printer Spare Parts', witcolorSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('witColorPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Gongzheng Printer Spare Parts specifically
-window.loadGongzhengPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Gongzheng Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Gongzheng printer spare parts
-    const gongzhengSpareParts = printSparePartProducts.gongzheng || [];
-    
-    const productsHTML = renderProducts(gongzhengSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show Gongzheng printer spare parts category
-    updatePageHeader('Gongzheng Printer Spare Parts', gongzhengSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('gongzhengPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Human Printer Spare Parts specifically
-window.loadHumanPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Human Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Human printer spare parts
-    const humanSpareParts = printSparePartProducts.human || [];
-    
-    const productsHTML = renderProducts(humanSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show Human printer spare parts category
-    updatePageHeader('Human Printer Spare Parts', humanSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('humanPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Teflon Printer Spare Parts specifically
-window.loadTeflonPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Teflon Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Teflon printer spare parts
-    const teflonSpareParts = printSparePartProducts.teflon || [];
-    
-    const productsHTML = renderProducts(teflonSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show Teflon printer spare parts category
-    updatePageHeader('Teflon Printer Spare Parts', teflonSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('teflonPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Wiper Printer Spare Parts specifically
-window.loadWiperPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Wiper Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Wiper printer spare parts
-    const wiperSpareParts = printSparePartProducts.wiper || [];
-    
-    const productsHTML = renderProducts(wiperSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show Wiper printer spare parts category
-    updatePageHeader('Wiper Printer Spare Parts', wiperSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('wiperPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Xaar Printer Spare Parts specifically
-window.loadXaarPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Xaar Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Xaar printer spare parts
-    const xaarSpareParts = printSparePartProducts.xaar || [];
-    
-    const productsHTML = renderProducts(xaarSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show Xaar printer spare parts category
-    updatePageHeader('Xaar Printer Spare Parts', xaarSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('xaarPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load Toshiba Printer Spare Parts specifically
-window.loadToshibaPrinterSpareParts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Toshiba Printer Spare Parts') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get Toshiba printer spare parts
-    const toshibaSpareParts = printSparePartProducts.toshiba || [];
-    
-    const productsHTML = renderProducts(toshibaSpareParts, 'printsparepart');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show Toshiba printer spare parts category
-    updatePageHeader('Toshiba Printer Spare Parts', toshibaSpareParts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('toshibaPrinterSpareParts');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Hero Carousel functionality
 class HeroCarousel {
   constructor() {
     this.currentSlide = 0;
@@ -4320,43 +999,37 @@ class HeroCarousel {
     this.indicators = document.querySelectorAll('.hero-indicator');
     this.heroElement = document.querySelector('.hero-carousel');
     this.autoPlayInterval = null;
-    this.autoPlayDelay = 5000; // 5 seconds
-    
+    this.autoPlayDelay = 5000;
+
     if (this.slides.length > 0) {
       this.init();
     }
   }
-  
+
   init() {
-    // Show first slide
     this.showSlide(0);
-    
-    // Start auto-play
     this.startAutoPlay();
   }
 
   showSlide(index) {
-    // Hide all slides
     this.slides.forEach((slide, i) => {
       slide.style.opacity = '0';
       slide.style.transform = i < index ? 'translateX(-100%)' : 'translateX(100%)';
       slide.style.zIndex = '1';
       slide.classList.remove('active');
     });
-    
-    // Show current slide
+
     if (this.slides[index]) {
       this.slides[index].style.opacity = '1';
       this.slides[index].style.transform = 'translateX(0)';
       this.slides[index].style.zIndex = '2';
       this.slides[index].classList.add('active');
     }
-    
-    // Update indicators
+
     this.indicators.forEach((indicator, i) => {
       indicator.classList.toggle('active', i === index);
     });
-    
+
     this.currentSlide = index;
   }
 
@@ -4366,84 +1039,102 @@ class HeroCarousel {
       this.restartAutoPlay();
     }
   }
-  
+
   next() {
     this.nextSlide();
     this.restartAutoPlay();
   }
-  
+
   prev() {
     this.previousSlide();
     this.restartAutoPlay();
   }
-  
+
   nextSlide() {
+    if (this.slides.length === 0) {
+      return;
+    }
     const nextIndex = (this.currentSlide + 1) % this.slides.length;
     this.showSlide(nextIndex);
   }
-  
+
   previousSlide() {
+    if (this.slides.length === 0) {
+      return;
+    }
     const prevIndex = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
     this.showSlide(prevIndex);
   }
-  
+
   startAutoPlay() {
-    if (this.slides.length <= 1) {
+    if (this.slides.length <= 1 || this.autoPlayInterval) {
       return;
     }
-    this.autoPlayInterval = setInterval(() => {
+    this.autoPlayInterval = window.setInterval(() => {
       this.nextSlide();
     }, this.autoPlayDelay);
   }
-  
+
   stopAutoPlay() {
     if (this.autoPlayInterval) {
-      clearInterval(this.autoPlayInterval);
+      window.clearInterval(this.autoPlayInterval);
       this.autoPlayInterval = null;
     }
   }
-  
+
   restartAutoPlay() {
     this.stopAutoPlay();
     this.startAutoPlay();
   }
 }
 
-// Initialize hero carousel reference
-let heroCarousel = null;
+function initializeHeroCarousel(slideCountOverride = null) {
+  const heroCarouselElement = document.querySelector('.hero-carousel');
+  const heroIndicatorsContainer = document.querySelector('.hero-indicators');
+  const heroPrevButton = document.querySelector('.hero-nav-prev');
+  const heroNextButton = document.querySelector('.hero-nav-next');
 
-// Make heroCarousel globally accessible
-window.heroCarousel = null;
-
-const heroCarouselElement = document.querySelector('.hero-carousel');
-const heroIndicatorsContainer = document.querySelector('.hero-indicators');
-const heroPrevButton = document.querySelector('.hero-nav-prev');
-const heroNextButton = document.querySelector('.hero-nav-next');
-
-if (heroCarouselElement) {
-  if (!heroCarouselElement.hasAttribute('tabindex')) {
-    heroCarouselElement.setAttribute('tabindex', '0');
+  if (!heroCarouselElement) {
+    window.heroCarousel = null;
+    return;
   }
-  if (!heroCarouselElement.hasAttribute('role')) {
-    heroCarouselElement.setAttribute('role', 'region');
-    heroCarouselElement.setAttribute('aria-roledescription', 'carousel');
-    heroCarouselElement.setAttribute('aria-label', 'Featured toy collections carousel');
+
+  const ensureAttributes = () => {
+    if (!heroCarouselElement.hasAttribute('tabindex')) {
+      heroCarouselElement.setAttribute('tabindex', '0');
+    }
+    if (!heroCarouselElement.hasAttribute('role')) {
+      heroCarouselElement.setAttribute('role', 'region');
+      heroCarouselElement.setAttribute('aria-roledescription', 'carousel');
+      heroCarouselElement.setAttribute('aria-label', 'Featured toy collections carousel');
+    }
+  };
+
+  ensureAttributes();
+
+  const slides = heroCarouselElement.querySelectorAll('.hero-slide');
+  const slideCount = typeof slideCountOverride === 'number' ? slideCountOverride : slides.length;
+
+  if (slideCount <= 1) {
+    if (slides[0]) {
+      slides[0].classList.add('active');
+      slides[0].style.opacity = '1';
+      slides[0].style.transform = 'translateX(0)';
+      slides[0].style.zIndex = '2';
+    }
+    window.heroCarousel = null;
+    return;
   }
+
+  let heroCarousel = new HeroCarousel();
 
   heroCarouselElement.addEventListener('mouseenter', () => {
-    if (heroCarousel) {
-      heroCarousel.stopAutoPlay();
-    }
+    heroCarousel.stopAutoPlay();
   });
   heroCarouselElement.addEventListener('mouseleave', () => {
-    if (heroCarousel) {
-      heroCarousel.startAutoPlay();
-    }
+    heroCarousel.startAutoPlay();
   });
   heroCarouselElement.addEventListener('keydown', (event) => {
-    if (!heroCarousel) {
-      return;
-    }
     if (event.key === 'ArrowLeft') {
       event.preventDefault();
       heroCarousel.prev();
@@ -4452,1146 +1143,74 @@ if (heroCarouselElement) {
       heroCarousel.next();
     }
   });
-}
 
-if (heroIndicatorsContainer) {
-  heroIndicatorsContainer.addEventListener('click', (event) => {
-    const target = event.target.closest('.hero-indicator');
-    if (!target || !heroCarousel) {
-      return;
-    }
-    const index = Number.parseInt(target.dataset.index || '', 10);
-    if (!Number.isNaN(index)) {
-      heroCarousel.goToSlide(index);
-    }
-  });
-}
+  if (heroIndicatorsContainer) {
+    heroIndicatorsContainer.addEventListener('click', (event) => {
+      const target = event.target.closest('.hero-indicator');
+      if (!target) {
+        return;
+      }
+      const index = Number.parseInt(target.dataset.index || '', 10);
+      if (!Number.isNaN(index)) {
+        heroCarousel.goToSlide(index);
+      }
+    });
+  }
 
-if (heroPrevButton) {
-  heroPrevButton.addEventListener('click', () => {
-    if (heroCarousel) {
+  if (heroPrevButton) {
+    heroPrevButton.addEventListener('click', () => {
       heroCarousel.prev();
-    }
-  });
-}
+    });
+  }
 
-if (heroNextButton) {
-  heroNextButton.addEventListener('click', () => {
-    if (heroCarousel) {
+  if (heroNextButton) {
+    heroNextButton.addEventListener('click', () => {
       heroCarousel.next();
-    }
-  });
+    });
+  }
+
+  window.heroCarousel = heroCarousel;
 }
 
-// Expose product data globally for search system
-window.inkjetPrinterProducts = inkjetPrinterProducts;
-window.printheadProducts = printheadProducts;
-window.printSparePartProducts = printSparePartProducts;
-window.upgradingKitProducts = upgradingKitProducts;
+async function initializeIndexPage() {
+  window.updatingHashFromCategory = false;
+  clearProductsGrid();
+  const heroHighlights = await renderHeroSlides();
+  const highlightCount = Array.isArray(heroHighlights) ? heroHighlights.length : 0;
+  initializeHeroCarousel(highlightCount);
 
-// Expose utility functions globally for search system
-window.updatePageHeader = updatePageHeader;
-window.hideHeroBanner = hideHeroBanner;
-window.hideActiveSubmenus = hideActiveSubmenus;
+  if (isSearchRequest || highlightCount === 0) {
+    hideHeroBanner();
+  }
+
+  const initialHash = window.location.hash ? window.location.hash.substring(1) : '';
+  if (initialHash) {
+    const handled = handleHashNavigation(initialHash);
+    if (!handled) {
+      loadAllProducts({ skipHashUpdate: true });
+    }
+  } else if (!isSearchRequest) {
+    window.setTimeout(() => {
+      clearProductsGrid();
+      showHeroBanner();
+    }, 0);
+  }
+}
+
 window.renderProducts = renderProducts;
 window.attachAddToCartListeners = attachAddToCartListeners;
+window.hideHeroBanner = hideHeroBanner;
+window.showHeroBanner = showHeroBanner;
+window.hideActiveSubmenus = hideActiveSubmenus;
+window.updatePageHeader = updatePageHeader;
 window.scrollToProducts = scrollToProducts;
-
-// Expose solvent printer functions globally
-window.getAllSolventPrinters = getAllSolventPrinters;
-window.getSolventKM512iPrinters = getSolventKM512iPrinters;
-window.getSolventKM1024iPrinters = getSolventKM1024iPrinters;
-window.getSolventRicohGen5Printers = getSolventRicohGen5Printers;
-window.getSolventRicohGen6Printers = getSolventRicohGen6Printers;
-
-// Function to load material products for a specific category
-window.loadMaterialProducts = function(category) {
-  const categoryProducts = materialProducts[category];
-  if (categoryProducts) {
-    // Hide the submenu after selection
-    hideActiveSubmenus();
-    
-    // Hide hero banner for specific category views
-    hideHeroBanner();
-    
-    // Highlight selected menu item
-    highlightSelectedMenuItem(category);
-    
-    // Add loading animation
-    showLoadingState();
-    
-    // Small delay for smooth transition
-    setTimeout(() => {
-      const productsHTML = renderProducts(categoryProducts, 'material');
-      const productsGrid = document.querySelector('.js-prodcts-grid');
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-      
-      // Re-attach event listeners for the new add to cart buttons
-      attachAddToCartListeners();
-        // Update page title or add a header to show which category is selected
-      updatePageHeader(`${category.charAt(0).toUpperCase() + category.slice(1)} Materials`, categoryProducts.length);
-      
-      // Update breadcrumb navigation
-      updateBreadcrumb(`material-${category}`);
-      
-      // Scroll to top of products
-      scrollToProducts();
-    }, 200);
-  }
-};
-
-// Function to load all material products from all categories
-window.loadAllMaterialProducts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Material') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Combine all material products from all categories
-    let allMaterialProducts = [];
-    for (const category in materialProducts) {
-      allMaterialProducts = allMaterialProducts.concat(materialProducts[category]);
-    }
-    
-    const productsHTML = renderProducts(allMaterialProducts, 'material');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show material category
-    updatePageHeader('Material', allMaterialProducts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('material');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load specific channel letter category products
-window.loadChannelLetterProducts = function(category) {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Channel Letter') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    const productsToShow = channelLetterBendingMechineProducts[category] || [];
-    const productsHTML = renderProducts(productsToShow, 'channel-letter');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title
-    const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
-    updatePageHeader(`${categoryName} Channel Letter`, productsToShow.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('channel-letter', category);
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load all channel letter products from all categories
-window.loadAllChannelLetterProducts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Channel Letter') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Combine all channel letter products from all categories
-    let allChannelLetterProducts = [];
-    for (const category in channelLetterBendingMechineProducts) {
-      allChannelLetterProducts = allChannelLetterProducts.concat(channelLetterBendingMechineProducts[category]);
-    }
-    
-    const productsHTML = renderProducts(allChannelLetterProducts, 'channel-letter');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show channel letter category
-    updatePageHeader('Channel Letter', allChannelLetterProducts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('channel-letter');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load specific other category products
-window.loadOtherProducts = function(category) {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Other') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    const productsToShow = otherProducts[category] || [];
-    const productsHTML = renderProducts(productsToShow, 'other');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title
-    const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
-    updatePageHeader(`${categoryName} Other Products`, productsToShow.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('other', category);
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      // Scroll to top of products
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load all other products from all categories
-window.loadAllOtherProducts = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Other') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Combine all other products from all categories
-    let allOtherProducts = [];
-    for (const category in otherProducts) {
-      allOtherProducts = allOtherProducts.concat(otherProducts[category]);
-    }
-    
-    const productsHTML = renderProducts(allOtherProducts, 'other');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-      // Update page title or add a header to show other category
-    updatePageHeader('Other Products', allOtherProducts.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('other');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load all economic version inkjet printers
-window.loadAllEconomicVersionPrinters = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item in the navigation
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    // Get all economic version printers
-    const allEconomicPrinters = getAllEcoSolventPrinters();
-    
-    const productsHTML = renderProducts(allEconomicPrinters, 'economicprinter');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title or add a header to show economic version printers category
-    updatePageHeader('Eco-Solvent Inkjet Printers', allEconomicPrinters.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('economicVersionPrinters');
-    
-    // Check if we need to skip scrolling
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    // Scroll to top of products only if not skipping
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Helper function to get all eco-solvent printer products
-export function getAllEcoSolventPrinters() {
-  // Eco-solvent printers should only come from economic_version category
-  // DTF and UV DTF are Direct to Fabric & Film printers, not eco-solvent
-  const economicPrinters = inkjetPrinterProducts.economic_version || [];
-  return economicPrinters;
-}
-
-// Helper function to get eco-solvent printers with XP600 printhead
-export function getEcoSolventXP600Printers() {
-  return (inkjetPrinterProducts.economic_version || []).filter(printer => 
-    printer.name.toLowerCase().includes('xp600')
-  );
-}
-
-// Helper function to get all printers with I1600 printhead (eco-solvent and sublimation)  
-export function getEcoSolventI1600Printers() {
-  // Only return eco-solvent printers (from economic_version), not sublimation printers
-  const economicI1600 = (inkjetPrinterProducts.economic_version || []).filter(printer => 
-    printer.name.toLowerCase().includes('i1600') || printer.name.toLowerCase().includes('i16')
-  );
-  return economicI1600;
-}
-
-// Helper function to get all printers with I3200 printhead (eco-solvent and sublimation)
-export function getEcoSolventI3200Printers() {
-  // Only return eco-solvent printers (from economic_version), not sublimation printers
-  const economicI3200 = (inkjetPrinterProducts.economic_version || []).filter(printer => 
-    printer.name.toLowerCase().includes('i3200') || printer.name.toLowerCase().includes('i32')
-  );
-  return economicI3200;
-}
-
-// Helper function to get all solvent printer products
-export function getAllSolventPrinters() {
-  return inkjetPrinterProducts.solvent || [];
-}
-
-// Helper function to get solvent printers with KM512i printhead
-export function getSolventKM512iPrinters() {
-  return (inkjetPrinterProducts.solvent || []).filter(printer => 
-    printer.name.toLowerCase().includes('512i') || printer.name.toLowerCase().includes('km512i')
-  );
-}
-
-// Helper function to get solvent printers with KM1024i printhead  
-export function getSolventKM1024iPrinters() {
-  return (inkjetPrinterProducts.solvent || []).filter(printer => 
-    printer.name.toLowerCase().includes('1024i') || printer.name.toLowerCase().includes('km1024i')
-  );
-}
-
-// Helper function to get solvent printers with Ricoh Gen5 printhead
-export function getSolventRicohGen5Printers() {
-  return (inkjetPrinterProducts.solvent || []).filter(printer => 
-    printer.name.toLowerCase().includes('gen5') || printer.name.toLowerCase().includes('ricoh gen5')
-  );
-}
-
-// Helper function to get solvent printers with Ricoh Gen6 printhead
-export function getSolventRicohGen6Printers() {
-  return (inkjetPrinterProducts.solvent || []).filter(printer => 
-    printer.name.toLowerCase().includes('gen6') || printer.name.toLowerCase().includes('ricoh gen6')
-  );
-}
-
-// Helper function to get a specific printer by ID
-export function getInkjetPrinterById(productId) {
-  for (const category in inkjetPrinterProducts) {
-    const products = inkjetPrinterProducts[category];
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      return { ...product, category };
-    }
-  }
-  return null;
-}
-
-// Function to get all DTF printers
-function getAllDTFPrinters() {
-  return inkjetPrinterProducts.dtf_printer || [];
-}
-
-// Function to load DTF printer products
-window.loadDTFPrinters = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item
-  highlightSelectedMenuItem('dtf-printers');
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    const dtfPrinters = getAllDTFPrinters();
-    const productsHTML = renderProducts(dtfPrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title
-    updatePageHeader('DTF Printers', dtfPrinters.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('dtfPrinters');
-    
-    // Scroll to top of products
-    scrollToProducts();
-  }, 200);
-};
-
-// Function to load all Direct to Fabric & Film printers (currently only DTF)
-window.loadDirectToFabricFilmPrinters = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item
-  highlightSelectedMenuItem('direct-to-fabric-film');
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    const dtfPrinters = getAllDTFPrinters();
-    const uvDtfPrinters = getAllUVDTFPrinters();
-    const allDirectToFabricFilmPrinters = [...dtfPrinters, ...uvDtfPrinters];
-    
-    const productsHTML = renderProducts(allDirectToFabricFilmPrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title
-    updatePageHeader('Direct to Fabric & Film Printers', allDirectToFabricFilmPrinters.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('directToFabricFilm');
-    
-    // Scroll to top of products
-    scrollToProducts();
-  }, 200);
-};
-
-// Function to get all UV DTF printers
-function getAllUVDTFPrinters() {
-  return inkjetPrinterProducts.uv_dtf || [];
-}
-
-// Function to load UV DTF printer products
-window.loadUVDTFPrinters = function() {
-  // Hide the submenu after selection
-  hideActiveSubmenus();
-  
-  // Hide hero banner for specific category views
-  hideHeroBanner();
-  
-  // Highlight selected menu item
-  highlightSelectedMenuItem('uv-dtf-printers');
-  
-  // Add loading animation
-  showLoadingState();
-  
-  // Small delay for smooth transition
-  setTimeout(() => {
-    const uvDtfPrinters = getAllUVDTFPrinters();
-    const productsHTML = renderProducts(uvDtfPrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    // Re-attach event listeners for the new add to cart buttons
-    attachAddToCartListeners();
-    
-    // Update page title
-    updatePageHeader('UV DTF Printers', uvDtfPrinters.length);
-    
-    // Update breadcrumb navigation
-    updateBreadcrumb('uvDtfPrinters');
-    
-    // Scroll to top of products
-    scrollToProducts();
-  }, 200);
-};
-
-// Function to load all solvent inkjet printers
-window.loadAllSolventPrinters = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const allSolventPrinters = getAllSolventPrinters();
-    const productsHTML = renderProducts(allSolventPrinters, 'solventprinter');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('Solvent Inkjet Printers', allSolventPrinters.length);
-    updateBreadcrumb('solventPrinters');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load solvent printers with KM512i printhead
-window.loadSolventKM512iPrinters = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const km512iPrinters = getSolventKM512iPrinters();
-    const productsHTML = renderProducts(km512iPrinters, 'solventprinter');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('Solvent Inkjet Printers - With Konica KM512i Printhead', km512iPrinters.length);
-    updateBreadcrumb('solventKM512iPrinters');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load solvent printers with KM1024i printhead
-window.loadSolventKM1024iPrinters = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const km1024iPrinters = getSolventKM1024iPrinters();
-    const productsHTML = renderProducts(km1024iPrinters, 'solventprinter');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('Solvent Inkjet Printers - With Konica KM1024i Printhead', km1024iPrinters.length);
-    updateBreadcrumb('solventKM1024iPrinters');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to get all sublimation printers
-function getAllSublimationPrinters() {
-  return inkjetPrinterProducts.sublimation || [];
-}
-
-// Function to load sublimation printer products
-window.loadSublimationPrinters = function() {
-  window.loadSpecificCategory('Sublimation Printers');
-};
-
-// Function to get all UV inkjet printers
-export function getAllUvInkjetPrinters() {
-  return inkjetPrinterProducts.amo_uv_inkjet || [];
-}
-
-// Function to get UV inkjet printers with Ricoh Gen6 printhead
-export function getUvRicohGen6Printers() {
-  const uvPrinters = inkjetPrinterProducts.amo_uv_inkjet || [];
-  return uvPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('ricoh gen6') || 
-    printer.name.toLowerCase().includes('gen6')
-  );
-}
-
-// Function to get UV inkjet printers with Konica KM1024i printhead
-export function getUvInkjetKonica1024iPrinters() {
-  const uvPrinters = inkjetPrinterProducts.amo_uv_inkjet || [];
-  return uvPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('konica 1024i') || 
-    printer.name.toLowerCase().includes('km1024i') ||
-    printer.name.toLowerCase().includes('k24i')
-  );
-}
-
-// Function to get UV flatbed printers with Konica KM1024i printhead
-export function getUvKonica1024iPrinters() {
-  const uvFlatbedPrinters = inkjetPrinterProducts.uv_flatbed || [];
-  return uvFlatbedPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('konica 1024i') || 
-    printer.name.toLowerCase().includes('km1024i') ||
-    printer.name.toLowerCase().includes('k24i')
-  );
-}
-
-// Function to get UV flatbed printers with Ricoh Gen6 printhead
-export function getUvFlatbedRicohGen6Printers() {
-  const uvFlatbedPrinters = inkjetPrinterProducts.uv_flatbed || [];
-  return uvFlatbedPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('ricoh gen6') || 
-    printer.name.toLowerCase().includes('ricoh gen 6') ||
-    printer.name.toLowerCase().includes('ricohgen6')
-  );
-}
-
-// Function to get UV flatbed printers with Ricoh Gen5 printhead
-export function getUvFlatbedRicohGen5Printers() {
-  const uvFlatbedPrinters = inkjetPrinterProducts.uv_flatbed || [];
-  return uvFlatbedPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('ricoh gen5') || 
-    printer.name.toLowerCase().includes('ricoh gen 5') ||
-    printer.name.toLowerCase().includes('ricohgen5')
-  );
-}
-
-// Function to get UV flatbed printers with I3200 printhead
-export function getUvFlatbedI3200Printers() {
-  const uvFlatbedPrinters = inkjetPrinterProducts.uv_flatbed || [];
-  return uvFlatbedPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('i3200') || 
-    printer.name.toLowerCase().includes('i-3200') ||
-    printer.name.toLowerCase().includes('i 3200')
-  );
-}
-
-// Function to get UV flatbed printers with XP600 printhead
-export function getUvFlatbedXP600Printers() {
-  const uvFlatbedPrinters = inkjetPrinterProducts.uv_flatbed || [];
-  return uvFlatbedPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('xp600') || 
-    printer.name.toLowerCase().includes('xp-600') ||
-    printer.name.toLowerCase().includes('xp 600')
-  );
-}
-
-// Function to get UV Flatbed Printers
-export function getUvFlatbedPrinters() {
-  return inkjetPrinterProducts.uv_flatbed || [];
-}
-
-// Function to get all UV hybrid inkjet printers
-export function getAllUvHybridPrinters() {
-  return inkjetPrinterProducts.hybrid_uv || [];
-}
-
-// Function to get UV hybrid inkjet printers with Konica KM1024i printhead
-export function getUvHybridKonica1024iPrinters() {
-  const uvHybridPrinters = inkjetPrinterProducts.hybrid_uv || [];
-  return uvHybridPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('konica') && 
-    (printer.name.toLowerCase().includes('km1024i') || 
-     printer.name.toLowerCase().includes('k24i') ||
-     printer.name.toLowerCase().includes('1024i'))
-  );
-}
-
-// Function to get UV hybrid inkjet printers with Ricoh Gen6 printhead
-export function getUvHybridRicohGen6Printers() {
-  const uvHybridPrinters = inkjetPrinterProducts.hybrid_uv || [];
-  return uvHybridPrinters.filter(printer => 
-    printer.name.toLowerCase().includes('ricoh') && 
-    (printer.name.toLowerCase().includes('gen6') || 
-     printer.name.toLowerCase().includes('gen 6') ||
-     printer.name.toLowerCase().includes('ricoh gen6'))
-  );
-}
-
-// Function to load all UV inkjet printers
-window.loadAllUvInkjetPrinters = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const uvPrinters = getAllUvInkjetPrinters();
-    const productsHTML = renderProducts(uvPrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('UV Inkjet Printers', uvPrinters.length);
-    updateBreadcrumb('uvInkjetPrinters');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load all UV hybrid inkjet printers
-window.loadAllUvHybridPrinters = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const uvHybridPrinters = getAllUvHybridPrinters();
-    const productsHTML = renderProducts(uvHybridPrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('Hybrid UV Printers', uvHybridPrinters.length);
-    updateBreadcrumb('uvHybridPrinters');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load UV inkjet printers with Ricoh Gen6 printhead
-window.loadUvRicohGen6Printers = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const ricohGen6Printers = getUvRicohGen6Printers();
-    const productsHTML = renderProducts(ricohGen6Printers, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    if (productsGrid) {
-      productsGrid.innerHTML = productsHTML;
-      productsGrid.classList.remove('showing-coming-soon');
-    }
-    
-    attachAddToCartListeners();
-    updatePageHeader('UV Inkjet Printers - With Ricoh Gen6 Printhead', ricohGen6Printers.length);
-    updateBreadcrumb('uvRicohGen6Printers');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load UV flatbed printers with Konica KM1024i printhead
-window.loadUvKonica1024iPrinters = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const konica1024iPrinters = getUvKonica1024iPrinters();
-    const productsHTML = renderProducts(konica1024iPrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('UV Flatbed Printers - With Konica KM1024i Printhead', konica1024iPrinters.length);
-    updateBreadcrumb('uvKonica1024iPrinters');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load UV Flatbed Printers
-window.loadUvFlatbedPrinters = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const uvFlatbedPrinters = getUvFlatbedPrinters();
-    const productsHTML = renderProducts(uvFlatbedPrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('UV Flatbed Printers', uvFlatbedPrinters.length);
-    updateBreadcrumb('uvFlatbedPrinters');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Export functions for global access
-window.getAllUvInkjetPrinters = getAllUvInkjetPrinters;
-window.getAllUvHybridPrinters = getAllUvHybridPrinters;
-window.getUvRicohGen6Printers = getUvRicohGen6Printers;
-window.getUvInkjetKonica1024iPrinters = getUvInkjetKonica1024iPrinters;
-window.getUvFlatbedRicohGen6Printers = getUvFlatbedRicohGen6Printers;
-window.getUvFlatbedRicohGen5Printers = getUvFlatbedRicohGen5Printers;
-window.getUvFlatbedI3200Printers = getUvFlatbedI3200Printers;
-window.getUvFlatbedXP600Printers = getUvFlatbedXP600Printers;
-window.getUvHybridKonica1024iPrinters = getUvHybridKonica1024iPrinters;
-window.getUvHybridRicohGen6Printers = getUvHybridRicohGen6Printers;
-window.getUvKonica1024iPrinters = getUvKonica1024iPrinters;
-window.getUvFlatbedPrinters = getUvFlatbedPrinters;
-
-// Function to get all double side printers
-function getAllDoubleSidePrinters() {
-  return inkjetPrinterProducts.double_side || [];
-}
-
-// Function to load all double side printers
-window.loadAllDoubleSidePrinters = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    const doubleSidePrinters = getAllDoubleSidePrinters();
-    const productsHTML = renderProducts(doubleSidePrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('Double Side Printers', doubleSidePrinters.length);
-    updateBreadcrumb('doubleSidePrinters');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Function to load double side direct printing printers
-window.loadDoubleSideDirectPrinting = function() {
-  hideActiveSubmenus();
-  hideHeroBanner();
-  
-  document.querySelectorAll('.sub-header-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.textContent.trim() === 'Inkjet Printers') {
-      link.classList.add('active');
-    }
-  });
-  
-  showLoadingState();
-  
-  setTimeout(() => {
-    // For now, direct printing includes all double side printers
-    // This can be expanded later to filter specific types
-    const directPrintingPrinters = getAllDoubleSidePrinters();
-    const productsHTML = renderProducts(directPrintingPrinters, 'printer');
-    const productsGrid = document.querySelector('.js-prodcts-grid');
-    productsGrid.innerHTML = productsHTML;
-    productsGrid.classList.remove('showing-coming-soon');
-    
-    attachAddToCartListeners();
-    updatePageHeader('Double Side Printers - Direct Printing', directPrintingPrinters.length);
-    updateBreadcrumb('doubleSideDirectPrinting');
-    
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const skipScroll = urlSearchParams.get('noscroll') === 'true';
-    
-    if (!skipScroll) {
-      scrollToProducts();
-    }
-  }, 200);
-};
-
-// Export double side printer functions for global access
-window.getAllDoubleSidePrinters = getAllDoubleSidePrinters;
-
-// --- Toy dataset overrides for legacy loaders ---
-function loadToyNavDisplay(displayName) {
-  if (typeof window.loadSpecificCategory === 'function') {
-    window.loadSpecificCategory(displayName);
-    return;
-  }
-
-  if (typeof loadNavGroup === 'function') {
-    loadNavGroup(displayName);
-  }
-}
-
-window.loadPrintheadProducts = function() {
-  loadToyNavDisplay('Print Heads');
-};
-
-window.loadAllPrintheadProducts = function() {
-  loadToyNavDisplay('Print Heads');
-};
-
-window.loadPrintSpareParts = function() {
-  loadToyNavDisplay('Print Spare Parts');
-};
-
-window.loadAllPrintSpareParts = function() {
-  loadToyNavDisplay('Print Spare Parts');
-};
-
-window.loadUpgradingKitProducts = function() {
-  loadToyNavDisplay('Upgrading Kit');
-};
-
-window.loadAllUpgradingKitProducts = function() {
-  loadToyNavDisplay('Upgrading Kit');
-};
-
-window.loadMaterialProducts = function() {
-  loadToyNavDisplay('Material');
-};
-
-window.loadAllMaterialProducts = function() {
-  loadToyNavDisplay('Material');
-};
-
-window.loadLedLcdProducts = function() {
-  loadToyNavDisplay('LED & LCD');
-};
-
-window.loadAllLedLcdProducts = function() {
-  loadToyNavDisplay('LED & LCD');
-};
-
-window.loadChannelLetterProducts = function() {
-  loadToyNavDisplay('Channel Letter');
-};
-
-window.loadAllChannelLetterProducts = function() {
-  loadToyNavDisplay('Channel Letter');
-};
-
-window.loadOtherProducts = function() {
-  loadToyNavDisplay('Other');
-};
-
-window.loadAllOtherProducts = function() {
-  loadToyNavDisplay('Other');
-};
-
-window.loadAllDoubleSidePrinters = function() {
-  loadToyNavDisplay('Action Figures & Role Play');
-};
-
-window.loadDoubleSideDirectPrinting = function() {
-  loadToyNavDisplay('Action Figures & Role Play');
-};
+window.loadAllProducts = loadAllProducts;
+window.loadSpecificCategory = loadSpecificCategory;
+window.loadToyGroupView = loadToyGroupView;
+window.showEmptyCategoryState = showEmptyCategoryState;
+window.showLoadingState = showLoadingState;
+window.updateToyBreadcrumb = updateToyBreadcrumb;
+window.handleHashFallback = handleHashFallback;
+
+window.addEventListener('DOMContentLoaded', initializeIndexPage);
 

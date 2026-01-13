@@ -3,7 +3,7 @@ body.has-sidebar .departments-sidebar {
   top: 92px; /* 60px (main header) + 32px (sub-header) */
   bottom: 0;
   left: 0;
-  width: 210px;
+  width: 180px;
   background-color: #131a22;
   color: white;
   overflow-y: auto;
@@ -23,7 +23,7 @@ body.has-sidebar .departments-sidebar {
   padding: 10px 24px;
   text-decoration: none;
   color: rgba(255, 255, 255, 0.82);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.01em;
   position: relative;
@@ -56,7 +56,7 @@ body.has-sidebar .departments-sidebar {
   visibility: hidden;
   opacity: 0;
   position: fixed;
-  left: 210px; /* Sidebar width */
+  left: 180px; /* Sidebar width */
   top: 92px; /* 60px (main header) + 32px (sub-header) */
   bottom: 0;
   width: 320px;
@@ -78,7 +78,7 @@ body.has-sidebar .departments-sidebar {
 
 .department-subgroup > .submenu {
   position: fixed;
-  left: 530px; /* sidebar width (210px) + first submenu width (320px) */
+  left: 500px; /* sidebar width (180px) + first submenu width (320px) */
   background-color: #1e2d3c;
 }
 
@@ -151,7 +151,7 @@ body.has-sidebar .departments-sidebar {
 
 .submenu .department-link {
   padding: 10px 24px;
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
   transition: all 0.2s ease;
   min-height: 40px;
