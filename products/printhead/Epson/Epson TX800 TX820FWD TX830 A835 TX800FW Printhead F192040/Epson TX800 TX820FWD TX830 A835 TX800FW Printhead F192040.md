@@ -1,8 +1,0 @@
-# Epson TX800 TX820FWD TX830 A835 TX800FW Printhead F192040
-
-Price: USD:150-190
-
-Product Details:
-
-Epson TX800 TX820FWD TX830 A835 TX800FW Printhead
-Code:EPSON  (F192040)
