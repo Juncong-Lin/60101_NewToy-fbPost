@@ -11,8 +11,6 @@ import copy
 import shutil
 import csv
 import logging
-from decimal import Decimal, InvalidOperation
-from functools import lru_cache
 from datetime import datetime
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
@@ -59,7 +57,6 @@ BASE_URL = "https://www.1688.com"
 
 SCRIPT_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_SOURCE_DIR = os.path.normpath(os.path.join(SCRIPT_BASE_DIR, '..', 'products_to_toy_design_help_folder', 'caculate_categories', 'results'))
-TRANSLATION_CACHE_PATH = os.path.normpath(os.path.join(SCRIPT_BASE_DIR, '..', 'products_to_toy_design_help_folder', 'translation_cache.json'))
 
 # Load BRANDS and URL_TEMPLATE from JSON
 with open(os.path.join(DATA_SOURCE_DIR, 'brands.json'), 'r', encoding='utf-8') as f:
@@ -68,7 +65,7 @@ with open(os.path.join(DATA_SOURCE_DIR, 'brands.json'), 'r', encoding='utf-8') a
 BRANDS = [item['brand'] for item in brand_data]
 URL_TEMPLATE = [item['url'] for item in brand_data]
 
-SCRAPE_LINKS = int(os.environ.get('SCRAPE_LINKS', '536'))  # Links to be scraped per run of this script
+SCRAPE_LINKS = 536  # Links to be scraped per run of this script
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -100,284 +97,8 @@ PRODUCT_OUTPUT_FIELDS = [
     "price",
     "priceRight",
     "marketTag",
-    "sectionName",
-    "stallNumber",
-    "companyCode",
-    "companyCodeDigits",
-    "productCode",
-    "packaging",
-    "qtyPerCarton",
-    "innerBox",
-    "outerCartonLength",
-    "outerCartonWidth",
-    "outerCartonHeight",
-    "packageLength",
-    "packageWidth",
-    "packageHeight",
-    "volumeCbm",
-    "chargeableUnitCn",
-    "grossWeightKg",
-    "netWeightKg",
-    "pricePerChargeableUnit",
-    "excelRow",
-    "categoryFolder",
-    "groupName",
-    "categoryDisplayName",
-    "groupDisplayName",
-    "productDisplayName",
-    "packagingDisplayName",
-    "brandKey"
+    "sectionName"
 ]
-
-TRANSLATION_CACHE = {}
-TRANSLATION_CACHE_NORMALIZED = {}
-MAX_DIR_NAME_LENGTH = 80
-
-EXPECTED_GROUP_NAMES = [
-    "Action Figures & Role Play",
-    "Arts & Crafts Toys",
-    "Building Blocks & Construction",
-    "Dolls & Plush Toys",
-    "Educational Toys",
-    "Electronic & Interactive Toys",
-    "Inflatable & Water Toys",
-    "Other Industries",
-    "Other Toys",
-    "Outdoor & Sports Toys",
-    "Pop Culture & Licensed Toys",
-    "Puzzles & Board Games",
-    "Traditional Toys",
-    "Vehicles & Ride-On Toys",
-]
-
-
-def _normalize_translation_key(value):
-    if not value:
-        return ''
-    normalized = re.sub(r"\s+", "", str(value))
-    normalized = re.sub(r"[\u3000]", "", normalized)
-    normalized = re.sub(r"[^0-9a-zA-Z_\u4e00-\u9fff]", "", normalized)
-    return normalized.lower()
-
-
-def _smart_capitalize(phrase):
-    if not phrase or not isinstance(phrase, str):
-        return phrase
-
-    def capitalize_segment(segment):
-        def replacer(match):
-            word = match.group(0)
-            if any(char.isupper() for char in word[1:]) or any(char.isdigit() for char in word):
-                return word
-            return word.capitalize()
-
-        return re.sub(r"[A-Za-z]+(?:'[A-Za-z]+)?", replacer, segment)
-
-    segments = re.split(r"(\(.*?\))", phrase)
-    transformed = []
-    for segment in segments:
-        if not segment:
-            continue
-        if segment.startswith('(') and segment.endswith(')'):
-            inner = segment[1:-1]
-            inner_normalized = re.sub(r"\s+", " ", inner).strip().lower()
-            transformed.append(f"({inner_normalized})")
-        else:
-            transformed.append(capitalize_segment(segment))
-    return "".join(transformed)
-
-
-def _merge_parenthetical_suffix(translation):
-    if not translation:
-        return translation
-    match = re.match(r"^(.*?)(\([^()]*\))\s+([^()]+)$", translation)
-    if not match:
-        return translation
-    prefix, inner, suffix = match.groups()
-    inner_content = inner[1:-1].strip()
-    suffix = suffix.strip()
-    if not inner_content or not suffix:
-        return translation
-    if suffix.endswith('.'):
-        suffix = suffix[:-1]
-    if suffix and suffix[0].isalpha() and suffix.lower() not in inner_content.lower():
-        merged = f"{prefix}({inner_content}, {suffix})"
-        return merged
-    return translation
-
-
-def _load_translation_cache(path):
-    if not os.path.exists(path):
-        return
-    try:
-        with open(path, 'r', encoding='utf-8') as handle:
-            data = json.load(handle)
-            if not isinstance(data, dict):
-                return
-            for key, value in data.items():
-                if not key or not value:
-                    continue
-                key_str = str(key).strip()
-                value_str = str(value).strip()
-                if not key_str or not value_str:
-                    continue
-                TRANSLATION_CACHE[key_str] = value_str
-                norm = _normalize_translation_key(key_str)
-                if norm:
-                    bucket = TRANSLATION_CACHE_NORMALIZED.setdefault(norm, [])
-                    bucket.append((key_str, value_str))
-    except Exception:
-        pass
-
-
-_load_translation_cache(TRANSLATION_CACHE_PATH)
-
-
-@lru_cache(maxsize=4096)
-def translate_text(value, *, title_case=True, fallback=None):
-    if value is None:
-        return fallback
-    if isinstance(value, (int, float, Decimal)):
-        return value
-    text = str(value).strip()
-    if not text:
-        return fallback if fallback is not None else value
-
-    translation = TRANSLATION_CACHE.get(text)
-    if translation is None:
-        norm = _normalize_translation_key(text)
-        best_match = None
-        best_length = 0
-        if norm and norm in TRANSLATION_CACHE_NORMALIZED:
-            candidates = TRANSLATION_CACHE_NORMALIZED[norm]
-            best_match = max(candidates, key=lambda item: len(_normalize_translation_key(item[0])))
-        else:
-            for key_norm, entries in TRANSLATION_CACHE_NORMALIZED.items():
-                if not norm:
-                    continue
-                if norm in key_norm or key_norm in norm:
-                    for entry in entries:
-                        length = len(_normalize_translation_key(entry[0]))
-                        if length > best_length:
-                            best_match = entry
-                            best_length = length
-        if best_match:
-            translation = best_match[1]
-        else:
-            for raw_key, candidate in TRANSLATION_CACHE.items():
-                if text in raw_key:
-                    translation = candidate
-                    break
-
-    if translation is None:
-        return fallback if fallback is not None else value
-
-    normalized_translation = re.sub(r"\s+", " ", translation).strip()
-    normalized_translation = _merge_parenthetical_suffix(normalized_translation)
-    if title_case:
-        normalized_translation = _smart_capitalize(normalized_translation)
-    return normalized_translation or (fallback if fallback is not None else value)
-
-
-def parse_int(value, default=None):
-    if value is None:
-        return default
-    if isinstance(value, int):
-        return value
-    try:
-        decimal_value = Decimal(str(value).strip())
-    except (InvalidOperation, AttributeError):
-        return default
-    try:
-        return int(decimal_value)
-    except (ValueError, OverflowError):
-        return default
-
-
-def parse_decimal(value, places=None, default=None):
-    if value is None:
-        return default
-    if isinstance(value, (int, float, Decimal)) and value == value:
-        decimal_value = Decimal(str(value))
-    else:
-        text = str(value).strip() if isinstance(value, str) else None
-        if not text:
-            return default
-        text = text.replace(',', '')
-        try:
-            decimal_value = Decimal(text)
-        except InvalidOperation:
-            return default
-    if places is not None:
-        quantizer = Decimal('1') if places == 0 else Decimal(f"1e-{places}")
-        try:
-            decimal_value = decimal_value.quantize(quantizer)
-        except InvalidOperation:
-            pass
-    try:
-        return float(decimal_value)
-    except (ValueError, OverflowError):
-        return default
-
-
-def parse_decimal_as_str(value, places=None, default=None):
-    parsed = parse_decimal(value, places=places, default=None)
-    if parsed is None:
-        return default
-    if places is not None:
-        return f"{parsed:.{places}f}".rstrip('0').rstrip('.') if places > 0 else str(int(parsed))
-    text = str(parsed)
-    return text
-
-
-def translate_category_name(name):
-    translated = translate_text(name, fallback=name)
-    if isinstance(translated, str) and '(' in translated:
-        return translated.split('(')[0].strip()
-    return translated
-
-
-def translate_product_name(name):
-    return translate_text(name, fallback=name)
-
-
-def translate_packaging(value):
-    return translate_text(value, fallback=value)
-
-
-def contains_cjk(text):
-    if not text:
-        return False
-    return bool(re.search(r"[\u3400-\u9fff]", str(text)))
-
-
-def _normalize_identifier(value):
-    if not value:
-        return ""
-    return re.sub(r"[^0-9a-z]", "", str(value).lower())
-
-
-def looks_like_brand_code(value, *, brand_key=None):
-    norm = _normalize_identifier(value)
-    if not norm:
-        return True
-    if brand_key and norm == _normalize_identifier(brand_key):
-        return True
-    return norm.startswith('ys') and norm[2:].isdigit()
-
-
-def is_meaningful_category(name, *, brand_key=None):
-    if not name:
-        return False
-    text = str(name).strip()
-    if not text:
-        return False
-    lowered = text.lower()
-    if lowered == 'uncategorized':
-        return False
-    if is_aggregator_category(text):
-        return False
-    return not looks_like_brand_code(text, brand_key=brand_key)
 
 
 def sanitize_directory_name(name, remove_spaces=False):
@@ -386,8 +107,6 @@ def sanitize_directory_name(name, remove_spaces=False):
     sanitized = sanitize_filename(name)
     if remove_spaces:
         sanitized = sanitized.replace(" ", "")
-    if len(sanitized) > MAX_DIR_NAME_LENGTH:
-        sanitized = sanitized[:MAX_DIR_NAME_LENGTH].rstrip(' .-_')
     return sanitized or "Unnamed"
 
 
@@ -529,8 +248,7 @@ def extract_offer_id(href):
 
 
 def build_product_folder_name(product):
-    display_name = product.get('productDisplayName') or translate_product_name(product.get('galleyName', '') or 'Unnamed')
-    base_name = sanitize_directory_name(display_name or 'Unnamed')
+    base_name = sanitize_directory_name(product.get('galleyName', '') or 'Unnamed')
     offer_id = extract_offer_id(product.get('galleyItemLink href'))
     if offer_id and offer_id not in base_name:
         return f"{base_name}_{offer_id}"
@@ -563,47 +281,36 @@ def download_product_image(image_url, destination_path, referer=None):
 
 
 def build_markdown_content(product, group_name, category_name, brand_name):
-    product_name = product.get('productDisplayName') or translate_product_name(product.get('galleyName', '') or 'Unnamed Product')
-    product_code = product.get('productCode') or product.get('sampleTag') or ''
-    packaging = product.get('packagingDisplayName') or translate_packaging(product.get('packaging') or product.get('sampleTag (2)') or '')
-    qty_per_carton = product.get('qtyPerCarton')
-    outer_length = product.get('outerCartonLength')
-    outer_width = product.get('outerCartonWidth')
-    outer_height = product.get('outerCartonHeight')
-    volume_cbm = product.get('volumeCbm')
-    gross_weight = product.get('grossWeightKg')
-    net_weight = product.get('netWeightKg')
-    price = product.get('price') or ''
+    product_name = product.get('galleyName', '').strip() or 'Unnamed Product'
+    price = product.get('price', '').strip()
+    price_right = product.get('priceRight', '').strip()
+    market_tag = product.get('marketTag', '').strip()
+    sample_tags = [tag for tag in [product.get('sampleTag', ''), product.get('sampleTag (2)', ''), product.get('sampleTag (3)', '')] if tag]
+    href = product.get('galleyItemLink href', '').strip()
 
-    group_display = product.get('groupDisplayName') or translate_text(group_name, fallback=group_name)
-    category_display = product.get('categoryDisplayName') or translate_category_name(category_name)
-
-    def format_dimension_segment(length_value, width_value, height_value):
-        if length_value is None or width_value is None or height_value is None:
-            return 'N/A'
-        return f"{length_value:g} × {width_value:g} × {height_value:g} cm"
-
-    lines = [
-        f"# {product_name}",
-        "",
-        f"- Product Code: {product_code or 'N/A'}",
-        f"- Group: {group_display}",
-        f"- Category: {category_display}",
-        f"- Packaging: {packaging or 'N/A'}",
-        "",
-        "# Packing Details",
-        f"- Quantity per Carton: {qty_per_carton if qty_per_carton is not None else 'N/A'} pcs",
-        f"- Carton Size (length*width*height): {format_dimension_segment(outer_length, outer_width, outer_height)}",
-        f"- Volume: {volume_cbm if volume_cbm is not None else 'N/A'} CBM",
-        "",
-        "# Weight",
-        f"- Gross Weight: {gross_weight if gross_weight is not None else 'N/A'} kg / carton",
-        f"- Net Weight: {net_weight if net_weight is not None else 'N/A'} kg / carton",
-        "",
-        "# Pricing",
-        f"- Price: {price or 'N/A'}",
-    ]
-
+    lines = [f"# {product_name}"]
+    details = []
+    if brand_name:
+        details.append(f"- Brand: {brand_name}")
+    if group_name:
+        details.append(f"- Group: {group_name}")
+    if category_name:
+        details.append(f"- Category: {category_name}")
+    if price:
+        details.append(f"- Price: {price}")
+    if price_right:
+        details.append(f"- Price Info: {price_right}")
+    if market_tag:
+        details.append(f"- Market Tag: {market_tag}")
+    if sample_tags:
+        details.append(f"- Tags: {', '.join(sample_tags)}")
+    if details:
+        lines.append('')
+        lines.extend(details)
+    if href:
+        lines.append('')
+        lines.append(f"[View on 1688]({href})")
+    lines.append('')
     return "\n".join(lines)
 
 
@@ -612,92 +319,21 @@ def escape_js_string(value):
 
 
 def build_product_record(product, group_name, category_name, brand_name, image_rel_path, markdown_rel_path):
-    company_code_full = product.get('companyCode') or brand_name or ''
-    company_code_digits = product.get('companyCodeDigits') or re.sub(r'\D', '', company_code_full)
-    product_code = product.get('productCode') or product.get('sampleTag') or ''
-    stall_number = (product.get('stallNumber') or product.get('sampleTag (3)') or '').strip() or 'Unassigned'
-    group_display = product.get('groupDisplayName') or translate_text(group_name, fallback=group_name)
-    category_display = product.get('categoryDisplayName') or translate_category_name(category_name)
-    product_name = product.get('productDisplayName') or translate_product_name(product.get('galleyName', '') or 'Unnamed Product')
-    packaging_display = product.get('packagingDisplayName') or translate_packaging(product.get('packaging') or product.get('sampleTag (2)') or '')
-
-    qty_per_carton = product.get('qtyPerCarton')
-    inner_box = product.get('innerBox')
-    outer_length = product.get('outerCartonLength')
-    outer_width = product.get('outerCartonWidth')
-    outer_height = product.get('outerCartonHeight')
-    package_length = product.get('packageLength')
-    package_width = product.get('packageWidth')
-    package_height = product.get('packageHeight')
-    volume_cbm = product.get('volumeCbm')
-    chargeable_unit = product.get('chargeableUnitCn')
-    gross_weight = product.get('grossWeightKg')
-    net_weight = product.get('netWeightKg')
-    price = product.get('price', '')
-    price_per_chargeable = product.get('pricePerChargeableUnit')
-    if price_per_chargeable is not None:
-        price_per_chargeable = round(price_per_chargeable, 3)
-
-    outer_carton_cm = {
-        "length": outer_length,
-        "width": outer_width,
-        "height": outer_height,
-    }
-    package_cm = {
-        "length": package_length,
-        "width": package_width,
-        "height": package_height,
-    }
-
-    tags = []
-    if company_code_digits:
-        tags.append(company_code_digits)
-    elif company_code_full:
-        tags.append(company_code_full)
-    if product_code:
-        tags.append(product_code)
-    if packaging_display:
-        tags.append(packaging_display)
-
-    unique_id_parts = [company_code_digits, product_code, stall_number, product.get('excelRow') or '']
-    unique_id = "-".join(part for part in unique_id_parts if part)
-    if not unique_id:
-        offer_id = extract_offer_id(product.get('galleyItemLink href'))
-        fallback_id = re.sub(r'[^0-9a-zA-Z]+', '', product_name) or 'product'
-        unique_id = offer_id or fallback_id
-
-    record = {
-        "id": unique_id,
-        "sku": product_code or unique_id,
+    sample_tags = [tag for tag in [product.get('sampleTag'), product.get('sampleTag (2)'), product.get('sampleTag (3)')] if tag]
+    offer_id = extract_offer_id(product.get('galleyItemLink href'))
+    fallback_id = re.sub(r'[^0-9a-zA-Z]+', '', product.get('galleyName', '')) or 'product'
+    product_id = offer_id or fallback_id
+    return {
+        "id": product_id,
+        "name": product.get('galleyName', '').strip(),
         "href": product.get('galleyItemLink href', ''),
-        "group": group_display,
-        "category": category_display,
-        "stall_number": stall_number,
-        "company_code": company_code_full,
-        "company_code_id": company_code_digits or company_code_full,
-        "product_code": product_code,
-        "product_name": product_name,
-        "name": product_name,
-        "packaging": packaging_display,
-        "qty_per_carton": qty_per_carton if qty_per_carton is not None else 0,
-        "inner_box": inner_box if inner_box is not None else 0,
-        "outer_carton_cm": outer_carton_cm,
-        "package_cm": package_cm,
-        "volume_cbm": volume_cbm,
-        "chargeable_unit_cn": chargeable_unit,
-        "gross_weight_kg": gross_weight,
-        "net_weight_kg": net_weight,
-        "price": price,
-        "price/chargeable_unit": price_per_chargeable,
-        "excel_row": product.get('excelRow'),
-        "priceRight": product.get('priceRight', ''),
-        "marketTag": product.get('marketTag', ''),
-        "tags": tags,
         "image": image_rel_path.replace('\\', '/') if image_rel_path else "",
         "markdown": markdown_rel_path.replace('\\', '/') if markdown_rel_path else "",
+        "price": product.get('price', ''),
+        "priceRight": product.get('priceRight', ''),
+        "marketTag": product.get('marketTag', ''),
+        "tags": sample_tags
     }
-
-    return record
 
 
 def write_group_aggregates(group_dir, group_name, category_records, total_products, generated_at):
@@ -716,11 +352,11 @@ def write_group_aggregates(group_dir, group_name, category_records, total_produc
         f.write(f"// Total products: {total_products}, Date: {generated_at}\n")
         f.write(f"export const {var_name} = {{\n")
         sorted_categories = list(sorted(category_records.items(), key=lambda item: item[0]))
-        for cat_index, (category, stalls) in enumerate(sorted_categories):
+        for cat_index, (category, brands) in enumerate(sorted_categories):
             f.write(f"  \"{escape_js_string(category)}\": {{\n")
-            sorted_stalls = list(sorted(stalls.items(), key=lambda item: item[0]))
-            for stall_index, (stall, records) in enumerate(sorted_stalls):
-                f.write(f"    \"{escape_js_string(str(stall))}\": [\n")
+            sorted_brands = list(sorted(brands.items(), key=lambda item: item[0]))
+            for brand_index, (brand, records) in enumerate(sorted_brands):
+                f.write(f"    \"{escape_js_string(brand)}\": [\n")
                 for record_index, record in enumerate(records):
                     record_json = json.dumps(record, ensure_ascii=False, indent=4)
                     indented_record = "\n".join("      " + line for line in record_json.splitlines())
@@ -730,7 +366,7 @@ def write_group_aggregates(group_dir, group_name, category_records, total_produc
                     else:
                         f.write("\n")
                 f.write("    ]")
-                if stall_index < len(sorted_stalls) - 1:
+                if brand_index < len(sorted_brands) - 1:
                     f.write(",\n")
                 else:
                     f.write("\n")
@@ -746,13 +382,13 @@ def write_group_aggregates(group_dir, group_name, category_records, total_produc
     for category in sorted(category_records.keys()):
         lines.append(f"## {category}")
         lines.append("")
-        stall_map = category_records[category]
-        for stall in sorted(stall_map.keys(), key=lambda value: str(value)):
-            items = stall_map[stall]
-            lines.append(f"- Stall: {stall}")
+        brand_map = category_records[category]
+        for brand in sorted(brand_map.keys()):
+            items = brand_map[brand]
+            lines.append(f"- BRAND: {brand}")
             lines.append(f"- Products: {len(items)}")
             for record in items:
-                product_name = (record.get('product_name') or record.get('name') or '').strip()
+                product_name = record.get('name', '').strip()
                 if product_name:
                     lines.append(f"  - {product_name}")
             lines.append("")
@@ -774,21 +410,21 @@ def write_group_products(root_dir, structure, generated_at):
         group_records = {}
         total_products = 0
 
-        for category_name, stall_map in categories.items():
+        for category_name, brand_map in categories.items():
             category_dir = os.path.join(group_dir, sanitize_directory_name(category_name))
             os.makedirs(category_dir, exist_ok=True)
 
-            for stall_name, products in stall_map.items():
-                stall_dir = os.path.join(category_dir, sanitize_directory_name(str(stall_name)))
-                os.makedirs(stall_dir, exist_ok=True)
+            for brand_name, products in brand_map.items():
+                brand_dir = os.path.join(category_dir, sanitize_directory_name(brand_name))
+                os.makedirs(brand_dir, exist_ok=True)
 
                 for product in products:
                     product_folder_name = build_product_folder_name(product)
-                    product_dir = os.path.join(stall_dir, product_folder_name)
+                    product_dir = os.path.join(brand_dir, product_folder_name)
                     os.makedirs(product_dir, exist_ok=True)
 
                     markdown_path = os.path.join(product_dir, f"{product_folder_name}.md")
-                    markdown_content = build_markdown_content(product, group_name, category_name, stall_name)
+                    markdown_content = build_markdown_content(product, group_name, category_name, brand_name)
                     with open(markdown_path, 'w', encoding='utf-8') as f:
                         f.write(markdown_content)
 
@@ -847,12 +483,12 @@ def write_group_products(root_dir, structure, generated_at):
                         product,
                         group_name,
                         category_name,
-                        stall_name,
+                        brand_name,
                         image_rel_path,
                         markdown_rel_path
                     )
                     category_records = group_records.setdefault(category_name, {})
-                    category_records.setdefault(str(stall_name), []).append(record)
+                    category_records.setdefault(brand_name, []).append(record)
                     total_products += 1
 
         write_group_aggregates(group_dir, group_name, group_records, total_products, generated_at)
@@ -1170,8 +806,7 @@ def main():
 
     # Load previously scraped products
     previous_products = load_previous_products(md_path)
-    auto_continue = str(os.environ.get('TOY_SCRAPER_AUTO_CONTINUE', '')).lower() in {'1', 'true', 'yes', 'y'}
-    interactive = sys.stdin.isatty() and not auto_continue
+    interactive = sys.stdin.isatty()
     if previous_products:
         logger.info(f"Previously scraped products: {len(previous_products)} total")
         if interactive:
@@ -1198,44 +833,18 @@ def main():
             with open(csv_path, 'r', encoding='utf-8-sig') as cf:
                 reader = csv.DictReader(cf)
                 for row in reader:
-                    stall_number = (row.get('摊位号') or '').strip()
-                    company_code = (row.get('公司编号') or row.get('company') or '').strip()
-                    brand_key = company_code or stall_number or 'Unknown'
-                    product_name = (row.get('品名') or '').strip()
-                    packaging = (row.get('包装') or '').strip()
-                    product_code = (row.get('货号') or '').strip()
-                    company_code_digits = re.sub(r"\D", "", company_code)
-
+                    brand_key = (row.get('公司编号') or row.get('摊位号') or row.get('company') or 'Unknown').strip()
                     product = {
-                        "galleyItemLink href": (row.get('链接') or '').strip(),
-                        "galleyImg src": (row.get('图片') or '').strip(),
-                        "galleyName": product_name,
-                        "sampleTag": product_code,
-                        "sampleTag (2)": packaging,
-                        "sampleTag (3)": stall_number,
+                        "galleyItemLink href": row.get('链接', '').strip(),
+                        "galleyImg src": row.get('图片', '').strip(),
+                        "galleyName": row.get('品名', '').strip(),
+                        "sampleTag": row.get('货号', '').strip(),
+                        "sampleTag (2)": row.get('包装', '').strip(),
+                        "sampleTag (3)": row.get('摊位号', '').strip(),
                         "price": str(row.get('价格', '')).strip(),
-                        "priceRight": (row.get('装箱量') or '').strip(),
-                        "marketTag": (row.get('内盒') or '').strip(),
-                        "sectionName": company_code,
-                        "stallNumber": stall_number,
-                        "companyCode": company_code,
-                        "companyCodeDigits": company_code_digits,
-                        "productCode": product_code,
-                        "packaging": packaging,
-                        "qtyPerCarton": parse_int(row.get('装箱量')),
-                        "innerBox": parse_int(row.get('内盒')),
-                        "outerCartonLength": parse_decimal(row.get('外箱长'), places=1),
-                        "outerCartonWidth": parse_decimal(row.get('外箱宽'), places=1),
-                        "outerCartonHeight": parse_decimal(row.get('外箱高'), places=1),
-                        "packageLength": parse_decimal(row.get('包装长'), places=1),
-                        "packageWidth": parse_decimal(row.get('包装宽'), places=1),
-                        "packageHeight": parse_decimal(row.get('包装高'), places=1),
-                        "volumeCbm": parse_decimal(row.get('体积'), places=3),
-                        "chargeableUnitCn": parse_decimal(row.get('材积'), places=2),
-                        "grossWeightKg": parse_decimal(row.get('毛重'), places=2),
-                        "netWeightKg": parse_decimal(row.get('净重'), places=2),
-                        "pricePerChargeableUnit": parse_decimal(row.get('价格/材积'), places=3),
-                        "excelRow": (row.get('_excel_row') or '').strip()
+                        "priceRight": row.get('装箱量', '').strip(),
+                        "marketTag": row.get('内盒', '').strip(),
+                        "sectionName": row.get('公司编号', '').strip()
                     }
                     products_by_brand.setdefault(brand_key, []).append(product)
         except Exception as e:
@@ -1256,25 +865,6 @@ def main():
                             for product in products:
                                 href = product.get("galleyItemLink href")
                                 product.setdefault("sectionName", "")
-                                product.setdefault("stallNumber", (product.get('sampleTag (3)') or '').strip())
-                                product.setdefault("companyCode", (product.get('sectionName') or '').strip())
-                                product.setdefault("companyCodeDigits", re.sub(r"\D", "", product.get('companyCode', '')))
-                                product.setdefault("productCode", (product.get('sampleTag') or '').strip())
-                                product.setdefault("packaging", (product.get('sampleTag (2)') or '').strip())
-                                product.setdefault("qtyPerCarton", parse_int(product.get('priceRight')))
-                                product.setdefault("innerBox", parse_int(product.get('marketTag')))
-                                product.setdefault("outerCartonLength", None)
-                                product.setdefault("outerCartonWidth", None)
-                                product.setdefault("outerCartonHeight", None)
-                                product.setdefault("packageLength", None)
-                                product.setdefault("packageWidth", None)
-                                product.setdefault("packageHeight", None)
-                                product.setdefault("volumeCbm", None)
-                                product.setdefault("chargeableUnitCn", None)
-                                product.setdefault("grossWeightKg", None)
-                                product.setdefault("netWeightKg", None)
-                                product.setdefault("pricePerChargeableUnit", None)
-                                product.setdefault("excelRow", "")
                                 lookup_entry = category_lookup.get(href, {}) if href else {}
                                 product['categoryFolder'] = lookup_entry.get('category', product.get('categoryFolder', ''))
                                 product['groupName'] = lookup_entry.get('group', product.get('groupName', ''))
@@ -1350,7 +940,6 @@ def main():
             href = product.get("galleyItemLink href")
             section_name = (product.get("sectionName") or "").strip()
             stored_category = (product.get("categoryFolder") or "").strip()
-            matched_category = None
 
             # When section is an aggregator (e.g., "全部") and page has no meaningful sections,
             # immediately infer group/category from product name and tags instead
@@ -1376,32 +965,9 @@ def main():
                 # No section info on this product from current scrape; keep stored values
                 category_candidate = stored_category or product.get('categoryFolder') or "Uncategorized"
                 final_group = product.get('groupName') or determine_group_and_category(category_candidate)[0] or "Uncategorized"
-
-            if not is_meaningful_category(category_candidate, brand_key=brand_key):
-                if is_meaningful_category(stored_category, brand_key=brand_key):
-                    category_candidate = stored_category
-                elif matched_category and is_meaningful_category(matched_category, brand_key=brand_key):
-                    category_candidate = matched_category
             
             product['categoryFolder'] = category_candidate
             product['groupName'] = final_group
-            product['stallNumber'] = (product.get('stallNumber') or product.get('sampleTag (3)') or '').strip() or 'Unassigned'
-            product_display = translate_product_name(product.get('galleyName', '') or 'Unnamed Product')
-            product['productDisplayName'] = product_display
-            packaging_value = product.get('packaging') or product.get('sampleTag (2)') or ''
-            product['packagingDisplayName'] = translate_packaging(packaging_value)
-
-            category_display = translate_category_name(category_candidate)
-            if contains_cjk(category_display) or not is_meaningful_category(category_display, brand_key=brand_key):
-                english_hint = product_display if isinstance(product_display, str) else None
-                if english_hint:
-                    english_hint = english_hint.split('(')[0].strip()
-                if not english_hint:
-                    english_hint = translate_text(category_candidate, fallback=category_candidate)
-                category_display = english_hint or category_display
-
-            product['categoryDisplayName'] = category_display
-            product['groupDisplayName'] = translate_text(final_group, fallback=final_group)
             
             logger.debug(f"  Product: {product.get('galleyName', '')[:30]}... | Section: '{section_name}' | Group: '{final_group}' | Category: '{category_candidate}'")
             
@@ -1454,7 +1020,6 @@ def main():
             if href:
                 updated_category_lookup[href] = {
                     'category': category_candidate,
-                    'categoryDisplay': product['categoryDisplayName'],
                     'group': final_group
                 }
 
@@ -1464,16 +1029,14 @@ def main():
             href = product.get("galleyItemLink href")
             category_candidate = product.get('categoryFolder') or 'Uncategorized'
             final_group = product.get('groupName') or 'Uncategorized'
+            # If the category is an aggregator (e.g. '全部'), map it to the
+            # brand name so group outputs retain the brand grouping instead
+            # of creating an Uncategozied/全部 folder.
             if is_aggregator_category(category_candidate):
                 category_candidate = brand_key or 'Uncategorized'
-            category_display = product.get('categoryDisplayName') or translate_category_name(category_candidate)
-            stall_key = (product.get('stallNumber') or '').strip() or 'Unassigned'
-            product['brandKey'] = brand_key
-            product['categoryDisplayName'] = category_display
-            product['stallNumber'] = stall_key
             group_dict = group_structure.setdefault(final_group, {})
-            category_dict = group_dict.setdefault(category_display, {})
-            category_dict.setdefault(stall_key, []).append(product)
+            category_dict = group_dict.setdefault(category_candidate, {})
+            category_dict.setdefault(brand_key, []).append(product)
 
     # Post-process: attempt to reassign any products placed under the
     # 'Uncategorized' group to a better group by inferring from their
@@ -1508,14 +1071,6 @@ def main():
                 del uncats[cat_name]
         if not uncats:
             group_structure.pop('Uncategorized', None)
-
-    expected_groups = set(EXPECTED_GROUP_NAMES)
-    for entry in CATEGORY_GROUPS:
-        group_value = entry.get('group') if isinstance(entry, dict) else None
-        if group_value:
-            expected_groups.add(group_value)
-    for expected_group in sorted(expected_groups):
-        group_structure.setdefault(expected_group, {})
 
     # Replace products_by_brand with the filtered version for downstream processing,
     # but keep the original brand keys so we don't drop entire companies when all

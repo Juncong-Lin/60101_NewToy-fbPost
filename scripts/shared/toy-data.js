@@ -164,7 +164,8 @@ function normalizeProductEntry({
   categorySlug,
   categoryHash,
 }) {
-  const name = firstTruthy([
+  const preferredName = firstTruthy([
+    entry.product_name,
     entry.name,
     entry.galleyName,
     entry.productName,
@@ -195,24 +196,62 @@ function normalizeProductEntry({
 
   const tags = cloneTags(entry.tags);
 
-  return {
-    id: sku,
+  const companyCodeId = entry.company_code_id || entry.company_code || null;
+  const stallNumber = entry.stall_number || entry.stallNumber || sku;
+  const productCode = entry.product_code || entry.sampleTag || sku;
+
+  const logisticsAttributes = {
+    stallNumber,
+    companyCode: entry.company_code || companyCodeId,
+    companyCodeId,
+    productCode,
+    packaging: entry.packaging || null,
+    qtyPerCarton: entry.qty_per_carton ?? null,
+    innerBox: entry.inner_box ?? null,
+    outerCarton: entry.outer_carton_cm || null,
+    packageDimensions: entry.package_cm || null,
+    volumeCbm: entry.volume_cbm ?? null,
+    chargeableUnitCn: entry.chargeable_unit_cn ?? null,
+    grossWeightKg: entry.gross_weight_kg ?? null,
+    netWeightKg: entry.net_weight_kg ?? null,
+    pricePerChargeableUnit: entry['price/chargeable_unit'] ?? null,
+    excelRow: entry.excel_row ?? null,
+    priceRight: entry.priceRight ?? entry['price right'] ?? null,
+    marketTag: entry.marketTag ?? entry['market tag'] ?? null,
+  };
+
+  const uniqueId = firstTruthy([
+    entry.id,
+    `${productCode || sku}-${variantIndex}`,
     sku,
-    idLower: sku.toLowerCase(),
+  ]);
+
+  const normalizedSku = firstTruthy([
+    productCode,
+    entry.sku,
+    sku,
+  ]) || sku;
+
+  const nameValue = preferredName || sku;
+
+  return {
+    id: uniqueId,
+    sku: normalizedSku,
+    idLower: String(uniqueId || normalizedSku).toLowerCase(),
     variantIndex,
-    name,
-    nameLower: name.toLowerCase(),
+    name: nameValue,
+    nameLower: nameValue.toLowerCase(),
     description: entry.description || entry.details || '',
     href: entry.href || entry.link || '',
     image: ensureAssetPath(primaryImage),
     markdown: ensureAssetPath(markdownPath),
     price: priceRaw,
     priceValue,
-    priceRight: entry.priceRight ?? entry['price right'] ?? null,
-    marketTag: entry.marketTag ?? entry['market tag'] ?? null,
+    priceRight: logisticsAttributes.priceRight,
+    marketTag: logisticsAttributes.marketTag,
     tags,
     tagsLower: tags.map((tag) => tag.toLowerCase()),
-    attributes: entry.attributes ? { ...entry.attributes } : undefined,
+    attributes: { ...logisticsAttributes },
     raw: entry,
     groupKey,
     groupLabel,
