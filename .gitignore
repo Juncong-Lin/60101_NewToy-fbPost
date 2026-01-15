@@ -7,6 +7,7 @@ products_to_toy_design_help_folder/products_ys_images/
 # Ignore directory for toy products
 products_toy/toy/each_brand_products/
 products_toy/toy/each_group_products/
+products_toy/toy/logs/
 
-products_toy/toy copy/each_brand_products/
-products_toy/toy copy/each_group_products/
+# Ignore copy of toy copy products
+products_toy/toy copy/
