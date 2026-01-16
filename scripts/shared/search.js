@@ -435,6 +435,8 @@ class SearchSystem {  constructor() {
       return;
     }
 
+    productsGrid.style.display = '';
+
     // Remove any existing search results header since we're showing count in page title
     const existingHeader = document.querySelector('.search-results-header');
     if (existingHeader) {

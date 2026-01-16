@@ -41,6 +41,13 @@ function populateSidebarMenus() {
       return;
     }
 
+    const hasGroupInfo = typeof toyAPI.getGroupInfo === 'function' ? toyAPI.getGroupInfo(groupKey) : null;
+    if (!hasGroupInfo) {
+      groupElement.style.display = 'none';
+      processed.add(groupKey);
+      return;
+    }
+
     const container = groupElement.querySelector('.js-sidebar-submenu');
     if (!container) {
       return;

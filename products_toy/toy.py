@@ -133,24 +133,6 @@ TRANSLATION_CACHE = {}
 TRANSLATION_CACHE_NORMALIZED = {}
 MAX_DIR_NAME_LENGTH = 80
 
-EXPECTED_GROUP_NAMES = [
-    "Action Figures & Role Play",
-    "Arts & Crafts Toys",
-    "Building Blocks & Construction",
-    "Dolls & Plush Toys",
-    "Educational Toys",
-    "Electronic & Interactive Toys",
-    "Inflatable & Water Toys",
-    "Other Industries",
-    "Other Toys",
-    "Outdoor & Sports Toys",
-    "Pop Culture & Licensed Toys",
-    "Puzzles & Board Games",
-    "Traditional Toys",
-    "Vehicles & Ride-On Toys",
-]
-
-
 def _normalize_translation_key(value):
     if not value:
         return ''
@@ -593,7 +575,7 @@ def build_markdown_content(product, group_name, category_name, brand_name):
         "",
         "# Packing Details",
         f"- Quantity per Carton: {qty_per_carton if qty_per_carton is not None else 'N/A'} pcs",
-        f"- Carton Size (length*width*height): {format_dimension_segment(outer_length, outer_width, outer_height)}",
+        f"- Carton Size (length \\* width \\* height): {format_dimension_segment(outer_length, outer_width, outer_height)}",
         f"- Volume: {volume_cbm if volume_cbm is not None else 'N/A'} CBM",
         "",
         "# Weight",
@@ -760,6 +742,27 @@ def write_group_aggregates(group_dir, group_name, category_records, total_produc
     with open(md_path, 'w', encoding='utf-8') as f:
         f.write("\n".join(lines))
 
+    category_summaries = []
+    for category_name in sorted(category_records.keys()):
+        stall_map = category_records[category_name]
+        product_count = sum(len(records) for records in stall_map.values())
+        category_summaries.append({
+            'name': category_name,
+            'productCount': product_count,
+        })
+
+    base_var_name = var_name[:-8] if var_name.endswith('Products') else var_name
+
+    return {
+        'group_name': group_name,
+        'export_name': var_name,
+        'group_key': base_var_name,
+        'group_dirname': os.path.basename(group_dir),
+        'file_base': file_base,
+        'total_products': total_products,
+        'categories': category_summaries,
+    }
+
 
 def write_group_products(root_dir, structure, generated_at):
     if os.path.exists(root_dir):
@@ -767,6 +770,7 @@ def write_group_products(root_dir, structure, generated_at):
     os.makedirs(root_dir, exist_ok=True)
 
     root_rel_base = root_dir
+    manifest_entries = []
 
     for group_name, categories in structure.items():
         group_dir = os.path.join(root_dir, sanitize_directory_name(group_name, remove_spaces=True))
@@ -855,7 +859,113 @@ def write_group_products(root_dir, structure, generated_at):
                     category_records.setdefault(str(stall_name), []).append(record)
                     total_products += 1
 
-        write_group_aggregates(group_dir, group_name, group_records, total_products, generated_at)
+        manifest_entry = write_group_aggregates(group_dir, group_name, group_records, total_products, generated_at)
+        if manifest_entry:
+            module_rel_path = os.path.join(
+                GROUP_ROOT_FOLDER_NAME,
+                manifest_entry['group_dirname'],
+                f"{manifest_entry['file_base']}.js"
+            ).replace(os.sep, '/')
+            manifest_entry['module_path'] = f"./{module_rel_path}"
+            manifest_entry['group_directory'] = manifest_entry['group_dirname']
+            manifest_entries.append(manifest_entry)
+
+    return manifest_entries
+
+# --- Manifest Generation ---
+
+def write_group_manifest(output_dir, manifest_entries, generated_at):
+    manifest_js_path = os.path.join(output_dir, 'group-definitions.js')
+    manifest_json_path = os.path.join(output_dir, 'group-manifest.json')
+
+    sorted_entries = sorted(manifest_entries, key=lambda entry: entry['group_name'].lower())
+    total_products = sum(entry.get('total_products', 0) for entry in sorted_entries)
+
+    manifest_payload = {
+        'generatedAt': generated_at,
+        'totalGroups': len(sorted_entries),
+        'totalProducts': total_products,
+        'groups': [],
+    }
+
+    import_lines = []
+    definition_blocks = []
+
+    for entry in sorted_entries:
+        module_path = entry.get('module_path', '')
+        export_name = entry.get('export_name')
+        if module_path and export_name:
+            import_lines.append(f"import {{ {export_name} }} from '{module_path}';")
+
+        json_module_path = module_path[2:] if module_path.startswith('./') else module_path
+        manifest_payload['groups'].append({
+            'key': entry.get('group_key'),
+            'label': entry.get('group_name'),
+            'directory': entry.get('group_directory'),
+            'modulePath': json_module_path,
+            'exportName': export_name,
+            'totalProducts': entry.get('total_products', 0),
+            'categories': entry.get('categories', []),
+        })
+
+        categories = entry.get('categories', [])
+        category_lines = ['    categories: [']
+        if categories:
+            for category in categories:
+                category_lines.append('      {')
+                category_lines.append(f"        name: {json.dumps(category.get('name', ''), ensure_ascii=False)},")
+                category_lines.append(f"        productCount: {category.get('productCount', 0)},")
+                category_lines.append('      },')
+        category_lines.append('    ],')
+
+        definition_block = [
+            '  {',
+            f"    key: {json.dumps(entry.get('group_key'), ensure_ascii=False)},",
+            f"    label: {json.dumps(entry.get('group_name'), ensure_ascii=False)},",
+            f"    directory: {json.dumps(entry.get('group_directory'), ensure_ascii=False)},",
+            f"    modulePath: {json.dumps(json_module_path, ensure_ascii=False)},",
+            f"    exportName: {json.dumps(export_name, ensure_ascii=False)},",
+            f"    totalProducts: {entry.get('total_products', 0)},",
+            f"    categoryCount: {len(categories)},",
+            f"    data: {export_name if export_name else 'null'},",
+        ]
+        definition_block.extend(category_lines)
+        definition_block.append('  },')
+        definition_blocks.append("\n".join(definition_block))
+
+    js_lines = [
+        '// Auto-generated by toy.py. Do not edit manually.',
+        f'// Generated at: {generated_at}',
+        '',
+    ]
+    js_lines.extend(import_lines)
+    if import_lines:
+        js_lines.append('')
+    js_lines.append('export const GROUP_DEFINITIONS = [')
+    js_lines.extend(definition_blocks)
+    js_lines.append('];')
+    js_lines.append('')
+    js_lines.append('export const NAV_GROUP_MAP = GROUP_DEFINITIONS.reduce((accumulator, entry) => {')
+    js_lines.append('  if (entry && entry.label && entry.key) {')
+    js_lines.append('    accumulator[entry.label] = entry.key;')
+    js_lines.append('  }')
+    js_lines.append('  return accumulator;')
+    js_lines.append('}, {});')
+    js_lines.append('')
+    js_lines.append('export const MANIFEST_METADATA = {')
+    js_lines.append(f"  generatedAt: {json.dumps(generated_at, ensure_ascii=False)},")
+    js_lines.append(f"  totalGroups: {len(sorted_entries)},")
+    js_lines.append(f"  totalProducts: {total_products},")
+    js_lines.append('};')
+    js_lines.append('')
+    js_lines.append('export default GROUP_DEFINITIONS;')
+    js_lines.append('')
+
+    with open(manifest_js_path, 'w', encoding='utf-8') as js_file:
+        js_file.write("\n".join(js_lines))
+
+    with open(manifest_json_path, 'w', encoding='utf-8') as json_file:
+        json.dump(manifest_payload, json_file, indent=2, ensure_ascii=False)
 
 # --- Utility Functions ---
 
@@ -1509,7 +1619,7 @@ def main():
         if not uncats:
             group_structure.pop('Uncategorized', None)
 
-    expected_groups = set(EXPECTED_GROUP_NAMES)
+    expected_groups = set()
     for entry in CATEGORY_GROUPS:
         group_value = entry.get('group') if isinstance(entry, dict) else None
         if group_value:
@@ -1540,7 +1650,8 @@ def main():
             logger.warning(f"  ... and {len(zero_product_brands) - 5} more")
 
     group_root_dir = os.path.join(output_dir, GROUP_ROOT_FOLDER_NAME)
-    write_group_products(group_root_dir, group_structure, current_time)
+    manifest_entries = write_group_products(group_root_dir, group_structure, current_time)
+    write_group_manifest(output_dir, manifest_entries, current_time)
     save_category_lookup(category_lookup_path, updated_category_lookup)
 
     legacy_products_dir = os.path.normpath(os.path.join(SCRIPT_BASE_DIR, '..', 'products', root_folder_name))

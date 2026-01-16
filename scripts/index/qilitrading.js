@@ -851,21 +851,13 @@ function showProductsView({
 }
 
 function loadAllProducts(options = {}) {
-  const products = getAllProducts();
-  const count = products.length;
-  const displayName = 'All Toys';
   updateSubHeaderActiveState(null);
-  showProductsView({
-    products,
-    title: displayName,
-    productCount: count,
-    navDisplayName: null,
-    groupInfo: null,
-    categoryInfo: null,
-    shouldHideHero: false,
-    context: 'all',
-    hashValue: options.skipHashUpdate ? undefined : '',
-  });
+  hideActiveSubmenus();
+  clearProductsGrid();
+  showHeroBanner();
+  if (!options.skipHashUpdate) {
+    updateHash('');
+  }
   return true;
 }
 

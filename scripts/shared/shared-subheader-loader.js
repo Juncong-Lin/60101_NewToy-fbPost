@@ -201,6 +201,16 @@ function populateToySubmenus() {
     if (!groupKey || processed.has(groupKey)) {
       return;
     }
+    const hasGroupInfo = typeof toyAPI.getGroupInfo === 'function' ? toyAPI.getGroupInfo(groupKey) : null;
+    if (!hasGroupInfo) {
+      submenu.style.display = 'none';
+      const navLink = document.querySelector(`.sub-header-link[data-toy-group="${groupKey}"]`);
+      if (navLink) {
+        navLink.style.display = 'none';
+      }
+      processed.add(groupKey);
+      return;
+    }
 
     const container = submenu.querySelector('.js-toy-submenu-content');
     if (!container) {

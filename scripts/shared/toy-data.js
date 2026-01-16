@@ -3,56 +3,13 @@
  * Builds normalized views over products_toy/toy/each_group_products/*
  * and exposes helpers for navigation, product lookup, and search.
  */
-import { ActionFiguresRolePlayProducts } from '../../products_toy/toy/each_group_products/ActionFigures&RolePlay/ActionFigures&RolePlay.js';
-import { ArtsCraftsToysProducts } from '../../products_toy/toy/each_group_products/Arts&CraftsToys/Arts&CraftsToys.js';
-import { BuildingBlocksConstructionProducts } from '../../products_toy/toy/each_group_products/BuildingBlocks&Construction/BuildingBlocks&Construction.js';
-import { DollsPlushToysProducts } from '../../products_toy/toy/each_group_products/Dolls&PlushToys/Dolls&PlushToys.js';
-import { EducationalToysProducts } from '../../products_toy/toy/each_group_products/EducationalToys/EducationalToys.js';
-import { ElectronicInteractiveToysProducts } from '../../products_toy/toy/each_group_products/Electronic&InteractiveToys/Electronic&InteractiveToys.js';
-import { InflatableWaterToysProducts } from '../../products_toy/toy/each_group_products/Inflatable&WaterToys/Inflatable&WaterToys.js';
-import { OtherIndustriesProducts } from '../../products_toy/toy/each_group_products/OtherIndustries/OtherIndustries.js';
-import { OtherToysProducts } from '../../products_toy/toy/each_group_products/OtherToys/OtherToys.js';
-import { OutdoorSportsToysProducts } from '../../products_toy/toy/each_group_products/Outdoor&SportsToys/Outdoor&SportsToys.js';
-import { PopCultureLicensedToysProducts } from '../../products_toy/toy/each_group_products/PopCulture&LicensedToys/PopCulture&LicensedToys.js';
-import { PuzzlesBoardGamesProducts } from '../../products_toy/toy/each_group_products/Puzzles&BoardGames/Puzzles&BoardGames.js';
-import { TraditionalToysProducts } from '../../products_toy/toy/each_group_products/TraditionalToys/TraditionalToys.js';
-import { VehiclesRideOnToysProducts } from '../../products_toy/toy/each_group_products/Vehicles&Ride-OnToys/Vehicles&Ride-OnToys.js';
+import { GROUP_DEFINITIONS, NAV_GROUP_MAP, MANIFEST_METADATA } from '../../products_toy/toy/group-definitions.js';
 
 const BASE_ASSET_PREFIX = 'products_toy/toy/each_group_products/';
 
-const GROUP_DEFINITIONS = [
-  { key: 'ActionFiguresRolePlay', label: 'Action Figures & Role Play', data: ActionFiguresRolePlayProducts },
-  { key: 'ArtsCraftsToys', label: 'Arts & Crafts Toys', data: ArtsCraftsToysProducts },
-  { key: 'BuildingBlocksConstruction', label: 'Building Blocks & Construction', data: BuildingBlocksConstructionProducts },
-  { key: 'DollsPlushToys', label: 'Dolls & Plush Toys', data: DollsPlushToysProducts },
-  { key: 'EducationalToys', label: 'Educational Toys', data: EducationalToysProducts },
-  { key: 'ElectronicInteractiveToys', label: 'Electronic & Interactive Toys', data: ElectronicInteractiveToysProducts },
-  { key: 'InflatableWaterToys', label: 'Inflatable & Water Toys', data: InflatableWaterToysProducts },
-  { key: 'OtherIndustries', label: 'Other Industries', data: OtherIndustriesProducts },
-  { key: 'OtherToys', label: 'Other Toys', data: OtherToysProducts },
-  { key: 'OutdoorSportsToys', label: 'Outdoor & Sports Toys', data: OutdoorSportsToysProducts },
-  { key: 'PopCultureLicensedToys', label: 'Pop Culture & Licensed Toys', data: PopCultureLicensedToysProducts },
-  { key: 'PuzzlesBoardGames', label: 'Puzzles & Board Games', data: PuzzlesBoardGamesProducts },
-  { key: 'TraditionalToys', label: 'Traditional Toys', data: TraditionalToysProducts },
-  { key: 'VehiclesRideOnToys', label: 'Vehicles & Ride-On Toys', data: VehiclesRideOnToysProducts },
-];
-
-const NAV_GROUP_MAP = {
-  'Action Figures & Role Play': 'ActionFiguresRolePlay',
-  'Dolls & Plush Toys': 'DollsPlushToys',
-  'Electronic & Interactive Toys': 'ElectronicInteractiveToys',
-  'Building Blocks & Construction': 'BuildingBlocksConstruction',
-  'Puzzles & Board Games': 'PuzzlesBoardGames',
-  'Arts & Crafts Toys': 'ArtsCraftsToys',
-  'Pop Culture & Licensed Toys': 'PopCultureLicensedToys',
-  'Outdoor & Sports Toys': 'OutdoorSportsToys',
-  'Traditional Toys': 'TraditionalToys',
-  'Vehicles & Ride-On Toys': 'VehiclesRideOnToys',
-  'Educational Toys': 'EducationalToys',
-  'Inflatable & Water Toys': 'InflatableWaterToys',
-  'Other Industries': 'OtherIndustries',
-  'Other Toys': 'OtherToys',
-};
+const ACTIVE_GROUP_DEFINITIONS = Array.isArray(GROUP_DEFINITIONS) ? GROUP_DEFINITIONS : [];
+const ACTIVE_NAV_GROUP_MAP = NAV_GROUP_MAP && typeof NAV_GROUP_MAP === 'object' ? NAV_GROUP_MAP : {};
+const VALID_GROUP_KEYS = new Set(ACTIVE_GROUP_DEFINITIONS.map((group) => group.key));
 
 const LEGACY_NAV_ALIASES = {
   'Print Heads': 'ElectronicInteractiveToys',
@@ -69,7 +26,7 @@ const LEGACY_NAV_ALIASES = {
   'Inkjet Printers': 'ActionFiguresRolePlay',
 };
 
-const GROUP_TO_NAV = Object.entries(NAV_GROUP_MAP).reduce((accumulator, [displayName, groupKey]) => {
+const GROUP_TO_NAV = Object.entries(ACTIVE_NAV_GROUP_MAP).reduce((accumulator, [displayName, groupKey]) => {
   if (!accumulator[groupKey]) {
     accumulator[groupKey] = displayName;
   }
@@ -309,7 +266,7 @@ function initGroup(groupKey) {
     return groupCache.get(groupKey);
   }
 
-  const definition = GROUP_DEFINITIONS.find((group) => group.key === groupKey);
+  const definition = ACTIVE_GROUP_DEFINITIONS.find((group) => group.key === groupKey);
   if (!definition) {
     return null;
   }
@@ -406,7 +363,7 @@ function ensureAllGroupsLoaded() {
   if (groupsInitialized) {
     return;
   }
-  GROUP_DEFINITIONS.forEach((definition) => {
+  ACTIVE_GROUP_DEFINITIONS.forEach((definition) => {
     initGroup(definition.key);
   });
   groupsInitialized = true;
@@ -414,7 +371,7 @@ function ensureAllGroupsLoaded() {
 
 function getGroupList() {
   ensureAllGroupsLoaded();
-  return GROUP_DEFINITIONS.map((definition) => {
+  return ACTIVE_GROUP_DEFINITIONS.map((definition) => {
     const info = initGroup(definition.key);
     if (!info) {
       return {
@@ -569,7 +526,7 @@ function getAllProducts() {
   if (allProductsCache) {
     return allProductsCache.slice();
   }
-  const combined = GROUP_DEFINITIONS.flatMap((definition) => getProductsForGroup(definition.key));
+  const combined = ACTIVE_GROUP_DEFINITIONS.flatMap((definition) => getProductsForGroup(definition.key));
   allProductsCache = combined;
   return combined.slice();
 }
@@ -648,12 +605,12 @@ function findProductById(productId) {
 
 function getNavGroupMap() {
   ensureAllGroupsLoaded();
-  return { ...NAV_GROUP_MAP };
+  return { ...ACTIVE_NAV_GROUP_MAP };
 }
 
 function getNavEntries() {
   ensureAllGroupsLoaded();
-  return Object.keys(NAV_GROUP_MAP);
+  return Object.keys(ACTIVE_NAV_GROUP_MAP);
 }
 
 function resolveNavGroupKey(displayName) {
@@ -661,7 +618,11 @@ function resolveNavGroupKey(displayName) {
     return null;
   }
   ensureAllGroupsLoaded();
-  return NAV_GROUP_MAP[displayName] || LEGACY_NAV_ALIASES[displayName] || null;
+  const mapped = ACTIVE_NAV_GROUP_MAP[displayName] || LEGACY_NAV_ALIASES[displayName] || null;
+  if (mapped && !VALID_GROUP_KEYS.has(mapped)) {
+    return null;
+  }
+  return mapped;
 }
 
 function getLegacyNavAliases() {
@@ -686,6 +647,17 @@ function getGroupInfoForNav(displayName) {
   return getGroupInfo(groupKey);
 }
 
+function getManifestMetadata() {
+  if (MANIFEST_METADATA && typeof MANIFEST_METADATA === 'object') {
+    return { ...MANIFEST_METADATA };
+  }
+  return {
+    generatedAt: null,
+    totalGroups: 0,
+    totalProducts: 0,
+  };
+}
+
 const toyDataAPI = {
   getGroupList,
   getGroupInfo,
@@ -704,6 +676,7 @@ const toyDataAPI = {
   resolveNavDisplay,
   getLegacyNavAliases,
   getGroupInfoForNav,
+  getManifestMetadata,
 };
 
 export {
@@ -725,6 +698,7 @@ export {
   resolveNavDisplay,
   getLegacyNavAliases,
   getGroupInfoForNav,
+  getManifestMetadata,
 };
 
 if (typeof window !== 'undefined') {
