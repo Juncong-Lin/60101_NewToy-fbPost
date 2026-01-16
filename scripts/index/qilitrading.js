@@ -11,7 +11,7 @@ import {
   getNavGroupMap,
   getLegacyNavAliases,
 } from '../shared/toy-data.js';
-import { formatPriceRange } from '../shared/money.js';
+import { formatPriceRange, formatCurrency } from '../shared/money.js';
 import { parseMarkdown } from '../shared/markdown-parser.js';
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -223,11 +223,14 @@ function derivePriceDisplay(product) {
     return 'Contact for price';
   }
 
-  if (product.lower_price && product.higher_price) {
-    return formatPriceRange(product.lower_price, product.higher_price);
+  const lower = product.lower_price ?? product.raw?.lower_price;
+  const higher = product.higher_price ?? product.raw?.higher_price;
+  const rangeDisplay = formatPriceRange(lower, higher);
+  if (rangeDisplay && rangeDisplay !== 'Contact for price') {
+    return rangeDisplay;
   }
 
-  const priceCandidates = [product.priceValue, product.price];
+  const priceCandidates = [product.priceValue, product.price, product.raw?.price];
   for (let index = 0; index < priceCandidates.length; index += 1) {
     const candidate = priceCandidates[index];
     if (candidate === undefined || candidate === null) {
@@ -235,10 +238,26 @@ function derivePriceDisplay(product) {
     }
     const numeric = Number(candidate);
     if (!Number.isNaN(numeric) && numeric > 0) {
-      return `USD $${numeric.toFixed(2)}`;
+      const formatted = formatCurrency(numeric);
+      if (formatted) {
+        return `USD $${formatted}`;
+      }
     }
     if (typeof candidate === 'string' && candidate.trim()) {
-      return `USD $${candidate.trim()}`;
+      const trimmed = candidate.trim();
+      if (/^usd\s*\$/i.test(trimmed)) {
+        return trimmed;
+      }
+      if (/^usd/i.test(trimmed)) {
+        return trimmed.replace(/^usd/i, 'USD').trim();
+      }
+      if (/^\$/i.test(trimmed)) {
+        return `USD ${trimmed}`;
+      }
+      if (/^contact/i.test(trimmed)) {
+        return trimmed;
+      }
+      return `USD $${trimmed}`;
     }
   }
 

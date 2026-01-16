@@ -5,8 +5,114 @@ function getToyDataAPI() {
   return null;
 }
 
+function tokenizeSearchTerm(term) {
+  if (!term) {
+    return [];
+  }
+  const tokens = new Set();
+  term
+    .split(/[^a-z0-9]+/i)
+    .forEach((rawToken) => {
+      const normalized = rawToken.trim().toLowerCase();
+      if (normalized.length < 2) {
+        return;
+      }
+      tokens.add(normalized);
+      if (normalized.endsWith('s') && normalized.length > 3) {
+        tokens.add(normalized.slice(0, -1));
+      }
+    });
+  return Array.from(tokens);
+}
+
+function computeToySearchScore(product, tokens, originalTerm) {
+  if (!product) {
+    return 0;
+  }
+  let score = 0;
+  const tokenList = Array.isArray(tokens) ? tokens : [];
+  const normalizedTerm = typeof originalTerm === 'string' ? originalTerm : '';
+  const name = (product.name || '').toLowerCase();
+  const category = (product.categoryLower || product.categoryName || '').toLowerCase();
+  const group = (product.groupLower || product.groupLabel || '').toLowerCase();
+  const tags = Array.isArray(product.tagsLower) ? product.tagsLower : [];
+  const sku = (product.sku || '').toLowerCase();
+
+  if (name === normalizedTerm) {
+    score += 100;
+  }
+  if (category === normalizedTerm || group === normalizedTerm) {
+    score += 40;
+  }
+  if (sku === normalizedTerm) {
+    score += 90;
+  }
+
+  let matchedTokens = 0;
+  tokenList.forEach((token) => {
+    if (!token) {
+      return;
+    }
+    let tokenMatched = false;
+    if (name.startsWith(token)) {
+      score += 36;
+      tokenMatched = true;
+    } else if (name.includes(token)) {
+      score += 30;
+      tokenMatched = true;
+    }
+
+    if (category.startsWith(token)) {
+      score += 24;
+      tokenMatched = true;
+    } else if (category.includes(token)) {
+      score += 20;
+      tokenMatched = true;
+    }
+
+    if (group.startsWith(token)) {
+      score += 18;
+      tokenMatched = true;
+    } else if (group.includes(token)) {
+      score += 15;
+      tokenMatched = true;
+    }
+
+    if (sku.startsWith(token)) {
+      score += 18;
+      tokenMatched = true;
+    } else if (sku.includes(token)) {
+      score += 12;
+      tokenMatched = true;
+    }
+
+    if (tags.some((tag) => tag.includes(token))) {
+      score += 8;
+      tokenMatched = true;
+    }
+
+    if (tokenMatched) {
+      matchedTokens += 1;
+    }
+  });
+
+  if (matchedTokens > 0) {
+    score += matchedTokens * 5;
+  }
+  if (tokenList.length > 0 && matchedTokens === tokenList.length) {
+    score += 10;
+  }
+
+  if (score === 0 && normalizedTerm && name.includes(normalizedTerm)) {
+    score = 10;
+  }
+
+  return score;
+}
+
 // Search functionality for the header
-class SearchSystem {  constructor() {
+class SearchSystem {
+  constructor() {
     this.searchInput = null;
     this.searchButton = null;
     this.searchHistoryDropdown = null;
@@ -123,10 +229,10 @@ class SearchSystem {  constructor() {
       // Add some default search history for testing if none exists
       if (history.length === 0) {
         history = [
-          { term: 'inkjet', timestamp: Date.now() - 1000000 },
-          { term: 'print heads', timestamp: Date.now() - 2000000 },
-          { term: 'epson', timestamp: Date.now() - 3000000 },
-          { term: 'printer', timestamp: Date.now() - 4000000 }
+          { term: 'action figures', timestamp: Date.now() - 1000000 },
+          { term: 'building blocks', timestamp: Date.now() - 2000000 },
+          { term: 'plush toys', timestamp: Date.now() - 3000000 },
+          { term: 'stem kits', timestamp: Date.now() - 4000000 }
         ];
       }
       
@@ -262,150 +368,54 @@ class SearchSystem {  constructor() {
 
     // Perform search on current page
     this.searchProducts(searchTerm);
-  }  searchProducts(searchTerm) {
-    const searchTermLower = searchTerm.toLowerCase();
-    let searchResults = [];    try {
-      // Check if product data is available, if not wait for it to load
-      const toyAPI = getToyDataAPI();
-      const hasProducts = toyAPI || window.inkjetPrinterProducts || window.printheadProducts || 
-                         window.printSparePartProducts || window.upgradingKitProducts;
-      
-      if (!hasProducts) {
-        // Wait for product data to load, then retry search
-        this.waitForProductData(() => this.searchProducts(searchTerm));
-        return;
-      }
+  }
 
-      // Search in all product datasets      // Search inkjet printer products
-      if (toyAPI) {
-        const toyMatches = toyAPI.searchProducts(searchTermLower);
-        const mappedToyMatches = toyMatches.map((product) => ({
-          ...product,
-          type: 'toy',
-          category: product.categoryName || product.groupLabel || 'toys',
-          brand: product.groupLabel || 'toys',
-        }));
-        searchResults = searchResults.concat(mappedToyMatches);
-      }
+  searchProducts(searchTerm) {
+    const trimmed = typeof searchTerm === 'string' ? searchTerm.trim() : '';
+    if (!trimmed) {
+      this.showSearchMessage('Please enter a search term');
+      return;
+    }
 
-      if (window.inkjetPrinterProducts) {
-        for (const category in window.inkjetPrinterProducts) {
-          const products = window.inkjetPrinterProducts[category];
-          const matches = products.filter(product => 
-            this.productMatchesSearch(product, searchTermLower, {
-              category: category,
-              brand: null,
-              type: 'printer'
-            })
-          );
-          searchResults = searchResults.concat(matches.map(p => ({...p, type: 'printer', category: category})));
+    const normalized = trimmed.toLowerCase();
+    const toyAPI = getToyDataAPI();
+    if (!toyAPI) {
+      this.waitForProductData(() => this.searchProducts(trimmed));
+      return;
+    }
+
+    try {
+      const matches = toyAPI.searchProducts(normalized) || [];
+      const tokens = tokenizeSearchTerm(normalized);
+      const scored = matches.map((product) => ({
+        product,
+        score: computeToySearchScore(product, tokens, normalized),
+      }));
+
+      scored.sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
         }
-      }
-
-      // Search printhead products  
-      if (window.printheadProducts) {
-        for (const brand in window.printheadProducts) {
-          const products = window.printheadProducts[brand];
-          const matches = products.filter(product => 
-            this.productMatchesSearch(product, searchTermLower, {
-              category: 'printhead',
-              brand: brand,
-              type: 'printhead'
-            })
-          );
-          searchResults = searchResults.concat(matches.map(p => ({...p, type: 'printhead', brand: brand, category: 'printhead'})));
+        const nameA = (a.product?.name || '').toLowerCase();
+        const nameB = (b.product?.name || '').toLowerCase();
+        if (nameA < nameB) {
+          return -1;
         }
-      }
-
-      // Search print spare parts
-      if (window.printSparePartProducts) {
-        for (const brand in window.printSparePartProducts) {
-          const products = window.printSparePartProducts[brand];
-          const matches = products.filter(product => 
-            this.productMatchesSearch(product, searchTermLower, {
-              category: 'print spare parts',
-              brand: brand,
-              type: 'printsparepart'
-            })
-          );
-          searchResults = searchResults.concat(matches.map(p => ({...p, type: 'printsparepart', brand: brand, category: 'print spare parts'})));
+        if (nameA > nameB) {
+          return 1;
         }
-      }
+        return 0;
+      });
 
-      // Search upgrading kit products
-      if (window.upgradingKitProducts) {
-        for (const brand in window.upgradingKitProducts) {
-          const products = window.upgradingKitProducts[brand];
-          const matches = products.filter(product => 
-            this.productMatchesSearch(product, searchTermLower, {
-              category: 'upgrading kit',
-              brand: brand,
-              type: 'upgradingkit'
-            })
-          );
-          searchResults = searchResults.concat(matches.map(p => ({...p, type: 'upgradingkit', brand: brand, category: 'upgrading kit'})));        }
-      }
+      const decoratedResults = scored.map(({ product }) => ({
+        ...product,
+        type: 'toy',
+      }));
 
-      this.displaySearchResults(searchResults, searchTerm);
-
+      this.displaySearchResults(decoratedResults, trimmed);
     } catch (error) {
       this.showSearchMessage('Search temporarily unavailable. Please try again.');
     }
-  }  productMatchesSearch(product, searchTerm, context = {}) {
-    if (!product) return false;
-
-    // Search in product name
-    if (product.name && product.name.toLowerCase().includes(searchTerm)) {
-      return true;
-    }
-
-    // Search in derived category (from data structure)
-    if (context.category && context.category.toLowerCase().includes(searchTerm)) {
-      return true;
-    }
-
-    // Search in product category (if exists)
-    if (product.category && product.category.toLowerCase().includes(searchTerm)) {
-      return true;
-    }
-
-    // Search in product subcategory (if exists)
-    if (product.subcategory && product.subcategory.toLowerCase().includes(searchTerm)) {
-      return true;
-    }
-
-    // Search in derived brand (from data structure)
-    if (context.brand && context.brand.toLowerCase().includes(searchTerm)) {
-      return true;
-    }
-
-    // Search in product brand (if exists)
-    if (product.brand && product.brand.toLowerCase().includes(searchTerm)) {
-      return true;
-    }
-
-    // Special handling for common search terms
-    // Handle "print heads" or "printheads" searches
-    if ((searchTerm.includes('print head') || searchTerm.includes('printhead')) && context.category === 'printhead') {
-      return true;
-    }
-
-    // Handle "print spare parts" searches
-    if (searchTerm.includes('print spare') && context.category === 'print spare parts') {
-      return true;
-    }
-
-    // Handle "upgrading kit" searches
-    if (searchTerm.includes('upgrading') && context.category === 'upgrading kit') {
-      return true;
-    }
-
-    // Handle printer-related searches
-    if ((searchTerm.includes('printer') || searchTerm.includes('inkjet')) && context.type === 'printer') {
-      return true;
-    }
-
-    return false;
   }
   displaySearchResults(results, searchTerm) {
     // Hide hero banner
@@ -449,10 +459,10 @@ class SearchSystem {  constructor() {
           <div class="search-suggestions">
             <h3>Popular categories:</h3>
             <div class="suggestion-links">
-              <a href="javascript:void(0)" onclick="window.loadAllPrintheadProducts && window.loadAllPrintheadProducts()">Print Heads</a>
+              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Building Blocks & Construction')">Building Blocks & Construction</a>
+              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Electronic & Interactive Toys')">Electronic & Interactive Toys</a>
+              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Educational Toys')">Educational Toys</a>
               <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Action Figures & Role Play')">Action Figures & Role Play</a>
-              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Print Spare Parts')">Print Spare Parts</a>
-              <a href="javascript:void(0)" onclick="window.loadSpecificCategory && window.loadSpecificCategory('Upgrading Kit')">Upgrading Kit</a>
             </div>
           </div>
         </div>
@@ -620,7 +630,8 @@ class SearchSystem {  constructor() {
   isIndexPage() {
     return window.location.pathname.includes('index.html') || 
            window.location.pathname === '/' || 
-           window.location.pathname.endsWith('/');  }
+           window.location.pathname.endsWith('/');
+  }
 
   waitForProductData(callback) {
     // Show loading message
@@ -628,10 +639,8 @@ class SearchSystem {  constructor() {
     
     // Check for product data availability every 100ms
     const checkInterval = setInterval(() => {
-      const hasProducts = getToyDataAPI() || window.inkjetPrinterProducts || window.printheadProducts || 
-                         window.printSparePartProducts || window.upgradingKitProducts;
-      
-      if (hasProducts) {
+      const toyAPI = getToyDataAPI();
+      if (toyAPI) {
         clearInterval(checkInterval);
         callback();
       }
@@ -640,8 +649,7 @@ class SearchSystem {  constructor() {
     // Stop checking after 10 seconds to avoid infinite loop
     setTimeout(() => {
       clearInterval(checkInterval);
-      if (!(getToyDataAPI() || window.inkjetPrinterProducts || window.printheadProducts || 
-            window.printSparePartProducts || window.upgradingKitProducts)) {
+      if (!getToyDataAPI()) {
         this.showSearchMessage('Unable to load product data. Please refresh the page and try again.');
       }
     }, 10000);

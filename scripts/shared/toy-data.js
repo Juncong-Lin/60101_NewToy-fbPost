@@ -99,6 +99,53 @@ function cloneTags(tags) {
   return tags.map((tag) => String(tag));
 }
 
+function tokenizeSearchTerm(term) {
+  if (!term) {
+    return [];
+  }
+  const tokens = new Set();
+  String(term)
+    .split(/[^a-z0-9]+/i)
+    .forEach((rawToken) => {
+      const normalized = rawToken.trim().toLowerCase();
+      if (normalized.length < 2) {
+        return;
+      }
+      tokens.add(normalized);
+      if (normalized.endsWith('s') && normalized.length > 3) {
+        tokens.add(normalized.slice(0, -1));
+      }
+    });
+  return Array.from(tokens);
+}
+
+function productContainsToken(product, token) {
+  if (!product || !token) {
+    return false;
+  }
+  if (product.nameLower && product.nameLower.includes(token)) {
+    return true;
+  }
+  if (product.categoryLower && product.categoryLower.includes(token)) {
+    return true;
+  }
+  if (product.groupLower && product.groupLower.includes(token)) {
+    return true;
+  }
+  const skuLower = product.sku ? String(product.sku).toLowerCase() : '';
+  if (skuLower && skuLower.includes(token)) {
+    return true;
+  }
+  const descriptionLower = typeof product.description === 'string' ? product.description.toLowerCase() : '';
+  if (descriptionLower && descriptionLower.includes(token)) {
+    return true;
+  }
+  if (Array.isArray(product.tagsLower) && product.tagsLower.some((tag) => tag.includes(token))) {
+    return true;
+  }
+  return false;
+}
+
 function firstTruthy(values) {
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
@@ -535,25 +582,28 @@ function matchesSearchTerm(product, term) {
   if (!term) {
     return false;
   }
-  if (product.nameLower.includes(term)) {
+
+  if (productContainsToken(product, term)) {
     return true;
   }
-  if (product.categoryLower && product.categoryLower.includes(term)) {
-    return true;
+
+  const tokens = tokenizeSearchTerm(term);
+  if (tokens.length === 0) {
+    return false;
   }
-  if (product.groupLower && product.groupLower.includes(term)) {
-    return true;
-  }
-  if (product.sku.toLowerCase().includes(term)) {
-    return true;
-  }
-  if (product.description && product.description.toLowerCase().includes(term)) {
-    return true;
-  }
-  if (product.tagsLower.some((tag) => tag.includes(term))) {
-    return true;
-  }
-  return false;
+
+  let matched = 0;
+  tokens.forEach((token) => {
+    if (productContainsToken(product, token)) {
+      matched += 1;
+    }
+  });
+
+  const requiredMatches = tokens.length <= 2
+    ? tokens.length
+    : Math.max(2, Math.ceil(tokens.length * 0.6));
+
+  return matched >= requiredMatches;
 }
 
 function searchProducts(searchTerm) {

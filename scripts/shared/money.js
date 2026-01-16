@@ -1,16 +1,46 @@
-export function formatCurrency(priceCents) {
-  return (Math.round(priceCents) / 100).toFixed(0);
+function normaliseAmount(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return null;
+  }
+  const isLikelyCents = Number.isInteger(numeric) && Math.abs(numeric) >= 1000;
+  return isLikelyCents ? numeric / 100 : numeric;
 }
 
-// New function to format price ranges from lower_price and higher_price
-export function formatPriceRange(lowerPrice, higherPrice) {
-  if (!lowerPrice && !higherPrice) {
-    return 'USD: #NA';
+export function formatCurrency(value) {
+  const numeric = normaliseAmount(value);
+  if (numeric === null) {
+    return '';
   }
-  
-  const lower = formatCurrency(lowerPrice || 0);
-  const higher = formatCurrency(higherPrice || lowerPrice || 0);
-  
-  // Always show range format, even when prices are the same
-  return `USD:$${lower}~$${higher}`;
+
+  const fractionDigits = Math.abs(numeric - Math.round(numeric)) < 0.005 ? 0 : 2;
+  return numeric.toLocaleString('en-US', {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: 2,
+  });
+}
+
+export function formatPriceRange(lowerPrice, higherPrice) {
+  const lower = normaliseAmount(lowerPrice);
+  const higher = normaliseAmount(higherPrice);
+
+  if (lower === null && higher === null) {
+    return 'Contact for price';
+  }
+
+  const resolvedLower = formatCurrency(lower ?? higher ?? 0);
+  const resolvedHigher = formatCurrency(higher ?? lower ?? 0);
+
+  if (!resolvedLower && !resolvedHigher) {
+    return 'Contact for price';
+  }
+
+  if (!resolvedHigher || resolvedLower === resolvedHigher) {
+    return `USD $${resolvedLower}`;
+  }
+
+  return `USD $${resolvedLower} – $${resolvedHigher}`;
 }

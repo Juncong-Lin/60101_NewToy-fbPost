@@ -256,6 +256,8 @@ def translate_text(value, *, title_case=True, fallback=None):
 
     normalized_translation = re.sub(r"\s+", " ", translation).strip()
     normalized_translation = _merge_parenthetical_suffix(normalized_translation)
+    if normalized_translation.lower() == 'with':
+        normalized_translation = 'width'
     if title_case:
         normalized_translation = _smart_capitalize(normalized_translation)
     return normalized_translation or (fallback if fallback is not None else value)
@@ -310,6 +312,110 @@ def parse_decimal_as_str(value, places=None, default=None):
         return f"{parsed:.{places}f}".rstrip('0').rstrip('.') if places > 0 else str(int(parsed))
     text = str(parsed)
     return text
+
+
+def _default_price_meta():
+    return {
+        "lower": None,
+        "higher": None,
+        "display": "",
+        "raw": "",
+        "numeric": None,
+    }
+
+
+PRICE_NUMBER_RE = re.compile(r"\d+(?:\.\d+)?")
+
+
+def normalize_price_value(value):
+    meta = _default_price_meta()
+    if value is None:
+        return meta
+    if isinstance(value, (int, float, Decimal)):
+        amount = parse_decimal(value, places=2, default=None)
+        if amount is None or amount <= 0:
+            meta["raw"] = str(value)
+            return meta
+        meta.update({
+            "lower": amount,
+            "higher": None,
+            "display": f"USD ${amount:,.2f}",
+            "raw": str(value),
+            "numeric": amount,
+        })
+        return meta
+
+    text = str(value).strip()
+    if not text:
+        return meta
+
+    meta["raw"] = text
+    cleaned = text.lower()
+    cleaned = cleaned.replace('usd', ' ').replace('cny', ' ').replace('rmb', ' ')
+    cleaned = cleaned.replace('$', ' ').replace('¥', ' ').replace('￥', ' ')
+    cleaned = cleaned.replace(',', ' ')
+
+    matches = PRICE_NUMBER_RE.findall(cleaned)
+    amounts = []
+    for match in matches:
+        amount = parse_decimal(match, places=2, default=None)
+        if amount is None or amount <= 0:
+            continue
+        amounts.append(amount)
+
+    if not amounts:
+        return meta
+
+    amounts.sort()
+    lower = amounts[0]
+    higher = amounts[-1] if len(amounts) > 1 else None
+    if higher is not None and abs(higher - lower) < 0.0005:
+        higher = None
+
+    display = f"USD ${lower:,.2f}" if higher is None else f"USD ${lower:,.2f} – ${higher:,.2f}"
+    meta.update({
+        "lower": lower,
+        "higher": higher,
+        "display": display,
+        "numeric": lower,
+    })
+    return meta
+
+
+def compute_price_metadata(product):
+    meta = _default_price_meta()
+    if not isinstance(product, dict):
+        return meta
+
+    priority_keys = [
+        'priceDisplay', 'price_display', 'priceText', 'price_text', 'priceUSD',
+        'price', 'priceValue', 'price_value', 'offerPrice', 'offer_price',
+    ]
+
+    candidates = []
+    seen = set()
+
+    for key in priority_keys:
+        if key not in product:
+            continue
+        value = product.get(key)
+        if value in (None, '', '-', '--', 'N/A', '#N/A'):
+            continue
+        marker = (key, str(value))
+        if marker in seen:
+            continue
+        seen.add(marker)
+        candidates.append(value)
+
+    fallback = None
+    for candidate in candidates:
+        info = normalize_price_value(candidate)
+        if info["lower"] is not None or info["higher"] is not None or info["numeric"] is not None:
+            return info
+        if fallback is None:
+            fallback = info
+
+    return fallback or meta
 
 
 def translate_category_name(name):
@@ -555,7 +661,7 @@ def build_markdown_content(product, group_name, category_name, brand_name):
     volume_cbm = product.get('volumeCbm')
     gross_weight = product.get('grossWeightKg')
     net_weight = product.get('netWeightKg')
-    price = product.get('price') or ''
+    price_meta = compute_price_metadata(product)
 
     group_display = product.get('groupDisplayName') or translate_text(group_name, fallback=group_name)
     category_display = product.get('categoryDisplayName') or translate_category_name(category_name)
@@ -575,7 +681,7 @@ def build_markdown_content(product, group_name, category_name, brand_name):
         "",
         "# Packing Details",
         f"- Quantity per Carton: {qty_per_carton if qty_per_carton is not None else 'N/A'} pcs",
-        f"- Carton Size (length \\* width \\* height): {format_dimension_segment(outer_length, outer_width, outer_height)}",
+        f"- Carton Size (L × W × H): {format_dimension_segment(outer_length, outer_width, outer_height)}",
         f"- Volume: {volume_cbm if volume_cbm is not None else 'N/A'} CBM",
         "",
         "# Weight",
@@ -583,7 +689,7 @@ def build_markdown_content(product, group_name, category_name, brand_name):
         f"- Net Weight: {net_weight if net_weight is not None else 'N/A'} kg / carton",
         "",
         "# Pricing",
-        f"- Price: {price or 'N/A'}",
+        f"- Price: {price_meta['display'] or price_meta['raw'] or 'Contact for price'}",
     ]
 
     return "\n".join(lines)
@@ -615,7 +721,7 @@ def build_product_record(product, group_name, category_name, brand_name, image_r
     chargeable_unit = product.get('chargeableUnitCn')
     gross_weight = product.get('grossWeightKg')
     net_weight = product.get('netWeightKg')
-    price = product.get('price', '')
+    price_meta = compute_price_metadata(product)
     price_per_chargeable = product.get('pricePerChargeableUnit')
     if price_per_chargeable is not None:
         price_per_chargeable = round(price_per_chargeable, 3)
@@ -669,7 +775,11 @@ def build_product_record(product, group_name, category_name, brand_name, image_r
         "chargeable_unit_cn": chargeable_unit,
         "gross_weight_kg": gross_weight,
         "net_weight_kg": net_weight,
-        "price": price,
+        "price": price_meta['display'] or price_meta['raw'] or "",
+        "price_raw": price_meta['raw'],
+        "priceValue": price_meta['numeric'],
+        "lower_price": price_meta['lower'],
+        "higher_price": price_meta['higher'],
         "price/chargeable_unit": price_per_chargeable,
         "excel_row": product.get('excelRow'),
         "priceRight": product.get('priceRight', ''),
