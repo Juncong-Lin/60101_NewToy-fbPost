@@ -1,5 +1,6 @@
 # Save this file as xxxx.py (e.g., printhead_scraper.py)
 # The output folder will be named 'xxxx' (e.g., 'printhead_scraper') in the same directory as this script
+# python products_toy\toy.py
 
 import os
 import re
