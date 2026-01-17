@@ -506,8 +506,8 @@ class SearchSystem {
               <img class="product-image" src="${product.image}">
             </a>
           </div>
-          <div class="product-name limit-text-to-3-lines">
-            <a href="detail.html?productId=${product.id}&type=${product.type}" class="product-link">
+          <div class="product-name">
+            <a href="detail.html?productId=${product.id}&type=${product.type}" class="product-link limit-text-to-2-lines">
               ${product.name}
             </a>
           </div>

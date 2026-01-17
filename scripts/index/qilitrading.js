@@ -29,9 +29,6 @@ registerGroupAliases();
 
 function registerGroupAliases() {
   toyGroupsMeta.forEach((meta) => {
-    if (!meta || !meta.key) {
-      return;
-    }
     const displayName = meta.label || meta.key;
     registerAlias(meta.key, meta.key, displayName);
     if (meta.slug) {
@@ -268,22 +265,169 @@ function derivePriceDisplay(product) {
   return 'Contact for price';
 }
 
+function formatNumeric(value, { maximumFractionDigits = 2 } = {}) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const number = Number(value);
+  if (Number.isFinite(number)) {
+    const decimals = number % 1 === 0 ? 0 : maximumFractionDigits;
+    return number.toFixed(decimals).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+  }
+  const trimmed = String(value).trim();
+  return trimmed || null;
+}
+
+function formatCartonSize(carton) {
+  if (!carton || typeof carton !== 'object') {
+    return null;
+  }
+  const dimensions = [carton.length, carton.width, carton.height]
+    .map((dimension) => formatNumeric(dimension, { maximumFractionDigits: 2 }))
+    .filter(Boolean);
+  if (dimensions.length === 0) {
+    return null;
+  }
+  return `${dimensions.join(' × ')} cm`;
+}
+
+function formatWeightKg(value) {
+  const formatted = formatNumeric(value, { maximumFractionDigits: 2 });
+  return formatted ? `${formatted} kg` : null;
+}
+
+function formatVolumeCbm(value) {
+  const formatted = formatNumeric(value, { maximumFractionDigits: 3 });
+  return formatted ? `${formatted} cbm` : null;
+}
+
+function formatQuantity(value) {
+  const formatted = formatNumeric(value, { maximumFractionDigits: 0 });
+  return formatted ? `${formatted} pcs` : null;
+}
+
+function extractNumericValue(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === 'string') {
+    const match = value.match(/-?\d+(?:\.\d+)?/);
+    if (match) {
+      const number = Number(match[0]);
+      return Number.isFinite(number) ? number : null;
+    }
+  }
+  return null;
+}
+
+function hasCurrencyOrUnitPrice(value) {
+  if (!value) {
+    return false;
+  }
+  const trimmed = String(value).trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (/^contact/i.test(trimmed)) {
+    return false;
+  }
+  return /(usd|\$)/i.test(trimmed) && /\d/.test(trimmed);
+}
+
+function buildProductSpecsMarkup(product, priceDisplay) {
+  const specs = [];
+  const attributes = product.attributes || {};
+
+  const productCode = attributes.productCode || product.sku || product.id;
+  if (productCode) {
+    specs.push({ label: 'Product Code', value: productCode });
+  }
+
+  if (attributes.packaging) {
+    specs.push({ label: 'Packaging', value: attributes.packaging });
+  }
+
+  const quantityPerCartonRaw = attributes.qtyPerCarton ?? product.qty_per_carton ?? null;
+  const quantityPerCarton = formatQuantity(quantityPerCartonRaw);
+  const quantityPerCartonNumeric = extractNumericValue(quantityPerCartonRaw);
+  if (quantityPerCarton) {
+    specs.push({ label: 'Quantity per Carton', value: quantityPerCarton });
+  }
+
+  const cartonSize = formatCartonSize(attributes.outerCarton);
+  if (cartonSize) {
+    specs.push({ label: 'Carton Size', value: cartonSize });
+  }
+
+  const volume = formatVolumeCbm(attributes.volumeCbm);
+  if (volume) {
+    specs.push({ label: 'Volume', value: volume });
+  }
+
+  const grossWeight = formatWeightKg(attributes.grossWeightKg);
+  if (grossWeight) {
+    specs.push({ label: 'Gross Weight', value: `${grossWeight} / carton` });
+  }
+
+  const netWeight = formatWeightKg(attributes.netWeightKg);
+  if (netWeight) {
+    specs.push({ label: 'Net Weight', value: `${netWeight} / carton` });
+  }
+
+  const moqRaw = attributes.priceRight ?? product.priceRight ?? null;
+  const moq = formatQuantity(moqRaw);
+  const moqNumeric = extractNumericValue(moqRaw);
+  const priceLooksLikeCurrency = hasCurrencyOrUnitPrice(priceDisplay) || (product.priceValue !== null && product.priceValue !== undefined);
+  const isDuplicateMoq = moqNumeric !== null && quantityPerCartonNumeric !== null && moqNumeric === quantityPerCartonNumeric;
+  const priceIndicatesMoq = typeof priceDisplay === 'string' && /^MOQ\b/i.test(priceDisplay.trim());
+  if (moq && !priceIndicatesMoq && !isDuplicateMoq && !priceLooksLikeCurrency) {
+    specs.push({ label: 'MOQ', value: moq });
+  }
+
+  const normalizedPrice = typeof priceDisplay === 'string' ? priceDisplay.trim() : '';
+  if (normalizedPrice && !/^MOQ\s/i.test(normalizedPrice)) {
+    specs.push({ label: 'Price per Piece', value: normalizedPrice });
+  }
+
+  if (specs.length === 0) {
+    return '';
+  }
+
+  const rows = specs
+    .map((spec) => `
+      <div class="product-specs-row">
+        <span class="product-specs-label">${escapeHTML(spec.label)}</span>
+        <span class="product-specs-value">${escapeHTML(spec.value)}</span>
+      </div>
+    `)
+    .join('');
+
+  return `<div class="product-specs">${rows}</div>`;
+}
+
 function createProductCard(product) {
   const detailUrl = buildDetailUrl(product);
   const priceDisplay = derivePriceDisplay(product);
   const sku = product.sku || product.id;
+  // Badges intentionally disabled to avoid small numeric chips (e.g. "2") appearing
+  // under the title; we keep the area for future badges but do not render them now.
   const badges = [];
-  if (product.categoryName) {
-    badges.push(`<span class="product-badge">${escapeHTML(product.categoryName)}</span>`);
-  }
-  if (product.marketTag) {
-    badges.push(`<span class="product-badge badge-accent">${escapeHTML(product.marketTag)}</span>`);
-  }
 
   const imageUrl = buildAssetUrl(product.image);
   const imageHTML = imageUrl
     ? `<img class="product-image" src="${escapeHTML(imageUrl)}" alt="${escapeHTML(product.name)} preview">`
     : `<div class="product-image product-image-placeholder" role="img" aria-label="Image coming soon"></div>`;
+
+  const badgeHTML = badges.length ? `<div class="product-badges">${badges.join('')}</div>` : '';
+  const specsHTML = buildProductSpecsMarkup(product, priceDisplay);
+  const primaryProductCode = product.attributes?.productCode || product.sku || product.id;
+  const shouldShowSku = sku && safeLower(sku) !== safeLower(primaryProductCode);
+  const skuMarkup = shouldShowSku
+    ? `<div class="product-meta"><span class="product-sku">SKU: ${escapeHTML(sku)}</span></div>`
+    : '';
 
   return `
     <div class="product-container" data-product-id="${escapeHTML(product.id)}">
@@ -292,14 +436,12 @@ function createProductCard(product) {
           ${imageHTML}
         </a>
       </div>
-      <div class="product-name limit-text-to-3-lines">
-        <a href="${detailUrl}" class="product-link">${escapeHTML(product.name || 'Toy product')}</a>
+      <div class="product-name">
+        <a href="${detailUrl}" class="product-link limit-text-to-2-lines">${escapeHTML(product.name || 'Toy product')}</a>
       </div>
-      <div class="product-meta">
-        ${badges.join(' ')}
-        <span class="product-sku">SKU: ${escapeHTML(sku)}</span>
-      </div>
-      <div class="product-price">${priceDisplay}</div>
+      ${badgeHTML}
+      ${skuMarkup}
+      ${specsHTML}
       <div class="product-spacer"></div>
       <a class="add-to-cart-button button-primary" href="${detailUrl}" aria-label="View details for ${escapeHTML(product.name || sku)}">
         View Details
