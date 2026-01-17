@@ -65,6 +65,13 @@
   animation: resultAppear 0.3s ease-out;
 }
 
+/* ensure result doesn't overflow viewport unnecessarily */
+.magnifier-result {
+  overflow: hidden;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+
 @keyframes resultAppear {
   from {
     opacity: 0;
