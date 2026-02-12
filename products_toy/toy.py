@@ -19,6 +19,68 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
+
+def _is_http_url(value: str) -> bool:
+    if not value:
+        return False
+    try:
+        parsed = urlparse(value)
+    except Exception:
+        return False
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def _normalize_factory_url(raw_value: str) -> str | None:
+    """Normalize various inputs into a navigable factory/shop URL.
+
+    Supports:
+    - full http(s) URLs
+    - URLs without scheme (e.g. //shop... or shop...1688.com/...)
+    - shop hostnames missing path (adds /page/offerlist.htm)
+    - data-source mistakes where the value is a filename starting with digits; converts
+      leading digits to https://shop{digits}.1688.com/page/offerlist.htm
+    """
+    if raw_value is None:
+        return None
+    value = str(raw_value).strip()
+    if not value:
+        return None
+
+    # already valid
+    if _is_http_url(value):
+        return value
+
+    # scheme-relative
+    if value.startswith("//"):
+        candidate = "https:" + value
+        return candidate if _is_http_url(candidate) else None
+
+    # host/path without scheme
+    if "1688.com" in value and not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", value):
+        candidate = "https://" + value.lstrip("/")
+        # If this is just a host, add default offer list path
+        parsed = urlparse(candidate)
+        if parsed.path in {"", "/"}:
+            candidate = candidate.rstrip("/") + "/page/offerlist.htm"
+        return candidate if _is_http_url(candidate) else None
+
+    # common shop hostname without scheme
+    if value.startswith("shop") and ".1688.com" in value:
+        candidate = "https://" + value
+        parsed = urlparse(candidate)
+        if parsed.path in {"", "/"}:
+            candidate = candidate.rstrip("/") + "/page/offerlist.htm"
+        return candidate if _is_http_url(candidate) else None
+
+    # fallback: leading digits from filenames like "120828_xxx.jpeg"
+    digit_match = re.match(r"^(\d{3,})", value)
+    if digit_match:
+        shop_id = digit_match.group(1)
+        candidate = f"https://shop{shop_id}.1688.com/page/offerlist.htm"
+        return candidate if _is_http_url(candidate) else None
+
+    return None
+
 # --- Logging Setup ---
 def setup_logging(output_dir):
     """Setup comprehensive logging to both console and file."""
@@ -66,8 +128,31 @@ TRANSLATION_CACHE_PATH = os.path.normpath(os.path.join(SCRIPT_BASE_DIR, '..', 'p
 with open(os.path.join(DATA_SOURCE_DIR, 'brands.json'), 'r', encoding='utf-8') as f:
     brand_data = json.load(f)
 
-BRANDS = [item['brand'] for item in brand_data]
-URL_TEMPLATE = [item['url'] for item in brand_data]
+_raw_brands: list[str] = []
+_raw_urls: list[str] = []
+for item in (brand_data or []):
+    if not isinstance(item, dict):
+        continue
+    brand = str(item.get('brand') or '').strip()
+    url_value = item.get('url')
+    # Some data sources may not have a url; try the brand field as a backup.
+    normalized_url = _normalize_factory_url(url_value) or _normalize_factory_url(brand)
+    if not brand:
+        brand = normalized_url or "Unknown"
+    if normalized_url:
+        _raw_brands.append(brand)
+        _raw_urls.append(normalized_url)
+
+# Deduplicate URLs while keeping first-seen order to avoid scraping the same shop repeatedly.
+BRANDS = []
+URL_TEMPLATE = []
+_seen_urls = set()
+for brand, url in zip(_raw_brands, _raw_urls):
+    if url in _seen_urls:
+        continue
+    _seen_urls.add(url)
+    BRANDS.append(brand)
+    URL_TEMPLATE.append(url)
 
 SCRAPE_LINKS = int(os.environ.get('SCRAPE_LINKS', '536'))  # Links to be scraped per run of this script
 
@@ -1419,44 +1504,45 @@ def main():
             with open(csv_path, 'r', encoding='utf-8-sig') as cf:
                 reader = csv.DictReader(cf)
                 for row in reader:
-                    stall_number = (row.get('摊位号') or '').strip()
-                    company_code = (row.get('公司编号') or row.get('company') or '').strip()
+                    # Support both Chinese and English column headers.
+                    stall_number = (row.get('摊位号') or row.get('booth_number') or row.get('booth') or '').strip()
+                    company_code = (row.get('公司编号') or row.get('company_code') or row.get('company') or '').strip()
                     brand_key = company_code or stall_number or 'Unknown'
-                    product_name = (row.get('品名') or '').strip()
-                    packaging = (row.get('包装') or '').strip()
-                    product_code = (row.get('货号') or '').strip()
+                    product_name = (row.get('品名') or row.get('product_name') or '').strip()
+                    packaging = (row.get('包装') or row.get('packaging') or '').strip()
+                    product_code = (row.get('货号') or row.get('product_code') or '').strip()
                     company_code_digits = re.sub(r"\D", "", company_code)
 
                     product = {
-                        "galleyItemLink href": (row.get('链接') or '').strip(),
-                        "galleyImg src": (row.get('图片') or '').strip(),
+                        "galleyItemLink href": (row.get('链接') or row.get('link') or row.get('url') or '').strip(),
+                        "galleyImg src": (row.get('图片') or row.get('image') or '').strip(),
                         "galleyName": product_name,
                         "sampleTag": product_code,
                         "sampleTag (2)": packaging,
                         "sampleTag (3)": stall_number,
-                        "price": str(row.get('价格', '')).strip(),
-                        "priceRight": (row.get('装箱量') or '').strip(),
-                        "marketTag": (row.get('内盒') or '').strip(),
+                        "price": str(row.get('价格') or row.get('price') or '').strip(),
+                        "priceRight": (row.get('装箱量') or row.get('carton_quantity') or '').strip(),
+                        "marketTag": (row.get('内盒') or row.get('inner_box') or '').strip(),
                         "sectionName": company_code,
                         "stallNumber": stall_number,
                         "companyCode": company_code,
                         "companyCodeDigits": company_code_digits,
                         "productCode": product_code,
                         "packaging": packaging,
-                        "qtyPerCarton": parse_int(row.get('装箱量')),
-                        "innerBox": parse_int(row.get('内盒')),
-                        "outerCartonLength": parse_decimal(row.get('外箱长'), places=1),
-                        "outerCartonWidth": parse_decimal(row.get('外箱宽'), places=1),
-                        "outerCartonHeight": parse_decimal(row.get('外箱高'), places=1),
-                        "packageLength": parse_decimal(row.get('包装长'), places=1),
-                        "packageWidth": parse_decimal(row.get('包装宽'), places=1),
-                        "packageHeight": parse_decimal(row.get('包装高'), places=1),
-                        "volumeCbm": parse_decimal(row.get('体积'), places=3),
-                        "chargeableUnitCn": parse_decimal(row.get('材积'), places=2),
-                        "grossWeightKg": parse_decimal(row.get('毛重'), places=2),
-                        "netWeightKg": parse_decimal(row.get('净重'), places=2),
-                        "pricePerChargeableUnit": parse_decimal(row.get('价格/材积'), places=3),
-                        "excelRow": (row.get('_excel_row') or '').strip()
+                        "qtyPerCarton": parse_int(row.get('装箱量') or row.get('carton_quantity')),
+                        "innerBox": parse_int(row.get('内盒') or row.get('inner_box')),
+                        "outerCartonLength": parse_decimal(row.get('外箱长') or row.get('outer_carton_length'), places=1),
+                        "outerCartonWidth": parse_decimal(row.get('外箱宽') or row.get('outer_carton_width'), places=1),
+                        "outerCartonHeight": parse_decimal(row.get('外箱高') or row.get('outer_carton_height'), places=1),
+                        "packageLength": parse_decimal(row.get('包装长') or row.get('package_length'), places=1),
+                        "packageWidth": parse_decimal(row.get('包装宽') or row.get('package_width'), places=1),
+                        "packageHeight": parse_decimal(row.get('包装高') or row.get('package_height'), places=1),
+                        "volumeCbm": parse_decimal(row.get('体积') or row.get('volume'), places=3),
+                        "chargeableUnitCn": parse_decimal(row.get('材积') or row.get('chargeable_volume_m3') or row.get('chargeable_volume'), places=2),
+                        "grossWeightKg": parse_decimal(row.get('毛重') or row.get('gross_weight'), places=2),
+                        "netWeightKg": parse_decimal(row.get('净重') or row.get('net_weight'), places=2),
+                        "pricePerChargeableUnit": parse_decimal(row.get('价格/材积') or row.get('price_per_chargeable_volume'), places=3),
+                        "excelRow": (row.get('_excel_row') or row.get('excel_row') or '').strip()
                     }
                     products_by_brand.setdefault(brand_key, []).append(product)
         except Exception as e:
@@ -1503,8 +1589,15 @@ def main():
 
     original_products_by_brand = copy.deepcopy(products_by_brand)
 
-    # Calculate scraped_count from number of brand files
-    scraped_count = len(products_by_brand)
+    # Calculate scraped_count from number of brand files already written to disk.
+    # When loading from CSV, products_by_brand may already contain many entries,
+    # and using its length would incorrectly skip scraping.
+    scraped_count = 0
+    try:
+        if os.path.exists(each_brand_dir):
+            scraped_count = len([name for name in os.listdir(each_brand_dir) if name.endswith('.json')])
+    except Exception:
+        scraped_count = 0
 
     brand_to_url = dict(zip(BRANDS, URL_TEMPLATE))
     url_to_brand = {url: brand for brand, url in brand_to_url.items()}
