@@ -458,7 +458,16 @@ def normalize_price_value(value):
     if higher is not None and abs(higher - lower) < 0.0005:
         higher = None
 
-    display = f"USD ${lower:,.2f}" if higher is None else f"USD ${lower:,.2f} – ${higher:,.2f}"
+    # If original text explicitly referenced USD, prefer 3 decimal display; otherwise 2 decimals
+    try:
+        raw_lowered = text.lower()
+    except Exception:
+        raw_lowered = ''
+    usd_flag = 'usd' in raw_lowered
+    if usd_flag:
+        display = f"USD ${lower:,.3f}" if higher is None else f"USD ${lower:,.3f} – ${higher:,.3f}"
+    else:
+        display = f"USD ${lower:,.2f}" if higher is None else f"USD ${lower:,.2f} – ${higher:,.2f}"
     meta.update({
         "lower": lower,
         "higher": higher,
@@ -1499,6 +1508,14 @@ def main():
     # Falls back to reading existing per-brand JSON files if CSV is not present.
     products_by_brand = {}
     csv_path = os.path.normpath(os.path.join(SCRIPT_BASE_DIR, '..', 'products_to_toy_design_help_folder', 'products_ys.csv'))
+    # Allow user to override CNY->USD exchange rate via environment variable TOY_EXCHANGE_RATE
+    exchange_rate_env = os.environ.get('TOY_EXCHANGE_RATE')
+    exchange_rate = None
+    try:
+        if exchange_rate_env:
+            exchange_rate = float(exchange_rate_env)
+    except Exception:
+        exchange_rate = None
     if os.path.exists(csv_path):
         try:
             with open(csv_path, 'r', encoding='utf-8-sig') as cf:
@@ -1513,6 +1530,54 @@ def main():
                     product_code = (row.get('货号') or row.get('product_code') or '').strip()
                     company_code_digits = re.sub(r"\D", "", company_code)
 
+                    # Attempt to read USD price from CSV if present (headers may vary)
+                    def _find_row_key(keys, row_dict):
+                        for k in row_dict.keys():
+                            nk = re.sub(r'[^0-9a-z_]', '', str(k).lower())
+                            if nk in keys:
+                                return k
+                        return None
+
+                    usd_key = _find_row_key({'price_usd', 'priceusd', 'price_usd', 'price usd'}, row)
+                    usd_value_raw = None
+                    if usd_key:
+                        usd_value_raw = (row.get(usd_key) or '').strip()
+
+                    # If USD value found in CSV, parse as Decimal and format to 3 decimals so
+                    # compute_price_metadata recognizes it as USD source. Otherwise, if an
+                    # exchange rate is provided via env, compute USD from CNY `price` field.
+                    usd_token = None
+                    usd_numeric = None
+                    if usd_value_raw:
+                        try:
+                            udec = Decimal(str(usd_value_raw))
+                            udec_q = udec.quantize(Decimal('0.001'))
+                            usd_token = f"USD {format(udec_q, '.3f')}"
+                            usd_numeric = float(udec_q)
+                        except (InvalidOperation, ValueError):
+                            # fallback: try float parse then format
+                            try:
+                                uval = float(usd_value_raw)
+                                usd_token = f"USD {uval:.3f}"
+                                usd_numeric = float(Decimal(uval).quantize(Decimal('0.001')))
+                            except Exception:
+                                usd_token = usd_value_raw or None
+                                usd_numeric = None
+                    else:
+                        if exchange_rate is not None:
+                            # attempt to parse CNY price and convert
+                            try:
+                                cny_raw = (row.get('价格') or row.get('price') or '').strip()
+                                if cny_raw:
+                                    cny_dec = Decimal(str(cny_raw))
+                                    rate_dec = Decimal(str(exchange_rate))
+                                    usd_calc = (cny_dec * rate_dec).quantize(Decimal('0.001'))
+                                    usd_token = f"USD {format(usd_calc, '.3f')}"
+                                    usd_numeric = float(usd_calc)
+                            except Exception:
+                                usd_token = None
+                                usd_numeric = None
+
                     product = {
                         "galleyItemLink href": (row.get('链接') or row.get('link') or row.get('url') or '').strip(),
                         "galleyImg src": (row.get('图片') or row.get('image') or '').strip(),
@@ -1521,6 +1586,8 @@ def main():
                         "sampleTag (2)": packaging,
                         "sampleTag (3)": stall_number,
                         "price": str(row.get('价格') or row.get('price') or '').strip(),
+                        # Provide a separate USD-source field for compute_price_metadata to prefer when available
+                        "priceUSD": usd_token,
                         "priceRight": (row.get('装箱量') or row.get('carton_quantity') or '').strip(),
                         "marketTag": (row.get('内盒') or row.get('inner_box') or '').strip(),
                         "sectionName": company_code,
