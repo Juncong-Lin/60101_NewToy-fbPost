@@ -781,6 +781,223 @@ def download_product_image(image_url, destination_path, referer=None):
         return False
 
 
+TAB_STOPWORDS = {
+    'a', 'an', 'and', 'or', 'the', 'of', 'for', 'to', 'with', 'without', 'in',
+    'on', 'at', 'by', 'from', 'new', 'set', 'type', 'types', 'toy', 'toys',
+    'figure', 'figures', 'man', 'woman', 'men', 'women'
+}
+
+TAB_GENERIC_WORDS = {
+    'building', 'block', 'blocks', 'figure', 'figures', 'mini', 'minifigure', 'minifigures',
+    'assembled', 'licensed', 'culture', 'pop', 'toys', 'toy'
+}
+
+TAB_PHRASE_TAGS = [
+    (r"\bbuilding\s*blocks?\b|\bblocks?\b", "BuildingBlocks"),
+    (r"\bminifigures?\b|\bmini\s*figures?\b", "Minifigures"),
+    (r"\baction\s*figures?\b", "ActionFigures"),
+    (r"\brole\s*play\b", "RolePlay"),
+    (r"\bpop\s*culture\b", "PopCulture"),
+    (r"\blicensed\b", "Licensed"),
+    (r"\boutdoor\b", "Outdoor"),
+    (r"\bsports?\b", "Sports"),
+    (r"\bpuzzles?\b", "Puzzles"),
+    (r"\bboard\s*games?\b", "BoardGames"),
+    (r"\beducational\b", "Educational"),
+    (r"\belectronic\b", "Electronic"),
+]
+
+
+def _split_ascii_words(text):
+    if not text:
+        return []
+    return re.findall(r"[A-Za-z0-9]+", str(text))
+
+
+def _build_camel_tag_from_text(text, max_words=3):
+    words = _split_ascii_words(text)
+    picked = []
+    for word in words:
+        lowered = word.lower()
+        if lowered in TAB_STOPWORDS:
+            continue
+        if len(word) < 3 and not re.fullmatch(r"[A-Za-z]\d+", word):
+            continue
+        picked.append(word)
+        if len(picked) >= max_words:
+            break
+    if not picked:
+        return ""
+
+    normalized = []
+    for word in picked:
+        if word.isupper() and len(word) <= 8:
+            normalized.append(word)
+        elif re.fullmatch(r"[A-Za-z]\d+", word):
+            normalized.append(word.upper())
+        else:
+            normalized.append(word[:1].upper() + word[1:].lower())
+    return "".join(normalized)
+
+
+def _extract_focus_tags(text, max_count=3):
+    words = _split_ascii_words(text)
+    picked = []
+    for word in words:
+        lowered = word.lower()
+        if lowered in TAB_STOPWORDS:
+            continue
+        if lowered in TAB_GENERIC_WORDS:
+            continue
+        if len(word) < 3 and not re.fullmatch(r"[A-Za-z]\d+", word):
+            continue
+        picked.append(word)
+        if len(picked) >= max_count:
+            break
+    return picked
+
+
+def _to_hashtag_token(value):
+    if not value:
+        return ""
+    text = str(value).strip()
+    if not text or contains_cjk(text):
+        return ""
+
+    text = re.sub(r"[^0-9a-zA-Z\s]", " ", text)
+    parts = [part for part in re.split(r"\s+", text) if part]
+    if not parts:
+        return ""
+
+    normalized = []
+    for part in parts:
+        lowered = part.lower()
+        if lowered in TAB_STOPWORDS:
+            continue
+        if len(part) == 1 and part.isalpha():
+            continue
+        if re.search(r"[a-z]", part) and re.search(r"[A-Z]", part[1:]):
+            normalized.append(part)
+            continue
+        if part.isupper() and len(part) <= 8:
+            normalized.append(part)
+        elif re.fullmatch(r"[a-zA-Z]\d+", part):
+            normalized.append(part.upper())
+        else:
+            normalized.append(part[:1].upper() + part[1:].lower())
+
+    if not normalized:
+        return ""
+    token = "".join(normalized)
+
+    if not token:
+        return ""
+
+    # Do not allow numeric-only tags like #120828
+    if token.isdigit():
+        return ""
+
+    if len(token) < 3 and not re.fullmatch(r"[A-Za-z]\d+", token):
+        return ""
+
+    if len(token) > 28:
+        token = token[:28]
+
+    return token
+
+
+def build_product_tabs(product, product_name, group_display, category_display, packaging, product_code):
+    scored_candidates = []
+
+    def add_candidate(value, score):
+        if value:
+            scored_candidates.append((score, value))
+
+    combined_text = " ".join(
+        str(v)
+        for v in [product_name, category_display, group_display, packaging, product.get('marketTag', '')]
+        if v
+    )
+
+    # Highest priority: concrete identity tags.
+    add_candidate(product_code, 120)
+
+    # Product-name-derived high-correlation tags.
+    for focus_word in _extract_focus_tags(product_name, max_count=3):
+        add_candidate(focus_word, 116)
+
+    # Keep packaging only as fallback to avoid overwhelming meaningful theme tags.
+    translated_packaging = packaging
+    if packaging and contains_cjk(packaging):
+        translated_packaging = translate_packaging(packaging)
+    add_candidate(translated_packaging, 62)
+
+    raw_numeric_sources = [
+        product.get('sampleTag'),
+        product.get('sampleTag (2)'),
+        product.get('sampleTag (3)'),
+    ]
+    sample_tags = product.get('sampleTags') or product.get('sample_tags')
+    if isinstance(sample_tags, (list, tuple)):
+        raw_numeric_sources.extend(sample_tags)
+    for source in raw_numeric_sources:
+        for token in _split_ascii_words(source):
+            # Keep mixed code-like tags (e.g. M8047), drop date-like numbers (e.g. 120828)
+            if re.search(r"[A-Za-z]", token) and re.search(r"\d", token):
+                add_candidate(token, 104)
+
+    # Eye-catching count tag from product/category names, e.g. "8 Types" -> #8Types.
+    count_match = re.search(r"\b(\d{1,2})\s*(types?|pcs|pieces?)\b", combined_text, flags=re.IGNORECASE)
+    if count_match:
+        add_candidate(f"{count_match.group(1)}Types", 102)
+
+    # Branded/theme tag from product name (first meaningful phrase).
+    product_series_tag = _build_camel_tag_from_text(product_name, max_words=1)
+    add_candidate(product_series_tag, 98)
+
+    for focus_word in _extract_focus_tags(category_display, max_count=2):
+        add_candidate(focus_word, 97)
+    for focus_word in _extract_focus_tags(group_display, max_count=2):
+        add_candidate(focus_word, 95)
+
+    # Phrase-level product type tags.
+    lowered_text = combined_text.lower()
+    for pattern, phrase_tag in TAB_PHRASE_TAGS:
+        if re.search(pattern, lowered_text):
+            add_candidate(phrase_tag, 96)
+
+    # Group/category compact tags.
+    add_candidate(_build_camel_tag_from_text(group_display, max_words=2), 94)
+    add_candidate(_build_camel_tag_from_text(category_display, max_words=3), 92)
+
+    # Additional metadata fields can still contribute.
+    for field in ('marketTag', 'sampleTag', 'sampleTag (2)', 'sampleTag (3)'):
+        add_candidate(product.get(field), 80)
+
+    if isinstance(sample_tags, (list, tuple)):
+        for value in sample_tags:
+            add_candidate(value, 78)
+
+    # Normalize, deduplicate, and select top tags by score.
+    scored_candidates.sort(key=lambda item: (-item[0], str(item[1]).lower()))
+
+    normalized = []
+    seen = set()
+    for score, value in scored_candidates:
+        token = _to_hashtag_token(value)
+        if not token:
+            continue
+        key = token.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append((score, token))
+
+    normalized.sort(key=lambda item: (-item[0], item[1].lower()))
+    top = [token for _, token in normalized[:6]]
+    return top
+
+
 def build_markdown_content(product, group_name, category_name, brand_name):
     product_name = product.get('productDisplayName') or translate_product_name(product.get('galleyName', '') or 'Unnamed Product')
     product_code = product.get('productCode') or product.get('sampleTag') or ''
@@ -820,8 +1037,23 @@ def build_markdown_content(product, group_name, category_name, brand_name):
         f"- Net Weight: {net_weight if net_weight is not None else 'N/A'} kg / carton",
         "",
         "# Pricing",
-        f"- Price: {price_meta['display'] or price_meta['raw'] or 'Contact for price'}",
+        f"- Price Per Piece: {price_meta['display'] or price_meta['raw'] or 'Contact for price'}",
     ]
+
+    tabs = build_product_tabs(
+        product,
+        product_name=product_name,
+        group_display=group_display,
+        category_display=category_display,
+        packaging=packaging,
+        product_code=product_code,
+    )
+    if tabs:
+        lines.extend([
+            "",
+            "# Tabs",
+            "- " + " ".join(f"#{tag}" for tag in tabs),
+        ])
 
     return "\n".join(lines)
 
