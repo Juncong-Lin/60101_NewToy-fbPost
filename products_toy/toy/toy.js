@@ -1,7 +1,5 @@
-// Total products: 23, Date: 2026-02-12 22:36:17
+// Total products: 23, Date: 2026-02-12 23:25:26
 export const toyProducts = {
-  "120828_YS0820031_M8016_12 Urban Professional Building Block Figures (CPC).jpeg": [
-  ],
   "YS0820019": [
     {
       "galleyItemLink href": "",

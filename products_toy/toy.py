@@ -1040,6 +1040,29 @@ def build_markdown_content(product, group_name, category_name, brand_name):
         f"- Price Per Piece: {price_meta['display'] or price_meta['raw'] or 'Contact for price'}",
     ]
 
+    # Compute and append Price Per Carton (USD, 3 decimal places) when possible
+    try:
+        ppc_line = "- Price Per Carton: N/A"
+        qty = None
+        try:
+            qty = int(qty_per_carton) if qty_per_carton is not None else None
+        except Exception:
+            try:
+                qty = int(float(qty_per_carton))
+            except Exception:
+                qty = None
+
+        unit_price = price_meta.get('numeric') if isinstance(price_meta, dict) else None
+        if unit_price is not None and qty and qty > 0:
+            price_per_carton_value = float(unit_price) * float(qty)
+            ppc_line = f"- Price Per Carton: USD ${price_per_carton_value:,.3f}"
+        elif unit_price is not None and (qty is None):
+            ppc_line = "- Price Per Carton: Quantity unknown"
+    except Exception:
+        ppc_line = "- Price Per Carton: N/A"
+
+    lines.append(ppc_line)
+
     tabs = build_product_tabs(
         product,
         product_name=product_name,
