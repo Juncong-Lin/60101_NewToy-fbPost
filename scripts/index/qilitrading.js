@@ -220,6 +220,27 @@ function derivePriceDisplay(product) {
     return 'Contact for price';
   }
 
+  const usdCandidates = [
+    product.price_usd,
+    product.raw?.price_usd,
+    product.raw?.priceUSD,
+    product.raw?.['price usd'],
+  ];
+  for (let index = 0; index < usdCandidates.length; index += 1) {
+    const candidate = usdCandidates[index];
+    if (typeof candidate !== 'string' || !candidate.trim()) {
+      continue;
+    }
+    const match = candidate.match(/(\d+(?:\.\d+)?)/);
+    if (!match) {
+      continue;
+    }
+    const numeric = Number(match[1]);
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return `USD $${numeric.toFixed(3)}`;
+    }
+  }
+
   const lower = product.lower_price ?? product.raw?.lower_price;
   const higher = product.higher_price ?? product.raw?.higher_price;
   const rangeDisplay = formatPriceRange(lower, higher);

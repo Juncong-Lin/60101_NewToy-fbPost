@@ -1,5 +1,7 @@
-// Total products: 23, Date: 2026-02-12 17:25:31
+// Total products: 23, Date: 2026-02-12 18:23:42
 export const toyProducts = {
+  "120828_YS0820031_M8016_12 Urban Professional Building Block Figures (CPC).jpeg": [
+  ],
   "YS0820019": [
     {
       "galleyItemLink href": "",
@@ -8,7 +10,7 @@ export const toyProducts = {
       "sampleTag": "M8004",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.69",
+      "price": "CNY 0.69",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -21,7 +23,7 @@ export const toyProducts = {
       "sampleTag": "M8016",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.73",
+      "price": "CNY 0.73",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -34,7 +36,7 @@ export const toyProducts = {
       "sampleTag": "M8047",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -47,7 +49,7 @@ export const toyProducts = {
       "sampleTag": "M8048",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.73",
+      "price": "CNY 0.73",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -60,7 +62,7 @@ export const toyProducts = {
       "sampleTag": "M8058",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -73,7 +75,7 @@ export const toyProducts = {
       "sampleTag": "M8059",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -86,7 +88,7 @@ export const toyProducts = {
       "sampleTag": "M8068",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -99,7 +101,7 @@ export const toyProducts = {
       "sampleTag": "M8077",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.63",
+      "price": "CNY 0.63",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -112,7 +114,7 @@ export const toyProducts = {
       "sampleTag": "M8080",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -125,7 +127,7 @@ export const toyProducts = {
       "sampleTag": "M8092",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -138,7 +140,7 @@ export const toyProducts = {
       "sampleTag": "M8095",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.65",
+      "price": "CNY 0.65",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -151,7 +153,7 @@ export const toyProducts = {
       "sampleTag": "M8112",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -164,7 +166,7 @@ export const toyProducts = {
       "sampleTag": "1637",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.62",
+      "price": "CNY 0.62",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -177,7 +179,7 @@ export const toyProducts = {
       "sampleTag": "8007",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.69",
+      "price": "CNY 0.69",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -190,7 +192,7 @@ export const toyProducts = {
       "sampleTag": "M8090",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.63",
+      "price": "CNY 0.63",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -203,7 +205,7 @@ export const toyProducts = {
       "sampleTag": "M8126",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.69",
+      "price": "CNY 0.69",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -216,7 +218,7 @@ export const toyProducts = {
       "sampleTag": "M8128",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.69",
+      "price": "CNY 0.69",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -229,7 +231,7 @@ export const toyProducts = {
       "sampleTag": "M8134",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.63",
+      "price": "CNY 0.63",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -242,7 +244,7 @@ export const toyProducts = {
       "sampleTag": "M8145",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -255,7 +257,7 @@ export const toyProducts = {
       "sampleTag": "M8178",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.69",
+      "price": "CNY 0.69",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -268,7 +270,7 @@ export const toyProducts = {
       "sampleTag": "M8185",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.59",
+      "price": "CNY 0.59",
       "priceRight": "1200",
       "marketTag": "0"
     },
@@ -281,7 +283,7 @@ export const toyProducts = {
       "sampleTag": "M8193",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.83",
+      "price": "CNY 0.83",
       "priceRight": "1280",
       "marketTag": "0"
     },
@@ -294,7 +296,7 @@ export const toyProducts = {
       "sampleTag": "M8229",
       "sampleTag (2)": "袋装",
       "sampleTag (3)": "120828",
-      "price": "0.69",
+      "price": "CNY 0.69",
       "priceRight": "1200",
       "marketTag": "0"
     },

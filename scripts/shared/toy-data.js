@@ -190,7 +190,13 @@ function normalizeProductEntry({
     entry['markdown path'],
   ]);
 
-  let priceRaw = entry.price ?? entry.priceValue ?? null;
+  const priceUsdRaw = firstTruthy([
+    entry.price_usd,
+    entry.priceUSD,
+    entry['price usd'],
+  ]);
+
+  let priceRaw = priceUsdRaw ?? entry.price ?? entry.priceValue ?? null;
   if (typeof priceRaw === 'string' && priceRaw.trim() === '') {
     priceRaw = null;
   }
@@ -250,6 +256,7 @@ function normalizeProductEntry({
     image: ensureAssetPath(primaryImage),
     markdown: ensureAssetPath(markdownPath),
     price: priceRaw,
+    price_usd: priceUsdRaw,
     priceValue,
     priceRight: logisticsAttributes.priceRight,
     marketTag: logisticsAttributes.marketTag,
