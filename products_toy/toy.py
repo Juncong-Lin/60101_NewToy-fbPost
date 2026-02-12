@@ -675,6 +675,19 @@ def determine_group_and_category(section_name):
                     return group, cat
             return group, keyword
 
+    # Try matching against translations of the known categories. Some category
+    # definitions are in Chinese while the scraped section names are English.
+    # Translate each known category and compare its normalized form to the
+    # candidate to catch cases where translations align.
+    for category, group in CATEGORY_TO_GROUP.items():
+        try:
+            translated = translate_text(category, fallback=category, title_case=False)
+        except Exception:
+            translated = category
+        trans_norm = re.sub(r"[^0-9a-z\u4e00-\u9fff]", "", str(translated).lower())
+        if trans_norm and (trans_norm == cand_norm or trans_norm in cand_norm or cand_norm in trans_norm):
+            return group, category
+
     # Finally, try tokenized matching using delimiters commonly seen in section names
     tokens = [token.strip() for token in re.split(r'[、/,，,\s]+', candidate) if token.strip()]
     for token in tokens:
@@ -781,7 +794,7 @@ def build_markdown_content(product, group_name, category_name, brand_name):
     net_weight = product.get('netWeightKg')
     price_meta = compute_price_metadata(product)
 
-    group_display = product.get('groupDisplayName') or translate_text(group_name, fallback=group_name)
+    group_display = product.get('groupName') or product.get('groupDisplayName') or translate_text(group_name, fallback=group_name)
     category_display = product.get('categoryDisplayName') or translate_category_name(category_name)
 
     def format_dimension_segment(length_value, width_value, height_value):
@@ -822,7 +835,7 @@ def build_product_record(product, group_name, category_name, brand_name, image_r
     company_code_digits = product.get('companyCodeDigits') or re.sub(r'\D', '', company_code_full)
     product_code = product.get('productCode') or product.get('sampleTag') or ''
     stall_number = (product.get('stallNumber') or product.get('sampleTag (3)') or '').strip() or 'Unassigned'
-    group_display = product.get('groupDisplayName') or translate_text(group_name, fallback=group_name)
+    group_display = product.get('groupName') or product.get('groupDisplayName') or translate_text(group_name, fallback=group_name)
     category_display = product.get('categoryDisplayName') or translate_category_name(category_name)
     product_name = product.get('productDisplayName') or translate_product_name(product.get('galleyName', '') or 'Unnamed Product')
     packaging_display = product.get('packagingDisplayName') or translate_packaging(product.get('packaging') or product.get('sampleTag (2)') or '')
@@ -1864,8 +1877,12 @@ def main():
                         tgt_cat = inferred_category or inferred_group
                         tgt_group_dict = group_structure.setdefault(tgt_group, {})
                         tgt_cat_dict = tgt_group_dict.setdefault(tgt_cat, {})
+                        # update product metadata to reflect the new group/category
+                        product['groupName'] = tgt_group
+                        product['categoryFolder'] = tgt_cat
+                        product['groupDisplayName'] = translate_text(tgt_group, fallback=tgt_group)
+                        product['categoryDisplayName'] = translate_category_name(tgt_cat)
                         tgt_cat_dict.setdefault(brand_name, []).append(product)
-                        removed = True
                         moved.append((brand_name, product.get('galleyName', '')[:40], tgt_group, tgt_cat))
                 # after moving individual products, remove them from uncats
                 # we will remove the whole brand entry to be safe
