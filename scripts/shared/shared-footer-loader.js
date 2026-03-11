@@ -28,7 +28,7 @@ function loadSharedFooter() {
       .catch(error => {
         console.error('Error loading shared footer:', error);
         // Fallback: show a basic footer message
-        footerPlaceholder.innerHTML = '<footer class="footer"><div class="footer-bottom"><p>© 2025 qilitrading.com - All rights reserved</p></div></footer>';
+        footerPlaceholder.innerHTML = '<footer class="footer"><div class="footer-bottom"><p>© 2025 www.qili.ltd - All rights reserved</p></div></footer>';
       });
   }
 }
