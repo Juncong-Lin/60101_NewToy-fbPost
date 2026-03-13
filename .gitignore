@@ -3,6 +3,7 @@ __pycache__/
 
 # Ignore directory for products_up_helper/
 products_to_toy_design_help_folder/products_ys_images/
+products_to_toy_design_help_folder/
 
 # Ignore directory for toy products
 products_toy/toy/each_brand_products/
