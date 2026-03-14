@@ -2330,5 +2330,61 @@ def main():
     logger.info(f"\nTotal products: {total_products_overall}, Date: {current_time}")
     logger.info(f"\n--- Scraping complete! Data saved in '{root_folder_name}' folder. ---")
 
+    # --- 602 Inquiry Department Integration ---
+    # Auto-sync product catalog to 602_Inquiry after website product generation
+    sync_602_inquiry_catalog(logger)
+
+
+def sync_602_inquiry_catalog(log=None):
+    """Trigger 602_Inquiry product-catalog sync after toy.py generates website products."""
+    inquiry_catalog_script = os.path.normpath(
+        os.path.join(SCRIPT_BASE_DIR, '..', '..', '..', '602_Inquiry', 'a-product-catalog.py')
+    )
+    if not os.path.exists(inquiry_catalog_script):
+        msg = f"[602 Sync] a-product-catalog.py not found at {inquiry_catalog_script}, skipping."
+        if log:
+            log.warning(msg)
+        else:
+            print(msg)
+        return
+
+    msg = "[602 Sync] Syncing product catalog to 602_Inquiry department..."
+    if log:
+        log.info(msg)
+    else:
+        print(msg)
+
+    import subprocess
+    try:
+        result = subprocess.run(
+            [sys.executable, inquiry_catalog_script],
+            capture_output=True, text=True, timeout=60
+        )
+        if result.stdout:
+            for line in result.stdout.strip().split('\n'):
+                if log:
+                    log.info(f"  [602] {line}")
+                else:
+                    print(f"  [602] {line}")
+        if result.returncode != 0 and result.stderr:
+            err_msg = f"[602 Sync] Error: {result.stderr.strip()}"
+            if log:
+                log.error(err_msg)
+            else:
+                print(err_msg)
+        else:
+            ok_msg = "[602 Sync] Product catalog synced successfully."
+            if log:
+                log.info(ok_msg)
+            else:
+                print(ok_msg)
+    except Exception as exc:
+        err_msg = f"[602 Sync] Failed to sync: {exc}"
+        if log:
+            log.error(err_msg)
+        else:
+            print(err_msg)
+
+
 if __name__ == "__main__":
     main()
