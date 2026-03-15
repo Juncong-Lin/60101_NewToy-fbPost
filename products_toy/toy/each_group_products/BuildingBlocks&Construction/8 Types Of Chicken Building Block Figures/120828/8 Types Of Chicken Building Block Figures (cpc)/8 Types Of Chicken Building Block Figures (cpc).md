@@ -15,8 +15,8 @@
 - Net Weight: 6.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.083
-- Price Per Carton: USD $99.600
+- Price Per Piece: USD $0.55
+- Price Per Carton: USD $660.000
 
 # Tabs
 - #M8080 #Chicken #Cpc #8Types #BuildingBlocks #Construction

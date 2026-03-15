@@ -15,8 +15,8 @@
 - Net Weight: 5.4 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.088
-- Price Per Carton: USD $105.600
+- Price Per Piece: USD $0.60
+- Price Per Carton: USD $720.000
 
 # Tabs
 - #M8090 #Basketball #Cpc #BuildingBlocks #Construction #BasketballBuildingBlock

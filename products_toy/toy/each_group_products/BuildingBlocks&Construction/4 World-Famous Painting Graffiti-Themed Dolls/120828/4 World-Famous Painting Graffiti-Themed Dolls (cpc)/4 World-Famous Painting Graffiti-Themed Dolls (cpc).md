@@ -15,8 +15,8 @@
 - Net Weight: 6.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.097
-- Price Per Carton: USD $116.400
+- Price Per Piece: USD $0.69
+- Price Per Carton: USD $828.000
 
 # Tabs
 - #M8004 #Famous #Painting #World #BuildingBlocks #Construction

@@ -15,8 +15,8 @@
 - Net Weight: 7.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.088
-- Price Per Carton: USD $105.600
+- Price Per Piece: USD $0.60
+- Price Per Carton: USD $720.000
 
 # Tabs
 - #M8077 #Cpc #Football #6Types #BuildingBlocks #Minifigures

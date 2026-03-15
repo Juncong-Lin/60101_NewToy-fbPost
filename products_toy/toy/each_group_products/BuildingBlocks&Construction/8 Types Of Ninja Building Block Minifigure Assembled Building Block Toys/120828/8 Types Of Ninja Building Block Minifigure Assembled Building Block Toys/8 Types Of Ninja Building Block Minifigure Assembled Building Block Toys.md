@@ -15,8 +15,8 @@
 - Net Weight: 7.5 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.087
-- Price Per Carton: USD $104.400
+- Price Per Piece: USD $0.59
+- Price Per Carton: USD $708.000
 
 # Tabs
 - #Ninja #8Types #BuildingBlocks #Minifigures #Construction #NinjaBuildingBlock

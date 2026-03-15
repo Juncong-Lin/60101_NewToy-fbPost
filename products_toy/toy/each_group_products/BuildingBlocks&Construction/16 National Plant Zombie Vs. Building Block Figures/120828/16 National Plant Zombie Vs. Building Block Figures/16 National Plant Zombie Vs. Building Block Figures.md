@@ -15,8 +15,8 @@
 - Net Weight: 7.7 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.116
-- Price Per Carton: USD $148.480
+- Price Per Piece: USD $0.88
+- Price Per Carton: USD $1,126.400
 
 # Tabs
 - #M8193 #National #Plant #Zombie #BuildingBlocks #Construction
