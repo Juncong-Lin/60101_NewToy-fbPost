@@ -1,6 +1,6 @@
 # 12 Demolition And Demolition Building Block Minifigures
 
-- Product Code: M8185
+- Product Code: M8187
 - Group: Building Blocks & Construction
 - Category: 12 Demolition And Demolition Building Block Minifigures
 - Packaging: Bagged
@@ -11,12 +11,12 @@
 - Volume: 0.052 CBM
 
 # Weight
-- Gross Weight: 8.0 kg / carton
-- Net Weight: 7.0 kg / carton
+- Gross Weight: 7.0 kg / carton
+- Net Weight: 6.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.55
-- Price Per Carton: USD $660.000
+- Price Per Piece: USD $0.078
+- Price Per Carton: USD $93.600
 
 # Tabs
-- #M8185 #Demolition #BuildingBlocks #Minifigures #Construction #DemolitionDemolitionBuilding
+- #M8187 #Demolition #BuildingBlocks #Minifigures #Construction #DemolitionDemolitionBuilding

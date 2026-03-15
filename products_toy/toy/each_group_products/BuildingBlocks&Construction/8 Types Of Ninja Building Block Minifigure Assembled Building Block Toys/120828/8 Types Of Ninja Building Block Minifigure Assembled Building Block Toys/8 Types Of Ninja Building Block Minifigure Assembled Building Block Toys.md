@@ -1,6 +1,6 @@
 # 8 Types Of Ninja Building Block Minifigure Assembled Building Block Toys
 
-- Product Code: 1637
+- Product Code: M8095
 - Group: Building Blocks & Construction
 - Category: 8 Types Of Ninja Building Block Minifigure Assembled Building Block Toys
 - Packaging: Bagged
@@ -11,12 +11,12 @@
 - Volume: 0.071 CBM
 
 # Weight
-- Gross Weight: 8.7 kg / carton
-- Net Weight: 7.5 kg / carton
+- Gross Weight: 9.0 kg / carton
+- Net Weight: 8.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.59
-- Price Per Carton: USD $708.000
+- Price Per Piece: USD $0.082
+- Price Per Carton: USD $98.400
 
 # Tabs
-- #Ninja #8Types #BuildingBlocks #Minifigures #Construction #NinjaBuildingBlock
+- #M8095 #Ninja #8Types #BuildingBlocks #Minifigures #Construction

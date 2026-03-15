@@ -15,8 +15,8 @@
 - Net Weight: 20.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $22.40
-- Price Per Carton: USD $1,075.200
+- Price Per Piece: USD $2.912
+- Price Per Carton: USD $139.776
 
 # Tabs
 - #HR550 #Brick #Ninja #Small #BuildingBlocks #Minifigures

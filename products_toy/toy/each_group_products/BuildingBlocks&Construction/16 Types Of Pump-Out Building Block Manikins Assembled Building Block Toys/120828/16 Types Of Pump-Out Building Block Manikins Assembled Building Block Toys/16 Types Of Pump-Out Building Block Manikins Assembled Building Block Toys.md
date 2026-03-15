@@ -15,8 +15,8 @@
 - Net Weight: 6.5 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.69
-- Price Per Carton: USD $1,104.000
+- Price Per Piece: USD $0.089
+- Price Per Carton: USD $142.400
 
 # Tabs
 - #M8106 #Manikins #Out #Pump #16Types #BuildingBlocks

@@ -15,8 +15,8 @@
 - Net Weight: 25.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $1.43
-- Price Per Carton: USD $1,647.360
+- Price Per Piece: USD $0.186
+- Price Per Carton: USD $214.272
 
 # Tabs
 - #SM256 #Cylindrical #Dolls #Small #BuildingBlocks #Educational

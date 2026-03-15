@@ -15,8 +15,8 @@
 - Net Weight: 20.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $21.28
-- Price Per Carton: USD $893.760
+- Price Per Piece: USD $2.766
+- Price Per Carton: USD $116.172
 
 # Tabs
 - #HR882 #Nezha #Small #Weapon #BuildingBlocks #Minifigures

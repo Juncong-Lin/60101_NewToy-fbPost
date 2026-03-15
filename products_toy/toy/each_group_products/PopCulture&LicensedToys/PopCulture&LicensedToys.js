@@ -1,9 +1,9 @@
-// Total products: 9, Date: 2026-03-15 07:10:16
+// Total products: 14, Date: 2026-03-15 14:04:36
 export const PopCultureLicensedToysProducts = {
   "8 Avengers Building Block Minifigures": {
     "120828": [
       {
-          "id": "0820060-M8047-120828-4",
+          "id": "0820060-M8047-120828-954",
           "sku": "M8047",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -31,14 +31,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 1.84,
           "gross_weight_kg": 6.1,
           "net_weight_kg": 5.5,
-          "price": "CNY 0.55",
-          "price_usd": "",
-          "price_raw": "CNY 0.55",
-          "priceValue": 0.55,
-          "lower_price": 0.55,
+          "price": "CNY 0.51",
+          "price_usd": "USD 0.071",
+          "price_raw": "USD 0.071",
+          "priceValue": 0.071,
+          "lower_price": 0.071,
           "higher_price": null,
-          "price/chargeable_unit": 0.3,
-          "excel_row": "4",
+          "price/chargeable_unit": 0.276,
+          "excel_row": "954",
           "priceRight": "1200",
           "marketTag": "0",
           "tags": [
@@ -54,7 +54,7 @@ export const PopCultureLicensedToysProducts = {
   "8 Avengers Building Block Minifigures Assembled Building Block Toys": {
     "120828": [
       {
-          "id": "0820071-M8058-120828-5",
+          "id": "0820071-M8058-120828-955",
           "sku": "M8058",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -82,14 +82,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 1.84,
           "gross_weight_kg": 6.05,
           "net_weight_kg": 5.5,
-          "price": "CNY 0.55",
-          "price_usd": "",
-          "price_raw": "CNY 0.55",
-          "priceValue": 0.55,
-          "lower_price": 0.55,
+          "price": "CNY 0.51",
+          "price_usd": "USD 0.071",
+          "price_raw": "USD 0.071",
+          "priceValue": 0.071,
+          "lower_price": 0.071,
           "higher_price": null,
-          "price/chargeable_unit": 0.3,
-          "excel_row": "5",
+          "price/chargeable_unit": 0.276,
+          "excel_row": "955",
           "priceRight": "1200",
           "marketTag": "0",
           "tags": [
@@ -102,10 +102,61 @@ export const PopCultureLicensedToysProducts = {
       }
     ]
   },
+  "Avengers 12 Building Block Minifigures Window Box": {
+    "140108": [
+      {
+          "id": "1721575-8218（拆）-140108-279",
+          "sku": "8218（拆）",
+          "href": "",
+          "group": "Pop Culture & Licensed Toys",
+          "category": "Avengers 12 Building Block Minifigures Window Box",
+          "stall_number": "140108",
+          "company_code": "YS1721575",
+          "company_code_id": "1721575",
+          "product_code": "8218（拆）",
+          "product_name": "Avengers 12 Building Block Minifigures Window Box",
+          "name": "Avengers 12 Building Block Minifigures Window Box",
+          "packaging": "Disassembly And Assembly",
+          "qty_per_carton": 288,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 61.0,
+              "width": 40.0,
+              "height": 86.0
+          },
+          "package_cm": {
+              "length": 26.0,
+              "width": 4.0,
+              "height": 18.0
+          },
+          "volume_cbm": 0.21,
+          "chargeable_unit_cn": 7.4,
+          "gross_weight_kg": 35.0,
+          "net_weight_kg": 33.0,
+          "price": "CNY 12.35",
+          "price_usd": "USD 1.729",
+          "price_raw": "USD 1.729",
+          "priceValue": 1.729,
+          "lower_price": 1.729,
+          "higher_price": null,
+          "price/chargeable_unit": 1.669,
+          "excel_row": "279",
+          "priceRight": "288",
+          "marketTag": "2",
+          "tags": [
+              "1721575",
+              "8218（拆）",
+              "Disassembly And Assembly"
+          ],
+          "image": "PopCulture&LicensedToys/Avengers 12 Building Block Minifigures Window Box/140108/Avengers 12 Building Block Minifigures Window Box/image/Avengers 12 Building Block Minifigures Window Box.jpg",
+          "markdown": "PopCulture&LicensedToys/Avengers 12 Building Block Minifigures Window Box/140108/Avengers 12 Building Block Minifigures Window Box/Avengers 12 Building Block Minifigures Window Box.md"
+      }
+    ]
+  },
   "Avengers 24 Minifigure Window Box": {
     "170908B": [
       {
-          "id": "1574865-2801-170908B-172",
+          "id": "1574865-2801-170908B-1122",
           "sku": "2801",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -133,14 +184,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 8.53,
           "gross_weight_kg": 26.0,
           "net_weight_kg": 24.0,
-          "price": "CNY 27.72",
-          "price_usd": "",
-          "price_raw": "CNY 27.72",
-          "priceValue": 27.72,
-          "lower_price": 27.72,
+          "price": "CNY 25.74",
+          "price_usd": "USD 3.604",
+          "price_raw": "USD 3.604",
+          "priceValue": 3.604,
+          "lower_price": 3.604,
           "higher_price": null,
-          "price/chargeable_unit": 3.25,
-          "excel_row": "172",
+          "price/chargeable_unit": 3.018,
+          "excel_row": "1122",
           "priceRight": "96",
           "marketTag": "2",
           "tags": [
@@ -154,7 +205,7 @@ export const PopCultureLicensedToysProducts = {
     ],
     "241007": [
       {
-          "id": "1484758-2801-241007-229",
+          "id": "1484758-2801-241007-1179",
           "sku": "2801",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -182,14 +233,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 8.53,
           "gross_weight_kg": 26.0,
           "net_weight_kg": 24.0,
-          "price": "CNY 27.72",
-          "price_usd": "",
-          "price_raw": "CNY 27.72",
-          "priceValue": 27.72,
-          "lower_price": 27.72,
+          "price": "CNY 25.74",
+          "price_usd": "USD 3.604",
+          "price_raw": "USD 3.604",
+          "priceValue": 3.604,
+          "lower_price": 3.604,
           "higher_price": null,
-          "price/chargeable_unit": 3.25,
-          "excel_row": "229",
+          "price/chargeable_unit": 3.018,
+          "excel_row": "1179",
           "priceRight": "96",
           "marketTag": "2",
           "tags": [
@@ -205,7 +256,7 @@ export const PopCultureLicensedToysProducts = {
   "Avengers 3 Building Blocks": {
     "140108": [
       {
-          "id": "0168219-0813-1-140108-141",
+          "id": "0168219-0813-1-140108-1091",
           "sku": "0813-1",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -233,14 +284,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 13.23,
           "gross_weight_kg": 21.0,
           "net_weight_kg": 19.0,
-          "price": "CNY 1.96",
-          "price_usd": "",
-          "price_raw": "CNY 1.96",
-          "priceValue": 1.96,
-          "lower_price": 1.96,
+          "price": "CNY 1.82",
+          "price_usd": "USD 0.255",
+          "price_raw": "USD 0.255",
+          "priceValue": 0.255,
+          "lower_price": 0.255,
           "higher_price": null,
-          "price/chargeable_unit": 0.15,
-          "excel_row": "141",
+          "price/chargeable_unit": 0.138,
+          "excel_row": "1091",
           "priceRight": "576",
           "marketTag": "2",
           "tags": [
@@ -256,7 +307,7 @@ export const PopCultureLicensedToysProducts = {
   "Avengers 4 Building Blocks 16PCS": {
     "140108": [
       {
-          "id": "0306235-0853-1-140108-146",
+          "id": "0306235-0853-1-140108-1096",
           "sku": "0853-1",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -284,14 +335,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 13.23,
           "gross_weight_kg": 21.0,
           "net_weight_kg": 19.0,
-          "price": "CNY 1.96",
-          "price_usd": "",
-          "price_raw": "CNY 1.96",
-          "priceValue": 1.96,
-          "lower_price": 1.96,
+          "price": "CNY 1.82",
+          "price_usd": "USD 0.255",
+          "price_raw": "USD 0.255",
+          "priceValue": 0.255,
+          "lower_price": 0.255,
           "higher_price": null,
-          "price/chargeable_unit": 0.15,
-          "excel_row": "146",
+          "price/chargeable_unit": 0.138,
+          "excel_row": "1096",
           "priceRight": "576",
           "marketTag": "2",
           "tags": [
@@ -307,7 +358,7 @@ export const PopCultureLicensedToysProducts = {
   "Avengers Building Bricks Small Particle Lego-Style Assembling Building Blocks": {
     "220214-220215": [
       {
-          "id": "1094641-SM220-220214-220215-185",
+          "id": "1094641-SM220-220214-220215-1135",
           "sku": "SM220",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -335,14 +386,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 2.4,
           "gross_weight_kg": 11.0,
           "net_weight_kg": 10.0,
-          "price": "CNY 0.74",
-          "price_usd": "",
-          "price_raw": "CNY 0.74",
-          "priceValue": 0.74,
-          "lower_price": 0.74,
+          "price": "CNY 0.69",
+          "price_usd": "USD 0.096",
+          "price_raw": "USD 0.096",
+          "priceValue": 0.096,
+          "lower_price": 0.096,
           "higher_price": null,
-          "price/chargeable_unit": 0.31,
-          "excel_row": "185",
+          "price/chargeable_unit": 0.287,
+          "excel_row": "1135",
           "priceRight": "1200",
           "marketTag": "2",
           "tags": [
@@ -355,10 +406,61 @@ export const PopCultureLicensedToysProducts = {
       }
     ]
   },
+  "Avengers Electric Fire Water Gun": {
+    "260605-260606": [
+      {
+          "id": "1761221-6355-6A-260605-260606-783",
+          "sku": "6355-6A",
+          "href": "",
+          "group": "Pop Culture & Licensed Toys",
+          "category": "Avengers Electric Fire Water Gun",
+          "stall_number": "260605-260606",
+          "company_code": "YS1761221",
+          "company_code_id": "1761221",
+          "product_code": "6355-6A",
+          "product_name": "Avengers Electric Fire Water Gun",
+          "name": "Avengers Electric Fire Water Gun",
+          "packaging": "密封盒",
+          "qty_per_carton": 30,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 74.0,
+              "width": 50.0,
+              "height": 66.0
+          },
+          "package_cm": {
+              "length": 48.5,
+              "width": 7.0,
+              "height": 21.0
+          },
+          "volume_cbm": 0.244,
+          "chargeable_unit_cn": 8.62,
+          "gross_weight_kg": 24.5,
+          "net_weight_kg": 22.5,
+          "price": "CNY 51.30",
+          "price_usd": "USD 7.182",
+          "price_raw": "USD 7.182",
+          "priceValue": 7.182,
+          "lower_price": 7.182,
+          "higher_price": null,
+          "price/chargeable_unit": 5.951,
+          "excel_row": "783",
+          "priceRight": "30",
+          "marketTag": "0",
+          "tags": [
+              "1761221",
+              "6355-6A",
+              "密封盒"
+          ],
+          "image": "PopCulture&LicensedToys/Avengers Electric Fire Water Gun/260605-260606/Avengers Electric Fire Water Gun/image/Avengers Electric Fire Water Gun.jpg",
+          "markdown": "PopCulture&LicensedToys/Avengers Electric Fire Water Gun/260605-260606/Avengers Electric Fire Water Gun/Avengers Electric Fire Water Gun.md"
+      }
+    ]
+  },
   "Avengers Showdown 8 Minifigure Small Box Display Box": {
     "170908B": [
       {
-          "id": "1574764-1028-170908B-162",
+          "id": "1574764-1028-170908B-1112",
           "sku": "1028",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -386,14 +488,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 12.96,
           "gross_weight_kg": 25.0,
           "net_weight_kg": 23.0,
-          "price": "CNY 1.37",
-          "price_usd": "",
-          "price_raw": "CNY 1.37",
-          "priceValue": 1.37,
-          "lower_price": 1.37,
+          "price": "CNY 1.27",
+          "price_usd": "USD 0.178",
+          "price_raw": "USD 0.178",
+          "priceValue": 0.178,
+          "lower_price": 0.178,
           "higher_price": null,
-          "price/chargeable_unit": 0.11,
-          "excel_row": "162",
+          "price/chargeable_unit": 0.098,
+          "excel_row": "1112",
           "priceRight": "960",
           "marketTag": "2",
           "tags": [
@@ -407,7 +509,7 @@ export const PopCultureLicensedToysProducts = {
     ],
     "241007": [
       {
-          "id": "1331547-1028-241007-222",
+          "id": "1331547-1028-241007-1172",
           "sku": "1028",
           "href": "",
           "group": "Pop Culture & Licensed Toys",
@@ -435,14 +537,14 @@ export const PopCultureLicensedToysProducts = {
           "chargeable_unit_cn": 12.96,
           "gross_weight_kg": 25.0,
           "net_weight_kg": 23.0,
-          "price": "CNY 1.37",
-          "price_usd": "",
-          "price_raw": "CNY 1.37",
-          "priceValue": 1.37,
-          "lower_price": 1.37,
+          "price": "CNY 1.27",
+          "price_usd": "USD 0.178",
+          "price_raw": "USD 0.178",
+          "priceValue": 0.178,
+          "lower_price": 0.178,
           "higher_price": null,
-          "price/chargeable_unit": 0.11,
-          "excel_row": "222",
+          "price/chargeable_unit": 0.098,
+          "excel_row": "1172",
           "priceRight": "960",
           "marketTag": "2",
           "tags": [
@@ -452,6 +554,159 @@ export const PopCultureLicensedToysProducts = {
           ],
           "image": "PopCulture&LicensedToys/Avengers Showdown 8 Minifigure Small Box Display Box/241007/Avengers Showdown 8 Minifigure Small Box Display Box (16pcs single box price)/image/Avengers Showdown 8 Minifigure Small Box Display Box (16pcs single box price).jpeg",
           "markdown": "PopCulture&LicensedToys/Avengers Showdown 8 Minifigure Small Box Display Box/241007/Avengers Showdown 8 Minifigure Small Box Display Box (16pcs single box price)/Avengers Showdown 8 Minifigure Small Box Display Box (16pcs single box price).md"
+      }
+    ]
+  },
+  "Avengers Simulation Alloy Car/1 Pack": {
+    "251408A": [
+      {
+          "id": "1727120-055-2-251408A-744",
+          "sku": "055-2",
+          "href": "",
+          "group": "Pop Culture & Licensed Toys",
+          "category": "Avengers Simulation Alloy Car/1 Pack",
+          "stall_number": "251408A",
+          "company_code": "YS1727120",
+          "company_code_id": "1727120",
+          "product_code": "055-2",
+          "product_name": "Avengers Simulation Alloy Car/1 Pack",
+          "name": "Avengers Simulation Alloy Car/1 Pack",
+          "packaging": "Window Box",
+          "qty_per_carton": 480,
+          "inner_box": 4,
+          "outer_carton_cm": {
+              "length": 49.5,
+              "width": 34.5,
+              "height": 93.0
+          },
+          "package_cm": {
+              "length": 10.0,
+              "width": 4.5,
+              "height": 5.0
+          },
+          "volume_cbm": 0.159,
+          "chargeable_unit_cn": 5.6,
+          "gross_weight_kg": 22.0,
+          "net_weight_kg": 20.0,
+          "price": "CNY 3.25",
+          "price_usd": "USD 0.455",
+          "price_raw": "USD 0.455",
+          "priceValue": 0.455,
+          "lower_price": 0.455,
+          "higher_price": null,
+          "price/chargeable_unit": 0.58,
+          "excel_row": "744",
+          "priceRight": "480",
+          "marketTag": "4",
+          "tags": [
+              "1727120",
+              "055-2",
+              "Window Box"
+          ],
+          "image": "PopCulture&LicensedToys/Avengers Simulation Alloy Car1 Pack/251408A/Avengers Simulation Alloy Car1 Pack/image/Avengers Simulation Alloy Car1 Pack.png",
+          "markdown": "PopCulture&LicensedToys/Avengers Simulation Alloy Car1 Pack/251408A/Avengers Simulation Alloy Car1 Pack/Avengers Simulation Alloy Car1 Pack.md"
+      }
+    ]
+  },
+  "Avengers Simulation Alloy Car/2 Pack": {
+    "251408A": [
+      {
+          "id": "1727121-056-2-251408A-743",
+          "sku": "056-2",
+          "href": "",
+          "group": "Pop Culture & Licensed Toys",
+          "category": "Avengers Simulation Alloy Car/2 Pack",
+          "stall_number": "251408A",
+          "company_code": "YS1727121",
+          "company_code_id": "1727121",
+          "product_code": "056-2",
+          "product_name": "Avengers Simulation Alloy Car/2 Pack",
+          "name": "Avengers Simulation Alloy Car/2 Pack",
+          "packaging": "Window Box",
+          "qty_per_carton": 288,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 64.0,
+              "width": 28.5,
+              "height": 92.0
+          },
+          "package_cm": {
+              "length": 8.5,
+              "width": 3.5,
+              "height": 19.5
+          },
+          "volume_cbm": 0.168,
+          "chargeable_unit_cn": 5.92,
+          "gross_weight_kg": 25.0,
+          "net_weight_kg": 23.0,
+          "price": "CNY 6.24",
+          "price_usd": "USD 0.874",
+          "price_raw": "USD 0.874",
+          "priceValue": 0.874,
+          "lower_price": 0.874,
+          "higher_price": null,
+          "price/chargeable_unit": 1.054,
+          "excel_row": "743",
+          "priceRight": "288",
+          "marketTag": "2",
+          "tags": [
+              "1727121",
+              "056-2",
+              "Window Box"
+          ],
+          "image": "PopCulture&LicensedToys/Avengers Simulation Alloy Car2 Pack/251408A/Avengers Simulation Alloy Car2 Pack/image/Avengers Simulation Alloy Car2 Pack.png",
+          "markdown": "PopCulture&LicensedToys/Avengers Simulation Alloy Car2 Pack/251408A/Avengers Simulation Alloy Car2 Pack/Avengers Simulation Alloy Car2 Pack.md"
+      }
+    ]
+  },
+  "Avengers Simulation Alloy Car/3 Pack": {
+    "251408A": [
+      {
+          "id": "1727122-057-2-251408A-742",
+          "sku": "057-2",
+          "href": "",
+          "group": "Pop Culture & Licensed Toys",
+          "category": "Avengers Simulation Alloy Car/3 Pack",
+          "stall_number": "251408A",
+          "company_code": "YS1727122",
+          "company_code_id": "1727122",
+          "product_code": "057-2",
+          "product_name": "Avengers Simulation Alloy Car/3 Pack",
+          "name": "Avengers Simulation Alloy Car/3 Pack",
+          "packaging": "Window Box",
+          "qty_per_carton": 192,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 63.5,
+              "width": 37.0,
+              "height": 62.0
+          },
+          "package_cm": {
+              "length": 8.5,
+              "width": 3.5,
+              "height": 25.0
+          },
+          "volume_cbm": 0.146,
+          "chargeable_unit_cn": 5.14,
+          "gross_weight_kg": 26.0,
+          "net_weight_kg": 24.0,
+          "price": "CNY 9.36",
+          "price_usd": "USD 1.310",
+          "price_raw": "USD 1.310",
+          "priceValue": 1.31,
+          "lower_price": 1.31,
+          "higher_price": null,
+          "price/chargeable_unit": 1.821,
+          "excel_row": "742",
+          "priceRight": "192",
+          "marketTag": "2",
+          "tags": [
+              "1727122",
+              "057-2",
+              "Window Box"
+          ],
+          "image": "PopCulture&LicensedToys/Avengers Simulation Alloy Car3 Pack/251408A/Avengers Simulation Alloy Car3 Pack/image/Avengers Simulation Alloy Car3 Pack.png",
+          "markdown": "PopCulture&LicensedToys/Avengers Simulation Alloy Car3 Pack/251408A/Avengers Simulation Alloy Car3 Pack/Avengers Simulation Alloy Car3 Pack.md"
       }
     ]
   }

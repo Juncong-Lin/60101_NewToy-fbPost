@@ -15,8 +15,8 @@
 - Net Weight: 9.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.94
-- Price Per Carton: USD $1,128.000
+- Price Per Piece: USD $0.122
+- Price Per Carton: USD $146.400
 
 # Tabs
 - #M8111 #Blackhawk #Knight #BuildingBlocks #Minifigures #Construction

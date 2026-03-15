@@ -15,8 +15,8 @@
 - Net Weight: 26.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.71
-- Price Per Carton: USD $1,420.000
+- Price Per Piece: USD $0.093
+- Price Per Carton: USD $186.000
 
 # Tabs
 - #Brick #Engineering #Road #BuildingBlocks #Minifigures #Construction

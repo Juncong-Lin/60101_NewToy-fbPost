@@ -15,8 +15,8 @@
 - Net Weight: 33.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $9.52
-- Price Per Carton: USD $5,483.520
+- Price Per Piece: USD $1.238
+- Price Per Carton: USD $713.088
 
 # Tabs
 - #6PCS #Sonic #6Types #BuildingBlocks #Minifigures #Construction

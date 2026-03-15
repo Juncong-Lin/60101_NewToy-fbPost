@@ -15,8 +15,8 @@
 - Net Weight: 24.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $27.72
-- Price Per Carton: USD $2,661.120
+- Price Per Piece: USD $3.604
+- Price Per Carton: USD $345.984
 
 # Tabs
 - #People #Puzzle #Spider #170908B #BuildingBlocks #Educational

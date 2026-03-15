@@ -15,8 +15,8 @@
 - Net Weight: 4.6 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.63
-- Price Per Carton: USD $756.000
+- Price Per Piece: USD $0.082
+- Price Per Carton: USD $98.400
 
 # Tabs
 - #M8107 #Air #Assault #Division #12Types #BuildingBlocks

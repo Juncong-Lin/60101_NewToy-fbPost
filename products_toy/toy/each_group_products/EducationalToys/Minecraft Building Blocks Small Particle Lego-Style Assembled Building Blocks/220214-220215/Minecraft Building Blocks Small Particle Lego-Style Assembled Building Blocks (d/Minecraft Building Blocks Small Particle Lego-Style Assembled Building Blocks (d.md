@@ -1,6 +1,6 @@
 # Minecraft Building Blocks Small Particle Lego-Style Assembled Building Blocks (diy assembled building block dolls doll educational toys)
 
-- Product Code: SM354
+- Product Code: SM221
 - Group: Educational Toys
 - Category: Minecraft Building Blocks Small Particle Lego-Style Assembled Building Blocks
 - Packaging: Bagged
@@ -15,8 +15,8 @@
 - Net Weight: 10.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.74
-- Price Per Carton: USD $888.000
+- Price Per Piece: USD $0.096
+- Price Per Carton: USD $115.200
 
 # Tabs
-- #SM354 #Minecraft #Particle #Small #BuildingBlocks #Educational
+- #SM221 #Minecraft #Particle #Small #BuildingBlocks #Educational

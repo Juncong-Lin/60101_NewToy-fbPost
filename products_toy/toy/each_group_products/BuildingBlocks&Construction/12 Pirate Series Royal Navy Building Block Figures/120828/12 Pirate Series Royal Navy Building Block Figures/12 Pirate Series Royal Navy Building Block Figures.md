@@ -1,6 +1,6 @@
 # 12 Pirate Series Royal Navy Building Block Figures
 
-- Product Code: M8037A
+- Product Code: M8037C
 - Group: Building Blocks & Construction
 - Category: 12 Pirate Series Royal Navy Building Block Figures
 - Packaging: Bagged
@@ -15,8 +15,8 @@
 - Net Weight: 7.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.88
-- Price Per Carton: USD $1,056.000
+- Price Per Piece: USD $0.115
+- Price Per Carton: USD $138.000
 
 # Tabs
-- #M8037A #Pirate #Royal #Series #BuildingBlocks #Construction
+- #M8037C #Pirate #Royal #Series #BuildingBlocks #Construction

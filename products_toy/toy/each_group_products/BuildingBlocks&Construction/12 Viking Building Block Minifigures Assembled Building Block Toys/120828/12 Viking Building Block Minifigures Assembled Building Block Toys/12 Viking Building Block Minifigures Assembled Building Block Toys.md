@@ -1,6 +1,6 @@
 # 12 Viking Building Block Minifigures Assembled Building Block Toys
 
-- Product Code: M8168
+- Product Code: M8170
 - Group: Building Blocks & Construction
 - Category: 12 Viking Building Block Minifigures Assembled Building Block Toys
 - Packaging: Bagged
@@ -15,8 +15,8 @@
 - Net Weight: 8.7 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.91
-- Price Per Carton: USD $1,092.000
+- Price Per Piece: USD $0.118
+- Price Per Carton: USD $141.600
 
 # Tabs
-- #M8168 #Viking #BuildingBlocks #Minifigures #Construction #VikingBuildingBlock
+- #M8170 #Viking #BuildingBlocks #Minifigures #Construction #VikingBuildingBlock

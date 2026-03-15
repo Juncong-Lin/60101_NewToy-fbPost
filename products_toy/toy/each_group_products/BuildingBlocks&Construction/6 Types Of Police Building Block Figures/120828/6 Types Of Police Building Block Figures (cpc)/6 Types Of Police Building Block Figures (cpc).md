@@ -15,8 +15,8 @@
 - Net Weight: 6.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.73
-- Price Per Carton: USD $876.000
+- Price Per Piece: USD $0.095
+- Price Per Carton: USD $114.000
 
 # Tabs
 - #M8040 #Cpc #Police #6Types #BuildingBlocks #Construction

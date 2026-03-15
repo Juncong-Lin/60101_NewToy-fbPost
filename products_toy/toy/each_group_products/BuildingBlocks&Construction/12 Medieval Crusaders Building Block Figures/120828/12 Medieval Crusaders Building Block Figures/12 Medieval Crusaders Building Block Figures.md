@@ -15,8 +15,8 @@
 - Net Weight: 8.8 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.88
-- Price Per Carton: USD $739.200
+- Price Per Piece: USD $0.115
+- Price Per Carton: USD $96.600
 
 # Tabs
 - #M8152 #Crusaders #Medieval #BuildingBlocks #Construction #MedievalCrusadersBuilding

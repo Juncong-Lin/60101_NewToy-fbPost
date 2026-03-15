@@ -15,8 +15,8 @@
 - Net Weight: 24.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $1.37
-- Price Per Carton: USD $1,315.200
+- Price Per Piece: USD $0.178
+- Price Per Carton: USD $170.880
 
 # Tabs
 - #NG1180B #Bear #Midnight #Miniature #16Types #BuildingBlocks

@@ -15,8 +15,8 @@
 - Net Weight: 7.8 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.91
-- Price Per Carton: USD $1,092.000
+- Price Per Piece: USD $0.118
+- Price Per Carton: USD $141.600
 
 # Tabs
 - #M8247 #Hand #Pieces #Second #12Types #BuildingBlocks

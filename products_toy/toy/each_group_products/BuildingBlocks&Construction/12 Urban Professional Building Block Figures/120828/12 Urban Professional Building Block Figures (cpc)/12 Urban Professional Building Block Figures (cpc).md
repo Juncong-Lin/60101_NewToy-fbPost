@@ -1,6 +1,6 @@
 # 12 Urban Professional Building Block Figures (cpc)
 
-- Product Code: M8016
+- Product Code: M8018
 - Group: Building Blocks & Construction
 - Category: 12 Urban Professional Building Block Figures
 - Packaging: Bagged
@@ -15,8 +15,8 @@
 - Net Weight: 6.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.74
-- Price Per Carton: USD $888.000
+- Price Per Piece: USD $0.096
+- Price Per Carton: USD $115.200
 
 # Tabs
-- #M8016 #Cpc #Professional #Urban #BuildingBlocks #Construction
+- #M8018 #Cpc #Professional #Urban #BuildingBlocks #Construction

@@ -15,8 +15,8 @@
 - Net Weight: 21.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.70
-- Price Per Carton: USD $672.000
+- Price Per Piece: USD $0.091
+- Price Per Carton: USD $87.360
 
 # Tabs
 - #J9913 #24pcs #Blind #Box #24Types #Building

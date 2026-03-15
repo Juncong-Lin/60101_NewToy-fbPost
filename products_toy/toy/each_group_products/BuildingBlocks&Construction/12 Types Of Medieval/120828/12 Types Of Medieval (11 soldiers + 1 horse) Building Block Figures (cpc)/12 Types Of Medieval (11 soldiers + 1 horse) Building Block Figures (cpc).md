@@ -1,6 +1,6 @@
 # 12 Types Of Medieval (11 soldiers + 1 horse) Building Block Figures (cpc)
 
-- Product Code: 1624
+- Product Code: 1628
 - Group: Building Blocks & Construction
 - Category: 12 Types Of Medieval
 - Packaging: Bagged
@@ -11,12 +11,12 @@
 - Volume: 0.071 CBM
 
 # Weight
-- Gross Weight: 10.0 kg / carton
-- Net Weight: 9.0 kg / carton
+- Gross Weight: 9.5 kg / carton
+- Net Weight: 8.5 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.88
-- Price Per Carton: USD $1,056.000
+- Price Per Piece: USD $0.115
+- Price Per Carton: USD $138.000
 
 # Tabs
 - #Horse #Medieval #Soldiers #12Types #BuildingBlocks #Construction

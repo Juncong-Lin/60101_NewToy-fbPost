@@ -15,8 +15,8 @@
 - Net Weight: 5.1 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.55
-- Price Per Carton: USD $660.000
+- Price Per Piece: USD $0.071
+- Price Per Carton: USD $85.200
 
 # Tabs
 - #M8059 #Spider #BuildingBlocks #Minifigures #Construction #SpiderBuildingBlock

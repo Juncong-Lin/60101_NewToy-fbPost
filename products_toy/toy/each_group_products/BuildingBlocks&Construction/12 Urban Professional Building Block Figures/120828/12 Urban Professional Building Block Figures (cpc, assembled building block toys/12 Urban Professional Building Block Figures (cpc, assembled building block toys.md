@@ -1,6 +1,6 @@
 # 12 Urban Professional Building Block Figures (cpc, assembled building block toys)
 
-- Product Code: M8099
+- Product Code: M8017
 - Group: Building Blocks & Construction
 - Category: 12 Urban Professional Building Block Figures
 - Packaging: Bagged
@@ -11,12 +11,12 @@
 - Volume: 0.052 CBM
 
 # Weight
-- Gross Weight: 9.0 kg / carton
-- Net Weight: 8.0 kg / carton
+- Gross Weight: 7.0 kg / carton
+- Net Weight: 6.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.55
-- Price Per Carton: USD $660.000
+- Price Per Piece: USD $0.096
+- Price Per Carton: USD $115.200
 
 # Tabs
-- #M8099 #Cpc #Professional #Urban #BuildingBlocks #Construction
+- #M8017 #Cpc #Professional #Urban #BuildingBlocks #Construction

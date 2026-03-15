@@ -15,8 +15,8 @@
 - Net Weight: 6.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.46
-- Price Per Carton: USD $552.000
+- Price Per Piece: USD $0.060
+- Price Per Carton: USD $72.000
 
 # Tabs
 - #M8166 #City #12Types #BuildingBlocks #Minifigures #Construction

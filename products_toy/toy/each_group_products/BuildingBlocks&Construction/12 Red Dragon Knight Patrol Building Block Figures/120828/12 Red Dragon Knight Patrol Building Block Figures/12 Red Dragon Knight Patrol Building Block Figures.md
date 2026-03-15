@@ -15,8 +15,8 @@
 - Net Weight: 7.7 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.80
-- Price Per Carton: USD $960.000
+- Price Per Piece: USD $0.104
+- Price Per Carton: USD $124.800
 
 # Tabs
 - #M8180 #Dragon #Knight #Red #BuildingBlocks #Construction

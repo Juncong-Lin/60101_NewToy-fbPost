@@ -15,8 +15,8 @@
 - Net Weight: 6.3 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.60
-- Price Per Carton: USD $720.000
+- Price Per Piece: USD $0.078
+- Price Per Carton: USD $93.600
 
 # Tabs
 - #M8026 #Accessories #Dolls #Girl #BuildingBlocks #Construction

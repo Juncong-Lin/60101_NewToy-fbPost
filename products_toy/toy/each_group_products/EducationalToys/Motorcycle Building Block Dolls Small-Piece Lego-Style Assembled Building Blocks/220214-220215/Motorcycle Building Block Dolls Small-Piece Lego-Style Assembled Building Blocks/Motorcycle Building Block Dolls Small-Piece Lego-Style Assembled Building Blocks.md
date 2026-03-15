@@ -15,8 +15,8 @@
 - Net Weight: 10.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.74
-- Price Per Carton: USD $888.000
+- Price Per Piece: USD $0.096
+- Price Per Carton: USD $115.200
 
 # Tabs
 - #SM214 #Dolls #Motorcycle #Small #BuildingBlocks #Educational

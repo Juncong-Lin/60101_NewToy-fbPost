@@ -1,3 +1,513 @@
-// Total products: 0, Date: 2026-03-15 07:10:16
+// Total products: 10, Date: 2026-03-15 14:04:36
 export const InflatableWaterToysProducts = {
+  "12 Inch Boy With Little Yellow Duck Swim Ring/Basket": {
+    "121021-121022": [
+      {
+          "id": "1717129-ZY020-1B-121021-121022-175",
+          "sku": "ZY020-1B",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "12 Inch Boy With Little Yellow Duck Swim Ring/Basket",
+          "stall_number": "121021-121022",
+          "company_code": "YS1717129",
+          "company_code_id": "1717129",
+          "product_code": "ZY020-1B",
+          "product_name": "12 Inch Boy With Little Yellow Duck Swim Ring/Basket",
+          "name": "12 Inch Boy With Little Yellow Duck Swim Ring/Basket",
+          "packaging": "Window Box",
+          "qty_per_carton": 18,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 102.0,
+              "width": 36.0,
+              "height": 75.0
+          },
+          "package_cm": {
+              "length": 35.0,
+              "width": 10.0,
+              "height": 35.0
+          },
+          "volume_cbm": 0.275,
+          "chargeable_unit_cn": 9.72,
+          "gross_weight_kg": 17.0,
+          "net_weight_kg": 15.0,
+          "price": "CNY 28.34",
+          "price_usd": "USD 3.968",
+          "price_raw": "USD 3.968",
+          "priceValue": 3.968,
+          "lower_price": 3.968,
+          "higher_price": null,
+          "price/chargeable_unit": 2.916,
+          "excel_row": "175",
+          "priceRight": "18",
+          "marketTag": "2",
+          "tags": [
+              "1717129",
+              "ZY020-1B",
+              "Window Box"
+          ],
+          "image": "Inflatable&WaterToys/12 Inch Boy With Little Yellow Duck Swim RingBasket/121021-121022/12 Inch Boy With Little Yellow Duck Swim RingBasket/image/12 Inch Boy With Little Yellow Duck Swim RingBasket.jpg",
+          "markdown": "Inflatable&WaterToys/12 Inch Boy With Little Yellow Duck Swim RingBasket/121021-121022/12 Inch Boy With Little Yellow Duck Swim RingBasket/12 Inch Boy With Little Yellow Duck Swim RingBasket.md"
+      }
+    ]
+  },
+  "Cartoon Astronaut Dual Nozzle Water Gun": {
+    "231425": [
+      {
+          "id": "1758225-7966-231425-530",
+          "sku": "7966",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Cartoon Astronaut Dual Nozzle Water Gun",
+          "stall_number": "231425",
+          "company_code": "YS1758225",
+          "company_code_id": "1758225",
+          "product_code": "7966",
+          "product_name": "Cartoon Astronaut Dual Nozzle Water Gun",
+          "name": "Cartoon Astronaut Dual Nozzle Water Gun",
+          "packaging": "OPP Bag",
+          "qty_per_carton": 120,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 78.0,
+              "width": 43.0,
+              "height": 96.0
+          },
+          "package_cm": {
+              "length": 39.0,
+              "width": 6.0,
+              "height": 16.0
+          },
+          "volume_cbm": 0.322,
+          "chargeable_unit_cn": 11.36,
+          "gross_weight_kg": 18.0,
+          "net_weight_kg": 16.0,
+          "price": "CNY 4.42",
+          "price_usd": "USD 0.619",
+          "price_raw": "USD 0.619",
+          "priceValue": 0.619,
+          "lower_price": 0.619,
+          "higher_price": null,
+          "price/chargeable_unit": 0.389,
+          "excel_row": "530",
+          "priceRight": "120",
+          "marketTag": "2",
+          "tags": [
+              "1758225",
+              "7966",
+              "OPP Bag"
+          ],
+          "image": "Inflatable&WaterToys/Cartoon Astronaut Dual Nozzle Water Gun/231425/Cartoon Astronaut Dual Nozzle Water Gun/image/Cartoon Astronaut Dual Nozzle Water Gun.jpg",
+          "markdown": "Inflatable&WaterToys/Cartoon Astronaut Dual Nozzle Water Gun/231425/Cartoon Astronaut Dual Nozzle Water Gun/Cartoon Astronaut Dual Nozzle Water Gun.md"
+      }
+    ]
+  },
+  "Cartoon Dinosaur Water Gun": {
+    "231425": [
+      {
+          "id": "1758224-7966-1-231425-531",
+          "sku": "7966-1",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Cartoon Dinosaur Water Gun",
+          "stall_number": "231425",
+          "company_code": "YS1758224",
+          "company_code_id": "1758224",
+          "product_code": "7966-1",
+          "product_name": "Cartoon Dinosaur Water Gun",
+          "name": "Cartoon Dinosaur Water Gun",
+          "packaging": "OPP Bag",
+          "qty_per_carton": 216,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 99.0,
+              "width": 31.0,
+              "height": 85.0
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 5.0,
+              "height": 14.0
+          },
+          "volume_cbm": 0.261,
+          "chargeable_unit_cn": 9.21,
+          "gross_weight_kg": 18.0,
+          "net_weight_kg": 16.0,
+          "price": "CNY 2.47",
+          "price_usd": "USD 0.346",
+          "price_raw": "USD 0.346",
+          "priceValue": 0.346,
+          "lower_price": 0.346,
+          "higher_price": null,
+          "price/chargeable_unit": 0.268,
+          "excel_row": "531",
+          "priceRight": "216",
+          "marketTag": "2",
+          "tags": [
+              "1758224",
+              "7966-1",
+              "OPP Bag"
+          ],
+          "image": "Inflatable&WaterToys/Cartoon Dinosaur Water Gun/231425/Cartoon Dinosaur Water Gun/image/Cartoon Dinosaur Water Gun.jpg",
+          "markdown": "Inflatable&WaterToys/Cartoon Dinosaur Water Gun/231425/Cartoon Dinosaur Water Gun/Cartoon Dinosaur Water Gun.md"
+      }
+    ]
+  },
+  "Dinosaur Single Water Gun": {
+    "261601-261602": [
+      {
+          "id": "1721527-C-940-261601-261602-853",
+          "sku": "C-940",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Dinosaur Single Water Gun",
+          "stall_number": "261601-261602",
+          "company_code": "YS1721527",
+          "company_code_id": "1721527",
+          "product_code": "C-940",
+          "product_name": "Dinosaur Single Water Gun",
+          "name": "Dinosaur Single Water Gun",
+          "packaging": "PP卡头袋",
+          "qty_per_carton": 180,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 82.0,
+              "width": 52.0,
+              "height": 81.0
+          },
+          "package_cm": {
+              "length": 35.5,
+              "width": 5.0,
+              "height": 15.5
+          },
+          "volume_cbm": 0.345,
+          "chargeable_unit_cn": 12.19,
+          "gross_weight_kg": 22.6,
+          "net_weight_kg": 22.0,
+          "price": "CNY 6.44",
+          "price_usd": "USD 0.901",
+          "price_raw": "USD 0.901",
+          "priceValue": 0.901,
+          "lower_price": 0.901,
+          "higher_price": null,
+          "price/chargeable_unit": 0.528,
+          "excel_row": "853",
+          "priceRight": "180",
+          "marketTag": "2",
+          "tags": [
+              "1721527",
+              "C-940",
+              "PP卡头袋"
+          ],
+          "image": "Inflatable&WaterToys/Dinosaur Single Water Gun/261601-261602/Dinosaur Single Water Gun/image/Dinosaur Single Water Gun.jpg",
+          "markdown": "Inflatable&WaterToys/Dinosaur Single Water Gun/261601-261602/Dinosaur Single Water Gun/Dinosaur Single Water Gun.md"
+      }
+    ]
+  },
+  "Dinosaur Water Gun": {
+    "260906-260907-260908": [
+      {
+          "id": "1732478-007-36-260906-260907-260908-808",
+          "sku": "007-36",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Dinosaur Water Gun",
+          "stall_number": "260906-260907-260908",
+          "company_code": "YS1732478",
+          "company_code_id": "1732478",
+          "product_code": "007-36",
+          "product_name": "Dinosaur Water Gun (3 types mixed) (12pcs single price)",
+          "name": "Dinosaur Water Gun (3 types mixed) (12pcs single price)",
+          "packaging": "Display Box",
+          "qty_per_carton": 144,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 77.0,
+              "width": 41.0,
+              "height": 68.0
+          },
+          "package_cm": {
+              "length": 40.0,
+              "width": 33.0,
+              "height": 12.5
+          },
+          "volume_cbm": 0.215,
+          "chargeable_unit_cn": 7.58,
+          "gross_weight_kg": 18.5,
+          "net_weight_kg": 16.5,
+          "price": "CNY 4.68",
+          "price_usd": "USD 0.655",
+          "price_raw": "USD 0.655",
+          "priceValue": 0.655,
+          "lower_price": 0.655,
+          "higher_price": null,
+          "price/chargeable_unit": 0.617,
+          "excel_row": "808",
+          "priceRight": "144",
+          "marketTag": "0",
+          "tags": [
+              "1732478",
+              "007-36",
+              "Display Box"
+          ],
+          "image": "Inflatable&WaterToys/Dinosaur Water Gun/260906-260907-260908/Dinosaur Water Gun (3 types mixed) (12pcs single price)/image/Dinosaur Water Gun (3 types mixed) (12pcs single price).jpg",
+          "markdown": "Inflatable&WaterToys/Dinosaur Water Gun/260906-260907-260908/Dinosaur Water Gun (3 types mixed) (12pcs single price)/Dinosaur Water Gun (3 types mixed) (12pcs single price).md"
+      }
+    ]
+  },
+  "Dinosaur/Shark Water Gun": {
+    "260906-260907-260908": [
+      {
+          "id": "1732479-007-37-260906-260907-260908-807",
+          "sku": "007-37",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Dinosaur/Shark Water Gun",
+          "stall_number": "260906-260907-260908",
+          "company_code": "YS1732479",
+          "company_code_id": "1732479",
+          "product_code": "007-37",
+          "product_name": "Dinosaur/Shark Water Gun (2 types mixed) (12pcs single price)",
+          "name": "Dinosaur/Shark Water Gun (2 types mixed) (12pcs single price)",
+          "packaging": "Display Box",
+          "qty_per_carton": 144,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 77.0,
+              "width": 41.0,
+              "height": 68.0
+          },
+          "package_cm": {
+              "length": 40.0,
+              "width": 33.0,
+              "height": 12.5
+          },
+          "volume_cbm": 0.215,
+          "chargeable_unit_cn": 7.58,
+          "gross_weight_kg": 18.5,
+          "net_weight_kg": 16.5,
+          "price": "CNY 4.68",
+          "price_usd": "USD 0.655",
+          "price_raw": "USD 0.655",
+          "priceValue": 0.655,
+          "lower_price": 0.655,
+          "higher_price": null,
+          "price/chargeable_unit": 0.617,
+          "excel_row": "807",
+          "priceRight": "144",
+          "marketTag": "0",
+          "tags": [
+              "1732479",
+              "007-37",
+              "Display Box"
+          ],
+          "image": "Inflatable&WaterToys/DinosaurShark Water Gun/260906-260907-260908/DinosaurShark Water Gun (2 types mixed) (12pcs single price)/image/DinosaurShark Water Gun (2 types mixed) (12pcs single price).jpg",
+          "markdown": "Inflatable&WaterToys/DinosaurShark Water Gun/260906-260907-260908/DinosaurShark Water Gun (2 types mixed) (12pcs single price)/DinosaurShark Water Gun (2 types mixed) (12pcs single price).md"
+      }
+    ]
+  },
+  "Inflatable Water Gun": {
+    "220304": [
+      {
+          "id": "1732475-3603-220304-373",
+          "sku": "3603",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Inflatable Water Gun",
+          "stall_number": "220304",
+          "company_code": "YS1732475",
+          "company_code_id": "1732475",
+          "product_code": "3603",
+          "product_name": "Inflatable Water Gun (blue, pink)",
+          "name": "Inflatable Water Gun (blue, pink)",
+          "packaging": "PVC Header Bag",
+          "qty_per_carton": 48,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 78.0,
+              "width": 50.0,
+              "height": 93.0
+          },
+          "package_cm": {
+              "length": 53.0,
+              "width": 20.0,
+              "height": 9.0
+          },
+          "volume_cbm": 0.363,
+          "chargeable_unit_cn": 12.8,
+          "gross_weight_kg": 18.5,
+          "net_weight_kg": 15.0,
+          "price": "CNY 14.04",
+          "price_usd": "USD 1.966",
+          "price_raw": "USD 1.966",
+          "priceValue": 1.966,
+          "lower_price": 1.966,
+          "higher_price": null,
+          "price/chargeable_unit": 1.097,
+          "excel_row": "373",
+          "priceRight": "48",
+          "marketTag": "2",
+          "tags": [
+              "1732475",
+              "3603",
+              "PVC Header Bag"
+          ],
+          "image": "Inflatable&WaterToys/Inflatable Water Gun/220304/Inflatable Water Gun (blue, pink)/image/Inflatable Water Gun (blue, pink).jpg",
+          "markdown": "Inflatable&WaterToys/Inflatable Water Gun/220304/Inflatable Water Gun (blue, pink)/Inflatable Water Gun (blue, pink).md"
+      }
+    ]
+  },
+  "Pony Water Gun": {
+    "220304": [
+      {
+          "id": "1732474-3601-220304-374",
+          "sku": "3601",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Pony Water Gun",
+          "stall_number": "220304",
+          "company_code": "YS1732474",
+          "company_code_id": "1732474",
+          "product_code": "3601",
+          "product_name": "Pony Water Gun (blue, pink)",
+          "name": "Pony Water Gun (blue, pink)",
+          "packaging": "PVC Header Bag",
+          "qty_per_carton": 36,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 72.0,
+              "width": 58.0,
+              "height": 98.0
+          },
+          "package_cm": {
+              "length": 60.0,
+              "width": 28.0,
+              "height": 11.0
+          },
+          "volume_cbm": 0.409,
+          "chargeable_unit_cn": 14.44,
+          "gross_weight_kg": 24.0,
+          "net_weight_kg": 20.0,
+          "price": "CNY 20.54",
+          "price_usd": "USD 2.876",
+          "price_raw": "USD 2.876",
+          "priceValue": 2.876,
+          "lower_price": 2.876,
+          "higher_price": null,
+          "price/chargeable_unit": 1.422,
+          "excel_row": "374",
+          "priceRight": "36",
+          "marketTag": "2",
+          "tags": [
+              "1732474",
+              "3601",
+              "PVC Header Bag"
+          ],
+          "image": "Inflatable&WaterToys/Pony Water Gun/220304/Pony Water Gun (blue, pink)/image/Pony Water Gun (blue, pink).jpg",
+          "markdown": "Inflatable&WaterToys/Pony Water Gun/220304/Pony Water Gun (blue, pink)/Pony Water Gun (blue, pink).md"
+      }
+    ]
+  },
+  "Shark Single Water Gun": {
+    "261601-261602": [
+      {
+          "id": "1721526-C-939-261601-261602-854",
+          "sku": "C-939",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Shark Single Water Gun",
+          "stall_number": "261601-261602",
+          "company_code": "YS1721526",
+          "company_code_id": "1721526",
+          "product_code": "C-939",
+          "product_name": "Shark Single Water Gun",
+          "name": "Shark Single Water Gun",
+          "packaging": "PP卡头袋",
+          "qty_per_carton": 180,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 82.0,
+              "width": 52.0,
+              "height": 81.0
+          },
+          "package_cm": {
+              "length": 35.5,
+              "width": 5.0,
+              "height": 15.5
+          },
+          "volume_cbm": 0.345,
+          "chargeable_unit_cn": 12.19,
+          "gross_weight_kg": 24.5,
+          "net_weight_kg": 22.0,
+          "price": "CNY 6.44",
+          "price_usd": "USD 0.901",
+          "price_raw": "USD 0.901",
+          "priceValue": 0.901,
+          "lower_price": 0.901,
+          "higher_price": null,
+          "price/chargeable_unit": 0.528,
+          "excel_row": "854",
+          "priceRight": "180",
+          "marketTag": "2",
+          "tags": [
+              "1721526",
+              "C-939",
+              "PP卡头袋"
+          ],
+          "image": "Inflatable&WaterToys/Shark Single Water Gun/261601-261602/Shark Single Water Gun/image/Shark Single Water Gun.jpg",
+          "markdown": "Inflatable&WaterToys/Shark Single Water Gun/261601-261602/Shark Single Water Gun/Shark Single Water Gun.md"
+      }
+    ]
+  },
+  "Solid Color Single Water Spray Gun": {
+    "261601-261602": [
+      {
+          "id": "1715063-C-936（实色）-261601-261602-855",
+          "sku": "C-936（实色）",
+          "href": "",
+          "group": "Inflatable & Water Toys",
+          "category": "Solid Color Single Water Spray Gun",
+          "stall_number": "261601-261602",
+          "company_code": "YS1715063",
+          "company_code_id": "1715063",
+          "product_code": "C-936（实色）",
+          "product_name": "Solid Color Single Water Spray Gun",
+          "name": "Solid Color Single Water Spray Gun",
+          "packaging": "OPP Bag",
+          "qty_per_carton": 336,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 70.0,
+              "width": 42.0,
+              "height": 82.0
+          },
+          "package_cm": {
+              "length": 17.0,
+              "width": 3.0,
+              "height": 13.0
+          },
+          "volume_cbm": 0.241,
+          "chargeable_unit_cn": 8.51,
+          "gross_weight_kg": 26.0,
+          "net_weight_kg": 24.0,
+          "price": "CNY 3.06",
+          "price_usd": "USD 0.428",
+          "price_raw": "USD 0.428",
+          "priceValue": 0.428,
+          "lower_price": 0.428,
+          "higher_price": null,
+          "price/chargeable_unit": 0.359,
+          "excel_row": "855",
+          "priceRight": "336",
+          "marketTag": "2",
+          "tags": [
+              "1715063",
+              "C-936（实色）",
+              "OPP Bag"
+          ],
+          "image": "Inflatable&WaterToys/Solid Color Single Water Spray Gun/261601-261602/Solid Color Single Water Spray Gun/image/Solid Color Single Water Spray Gun.jpg",
+          "markdown": "Inflatable&WaterToys/Solid Color Single Water Spray Gun/261601-261602/Solid Color Single Water Spray Gun/Solid Color Single Water Spray Gun.md"
+      }
+    ]
+  }
 };

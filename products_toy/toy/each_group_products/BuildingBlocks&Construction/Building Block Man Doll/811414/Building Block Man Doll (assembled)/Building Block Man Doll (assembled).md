@@ -1,6 +1,6 @@
 # Building Block Man Doll (assembled)
 
-- Product Code: CQ1-66
+- Product Code: CQ127-166
 - Group: Building Blocks & Construction
 - Category: Building Block Man Doll
 - Packaging: Bagged
@@ -15,8 +15,8 @@
 - Net Weight: 20.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.31
-- Price Per Carton: USD $1,550.000
+- Price Per Piece: USD $0.040
+- Price Per Carton: USD $200.000
 
 # Tabs
-- #CQ166 #Doll #CQ1 #Building #BuildingBlocks #Construction
+- #CQ127166 #Doll #CQ127 #Building #BuildingBlocks #Construction

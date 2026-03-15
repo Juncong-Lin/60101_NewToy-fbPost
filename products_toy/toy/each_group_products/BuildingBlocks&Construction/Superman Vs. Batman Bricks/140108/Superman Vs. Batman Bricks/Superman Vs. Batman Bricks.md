@@ -15,8 +15,8 @@
 - Net Weight: 19.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $1.68
-- Price Per Carton: USD $967.680
+- Price Per Piece: USD $0.218
+- Price Per Carton: USD $125.568
 
 # Tabs
 - #Batman #Bricks #Superman #BuildingBlocks #Construction #SupermanBatmanBricks

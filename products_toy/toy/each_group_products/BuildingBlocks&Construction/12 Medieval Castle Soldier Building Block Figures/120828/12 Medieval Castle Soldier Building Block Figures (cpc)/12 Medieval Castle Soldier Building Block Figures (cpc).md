@@ -1,6 +1,6 @@
 # 12 Medieval Castle Soldier Building Block Figures (cpc)
 
-- Product Code: 1811
+- Product Code: 1812
 - Group: Building Blocks & Construction
 - Category: 12 Medieval Castle Soldier Building Block Figures
 - Packaging: Bagged
@@ -15,8 +15,8 @@
 - Net Weight: 7.1 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.88
-- Price Per Carton: USD $1,056.000
+- Price Per Piece: USD $0.115
+- Price Per Carton: USD $138.000
 
 # Tabs
 - #Castle #Medieval #Soldier #BuildingBlocks #Construction #MedievalCastleSoldier

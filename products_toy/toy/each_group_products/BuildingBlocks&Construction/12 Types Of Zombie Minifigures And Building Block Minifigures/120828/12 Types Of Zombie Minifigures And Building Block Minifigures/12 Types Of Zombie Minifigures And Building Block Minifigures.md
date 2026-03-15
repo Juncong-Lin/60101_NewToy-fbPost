@@ -15,8 +15,8 @@
 - Net Weight: 7.7 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.88
-- Price Per Carton: USD $1,126.400
+- Price Per Piece: USD $0.115
+- Price Per Carton: USD $147.200
 
 # Tabs
 - #M8192 #Zombie #12Types #BuildingBlocks #Minifigures #Construction

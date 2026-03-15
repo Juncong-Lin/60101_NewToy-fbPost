@@ -15,8 +15,8 @@
 - Net Weight: 19.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $1.96
-- Price Per Carton: USD $1,128.960
+- Price Per Piece: USD $0.255
+- Price Per Carton: USD $146.880
 
 # Tabs
 - #Avengers #Box #Display #BuildingBlocks #Licensed #PopCulture

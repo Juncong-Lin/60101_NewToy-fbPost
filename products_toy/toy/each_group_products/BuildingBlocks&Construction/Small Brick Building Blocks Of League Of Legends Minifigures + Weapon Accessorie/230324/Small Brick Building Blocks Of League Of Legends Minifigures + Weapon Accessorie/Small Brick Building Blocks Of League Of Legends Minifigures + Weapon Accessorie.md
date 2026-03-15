@@ -1,22 +1,22 @@
 # Small Brick Building Blocks Of League Of Legends Minifigures + Weapon Accessories (8 styles of 16 small boxes/display box for the whole box price)
 
-- Product Code: HR880
+- Product Code: HR557
 - Group: Building Blocks & Construction
 - Category: Small Brick Building Blocks Of League Of Legends Minifigures + Weapon Accessories
 - Packaging: Display Box
 
 # Packing Details
-- Quantity per Carton: 42 pcs
-- Carton Size (L × W × H): 90 × 38 × 89 cm
-- Volume: 0.304 CBM
+- Quantity per Carton: 48 pcs
+- Carton Size (L × W × H): 79 × 26 × 87 cm
+- Volume: 0.179 CBM
 
 # Weight
-- Gross Weight: 24.0 kg / carton
+- Gross Weight: 21.5 kg / carton
 - Net Weight: 20.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $21.28
-- Price Per Carton: USD $893.760
+- Price Per Piece: USD $2.912
+- Price Per Carton: USD $139.776
 
 # Tabs
-- #HR880 #Brick #League #Small #BuildingBlocks #Minifigures
+- #HR557 #Brick #League #Small #BuildingBlocks #Minifigures

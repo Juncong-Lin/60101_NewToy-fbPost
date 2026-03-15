@@ -15,8 +15,8 @@
 - Net Weight: 8.7 kg / carton
 
 # Pricing
-- Price Per Piece: USD $0.63
-- Price Per Carton: USD $1,008.000
+- Price Per Piece: USD $0.082
+- Price Per Carton: USD $131.200
 
 # Tabs
 - #M8191 #Army #Medieval #Skeleton #BuildingBlocks #Construction

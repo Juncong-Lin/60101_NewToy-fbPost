@@ -15,8 +15,8 @@
 - Net Weight: 13.0 kg / carton
 
 # Pricing
-- Price Per Piece: USD $1.82
-- Price Per Carton: USD $1,048.320
+- Price Per Piece: USD $0.237
+- Price Per Carton: USD $136.512
 
 # Tabs
 - #Killing #Space #Werewolf #BuildingBlocks #Educational #SpaceWerewolfKilling
