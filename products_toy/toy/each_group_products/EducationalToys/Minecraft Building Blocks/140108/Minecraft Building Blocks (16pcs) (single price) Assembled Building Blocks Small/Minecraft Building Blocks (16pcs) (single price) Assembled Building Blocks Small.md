@@ -1,0 +1,22 @@
+# Minecraft Building Blocks (16pcs) (single price) Assembled Building Blocks Small Particle Building Blocks Minecraft Building Blocks Dolls (small particle building blocks educational toys)
+
+- Product Code: 0875-1
+- Group: Educational Toys
+- Category: Minecraft Building Blocks
+- Packaging: Display Box
+
+# Packing Details
+- Quantity per Carton: 576 pcs
+- Carton Size (L × W × H): 93 × 36 × 112 cm
+- Volume: 0.375 CBM
+
+# Weight
+- Gross Weight: 21.0 kg / carton
+- Net Weight: 19.0 kg / carton
+
+# Pricing
+- Price Per Piece: USD $0.232
+- Price Per Carton: USD $133.632
+
+# Tabs
+- #16pcs #Minecraft #Single #16Types #BuildingBlocks #Educational

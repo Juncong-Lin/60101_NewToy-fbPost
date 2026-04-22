@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tracking</title>
+    <link rel="shortcut icon" href="/favicon.ico?v=2" type="image/x-icon" />
+    <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+    <link rel="icon" type="image/png" href="/favicon-32x32.png?v=2" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon-16x16.png?v=2" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" sizes="180x180" />
+    <!-- This code is needed for responsive design to work.
+      (Responsive design = make the website look good on
+      smaller screen sizes like a phone or a tablet). -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no"
+    />
+
+    <!-- Load a font called Roboto from Google Fonts. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Here are the CSS files for this page. -->
+    <link rel="stylesheet" href="styles/shared/general.css" />
+    <link rel="stylesheet" href="styles/shared/qili-header.css" />
+    <link rel="stylesheet" href="styles/shared/sub-header.css" />
+    <link rel="stylesheet" href="styles/pages/tracking.css" />
+    <link rel="stylesheet" href="styles/shared/footer.css" />
+    <link rel="stylesheet" href="styles/shared/right-panel.css" />
+    <!-- Meta Pixel Code -->
+    <script>
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = "2.0";
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        "script",
+        "https://connect.facebook.net/en_US/fbevents.js"
+      );
+      fbq("init", "569190689377819");
+      fbq("track", "PageView");
+    </script>
+    <noscript
+      ><img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=569190689377819&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    <!-- Google Analytics 4 (GA4) -->
+    <!-- TODO: Replace G-SBXRXEL6LE with actual GA4 Measurement ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SBXRXEL6LE"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SBXRXEL6LE');
+    </script>
+    <!-- End GA4 -->
+  </head>
+  <body class="no-sidebar">
+    <!-- Main Header - Loaded dynamically from shared component -->
+    <div id="shared-header-placeholder"></div>
+    <!-- Sub Header Navigation - Loaded dynamically from shared component -->
+    <div id="shared-subheader-placeholder"></div>
+
+    <div class="main">
+      <div class="order-tracking">
+        <a class="back-to-orders-link link-primary" href="orders.html">
+          View all orders
+        </a>
+
+        <div class="delivery-date">Arriving on Monday, June 13</div>
+
+        <div class="product-info">
+          Black and Gray Athletic Cotton Socks - 6 Pairs
+        </div>
+
+        <div class="product-info">Quantity: 1</div>
+
+        <img
+          class="product-image"
+          src="products/athletic-cotton-socks-6-pairs.jpg"
+        />
+
+        <div class="progress-labels-container">
+          <div class="progress-label">Preparing</div>
+          <div class="progress-label current-status">Shipped</div>
+          <div class="progress-label">Delivered</div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared Footer - Loaded dynamically from shared component -->
+    <div id="shared-footer-placeholder"></div>
+
+    <!-- Shared Right Panel - Loaded dynamically from shared component -->
+    <div id="shared-right-panel-placeholder"></div>
+    <script src="scripts/shared/url-utils.js"></script>
+    <script src="scripts/shared/search.js"></script>
+    <script src="scripts/shared/shared-header-loader.js"></script>
+    <script src="scripts/shared/sub-header-nav.js"></script>
+    <script src="scripts/shared/shared-subheader-loader.js"></script>
+    <script src="scripts/shared/shared-footer-loader.js"></script>
+    <script src="scripts/shared/shared-right-panel-loader.js"></script>
+    <script src="scripts/shared/right-panel.js"></script>
+  </body>
+</html>

@@ -1,0 +1,785 @@
+// Total products: 16, Date: 2026-04-21 17:00:59
+export const PuzzlesBoardGamesProducts = {
+  "80": {
+    "231426": [
+      {
+          "id": "1715888-4317-231426-531",
+          "sku": "4317",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "80",
+          "stall_number": "231426",
+          "company_code": "YS1715888",
+          "company_code_id": "1715888",
+          "product_code": "4317",
+          "product_name": "80",
+          "name": "80",
+          "packaging": "Color Box",
+          "qty_per_carton": 20,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 58.0,
+              "width": 30.0,
+              "height": 59.0
+          },
+          "package_cm": {
+              "length": 28.0,
+              "width": 28.0,
+              "height": 5.5
+          },
+          "volume_cbm": 0.103,
+          "chargeable_unit_cn": 3.62,
+          "gross_weight_kg": 29.0,
+          "net_weight_kg": 28.0,
+          "price": "CNY 50.14",
+          "price_usd": "USD 7.611",
+          "price_raw": "USD 7.611",
+          "priceValue": 7.611,
+          "lower_price": 7.611,
+          "higher_price": null,
+          "price/chargeable_unit": 13.85,
+          "excel_row": "531",
+          "priceRight": "20.0",
+          "marketTag": "0.0",
+          "tags": [
+              "1715888",
+              "4317",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/80/231426/80/image/80.jpeg",
+          "markdown": "Puzzles&BoardGames/80/231426/80/80.md"
+      }
+    ]
+  },
+  "Game Chess Piece Series Airplane Chess": {
+    "230730": [
+      {
+          "id": "1702094-N820-159-230730-484",
+          "sku": "N820-159",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "Game Chess Piece Series Airplane Chess",
+          "stall_number": "230730",
+          "company_code": "YS1702094",
+          "company_code_id": "1702094",
+          "product_code": "N820-159",
+          "product_name": "Game Chess Piece Series Airplane Chess",
+          "name": "Game Chess Piece Series Airplane Chess",
+          "packaging": "Window Box",
+          "qty_per_carton": 240,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 86.0,
+              "width": 48.0,
+              "height": 91.0
+          },
+          "package_cm": {
+              "length": 8.0,
+              "width": 8.0,
+              "height": 27.0
+          },
+          "volume_cbm": 0.376,
+          "chargeable_unit_cn": 13.26,
+          "gross_weight_kg": 22.0,
+          "net_weight_kg": 20.0,
+          "price": "CNY 3.76",
+          "price_usd": "USD 0.571",
+          "price_raw": "USD 0.571",
+          "priceValue": 0.571,
+          "lower_price": 0.571,
+          "higher_price": null,
+          "price/chargeable_unit": 0.28,
+          "excel_row": "484",
+          "priceRight": "240.0",
+          "marketTag": "2.0",
+          "tags": [
+              "1702094",
+              "N820-159",
+              "Window Box"
+          ],
+          "image": "Puzzles&BoardGames/Game Chess Piece Series Airplane Chess/230730/Game Chess Piece Series Airplane Chess/image/Game Chess Piece Series Airplane Chess.jpeg",
+          "markdown": "Puzzles&BoardGames/Game Chess Piece Series Airplane Chess/230730/Game Chess Piece Series Airplane Chess/Game Chess Piece Series Airplane Chess.md"
+      },
+      {
+          "id": "1702093-N820-158-230730-485",
+          "sku": "N820-158",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "Game Chess Piece Series Airplane Chess",
+          "stall_number": "230730",
+          "company_code": "YS1702093",
+          "company_code_id": "1702093",
+          "product_code": "N820-158",
+          "product_name": "Game Chess Piece Series Airplane Chess",
+          "name": "Game Chess Piece Series Airplane Chess",
+          "packaging": "Window Box",
+          "qty_per_carton": 240,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 86.0,
+              "width": 48.0,
+              "height": 91.0
+          },
+          "package_cm": {
+              "length": 8.0,
+              "width": 8.0,
+              "height": 27.0
+          },
+          "volume_cbm": 0.376,
+          "chargeable_unit_cn": 13.26,
+          "gross_weight_kg": 22.0,
+          "net_weight_kg": 20.0,
+          "price": "CNY 3.76",
+          "price_usd": "USD 0.571",
+          "price_raw": "USD 0.571",
+          "priceValue": 0.571,
+          "lower_price": 0.571,
+          "higher_price": null,
+          "price/chargeable_unit": 0.28,
+          "excel_row": "485",
+          "priceRight": "240.0",
+          "marketTag": "2.0",
+          "tags": [
+              "1702093",
+              "N820-158",
+              "Window Box"
+          ],
+          "image": "Puzzles&BoardGames/Game Chess Piece Series Airplane Chess/230730/Game Chess Piece Series Airplane Chess/image/Game Chess Piece Series Airplane Chess.jpeg",
+          "markdown": "Puzzles&BoardGames/Game Chess Piece Series Airplane Chess/230730/Game Chess Piece Series Airplane Chess/Game Chess Piece Series Airplane Chess.md"
+      }
+    ]
+  },
+  "Game Chess Piece Series Digital Chess": {
+    "230730": [
+      {
+          "id": "1702092-N820-157-230730-486",
+          "sku": "N820-157",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "Game Chess Piece Series Digital Chess",
+          "stall_number": "230730",
+          "company_code": "YS1702092",
+          "company_code_id": "1702092",
+          "product_code": "N820-157",
+          "product_name": "Game Chess Piece Series Digital Chess",
+          "name": "Game Chess Piece Series Digital Chess",
+          "packaging": "Window Box",
+          "qty_per_carton": 240,
+          "inner_box": 2,
+          "outer_carton_cm": {
+              "length": 86.0,
+              "width": 48.0,
+              "height": 91.0
+          },
+          "package_cm": {
+              "length": 8.0,
+              "width": 8.0,
+              "height": 27.0
+          },
+          "volume_cbm": 0.376,
+          "chargeable_unit_cn": 13.26,
+          "gross_weight_kg": 22.0,
+          "net_weight_kg": 20.0,
+          "price": "CNY 3.76",
+          "price_usd": "USD 0.571",
+          "price_raw": "USD 0.571",
+          "priceValue": 0.571,
+          "lower_price": 0.571,
+          "higher_price": null,
+          "price/chargeable_unit": 0.28,
+          "excel_row": "486",
+          "priceRight": "240.0",
+          "marketTag": "2.0",
+          "tags": [
+              "1702092",
+              "N820-157",
+              "Window Box"
+          ],
+          "image": "Puzzles&BoardGames/Game Chess Piece Series Digital Chess/230730/Game Chess Piece Series Digital Chess/image/Game Chess Piece Series Digital Chess.jpeg",
+          "markdown": "Puzzles&BoardGames/Game Chess Piece Series Digital Chess/230730/Game Chess Piece Series Digital Chess/Game Chess Piece Series Digital Chess.md"
+      }
+    ]
+  },
+  "Tic Tac Toe": {
+    "230819": [
+      {
+          "id": "1742559-929-12-230819-493",
+          "sku": "929-12",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "Tic Tac Toe",
+          "stall_number": "230819",
+          "company_code": "YS1742559",
+          "company_code_id": "1742559",
+          "product_code": "929-12",
+          "product_name": "Tic Tac Toe (single style)",
+          "name": "Tic Tac Toe (single style)",
+          "packaging": "Sealed Box",
+          "qty_per_carton": 120,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 66.0,
+              "width": 34.0,
+              "height": 54.0
+          },
+          "package_cm": {
+              "length": 21.3,
+              "width": 4.0,
+              "height": 10.5
+          },
+          "volume_cbm": 0.121,
+          "chargeable_unit_cn": 4.28,
+          "gross_weight_kg": 18.0,
+          "net_weight_kg": 7.0,
+          "price": "CNY 4.25",
+          "price_usd": "USD 0.645",
+          "price_raw": "USD 0.645",
+          "priceValue": 0.645,
+          "lower_price": 0.645,
+          "higher_price": null,
+          "price/chargeable_unit": 0.99,
+          "excel_row": "493",
+          "priceRight": "120.0",
+          "marketTag": "0.0",
+          "tags": [
+              "1742559",
+              "929-12",
+              "Sealed Box"
+          ],
+          "image": "Puzzles&BoardGames/Tic Tac Toe/230819/Tic Tac Toe (single style)/image/Tic Tac Toe (single style).jpeg",
+          "markdown": "Puzzles&BoardGames/Tic Tac Toe/230819/Tic Tac Toe (single style)/Tic Tac Toe (single style).md"
+      }
+    ],
+    "241119": [
+      {
+          "id": "1742560-929-12-241119-639",
+          "sku": "929-12",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "Tic Tac Toe",
+          "stall_number": "241119",
+          "company_code": "YS1742560",
+          "company_code_id": "1742560",
+          "product_code": "929-12",
+          "product_name": "Tic Tac Toe (single style)",
+          "name": "Tic Tac Toe (single style)",
+          "packaging": "Sealed Box",
+          "qty_per_carton": 120,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 66.0,
+              "width": 34.0,
+              "height": 54.0
+          },
+          "package_cm": {
+              "length": 21.3,
+              "width": 4.0,
+              "height": 10.5
+          },
+          "volume_cbm": 0.121,
+          "chargeable_unit_cn": 4.28,
+          "gross_weight_kg": 18.0,
+          "net_weight_kg": 7.0,
+          "price": "CNY 4.25",
+          "price_usd": "USD 0.645",
+          "price_raw": "USD 0.645",
+          "priceValue": 0.645,
+          "lower_price": 0.645,
+          "higher_price": null,
+          "price/chargeable_unit": 0.99,
+          "excel_row": "639",
+          "priceRight": "120.0",
+          "marketTag": "0.0",
+          "tags": [
+              "1742560",
+              "929-12",
+              "Sealed Box"
+          ],
+          "image": "Puzzles&BoardGames/Tic Tac Toe/241119/Tic Tac Toe (single style)/image/Tic Tac Toe (single style).jpeg",
+          "markdown": "Puzzles&BoardGames/Tic Tac Toe/241119/Tic Tac Toe (single style)/Tic Tac Toe (single style).md"
+      }
+    ]
+  },
+  "中古世纪兵人对战象棋": {
+    "Unassigned": [
+      {
+          "id": "76396-Unassigned-1741",
+          "sku": "76396",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "中古世纪兵人对战象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76396",
+          "product_name": "中古世纪兵人对战象棋",
+          "name": "中古世纪兵人对战象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 54.0,
+              "width": 38.5,
+              "height": 66.0
+          },
+          "package_cm": {
+              "length": 31.7,
+              "width": 26.0,
+              "height": 6.1
+          },
+          "volume_cbm": 0.137,
+          "chargeable_unit_cn": 4.84,
+          "gross_weight_kg": 23.34,
+          "net_weight_kg": 21.7,
+          "price": "CNY 40.11",
+          "price_usd": "USD 6.089",
+          "price_raw": "USD 6.089",
+          "priceValue": 6.089,
+          "lower_price": 6.089,
+          "higher_price": null,
+          "price/chargeable_unit": 8.29,
+          "excel_row": "1741",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76396",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/中古世纪兵人对战象棋/Unassigned/中古世纪兵人对战象棋/image/中古世纪兵人对战象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/中古世纪兵人对战象棋/Unassigned/中古世纪兵人对战象棋/中古世纪兵人对战象棋.md"
+      }
+    ]
+  },
+  "中古世纪狮王大战灰熊棋盘": {
+    "Unassigned": [
+      {
+          "id": "76397-Unassigned-1742",
+          "sku": "76397",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "中古世纪狮王大战灰熊棋盘",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76397",
+          "product_name": "中古世纪狮王大战灰熊棋盘",
+          "name": "中古世纪狮王大战灰熊棋盘",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 59.5,
+              "width": 30.5,
+              "height": 32.0
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 15.0,
+              "height": 4.5
+          },
+          "volume_cbm": 0.058,
+          "chargeable_unit_cn": 2.05,
+          "gross_weight_kg": 12.8,
+          "net_weight_kg": 12.0,
+          "price": "CNY 32.16",
+          "price_usd": "USD 4.882",
+          "price_raw": "USD 4.882",
+          "priceValue": 4.882,
+          "lower_price": 4.882,
+          "higher_price": null,
+          "price/chargeable_unit": 15.69,
+          "excel_row": "1742",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76397",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/中古世纪狮王大战灰熊棋盘/Unassigned/中古世纪狮王大战灰熊棋盘/image/中古世纪狮王大战灰熊棋盘.jpeg",
+          "markdown": "Puzzles&BoardGames/中古世纪狮王大战灰熊棋盘/Unassigned/中古世纪狮王大战灰熊棋盘/中古世纪狮王大战灰熊棋盘.md"
+      }
+    ]
+  },
+  "国际象棋": {
+    "Unassigned": [
+      {
+          "id": "76392-Unassigned-1736",
+          "sku": "76392",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "国际象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76392",
+          "product_name": "国际象棋",
+          "name": "国际象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 59.5,
+              "width": 30.5,
+              "height": 32.0
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 15.0,
+              "height": 4.5
+          },
+          "volume_cbm": 0.058,
+          "chargeable_unit_cn": 2.05,
+          "gross_weight_kg": 12.2,
+          "net_weight_kg": 11.6,
+          "price": "CNY 19.40",
+          "price_usd": "USD 2.945",
+          "price_raw": "USD 2.945",
+          "priceValue": 2.945,
+          "lower_price": 2.945,
+          "higher_price": null,
+          "price/chargeable_unit": 9.46,
+          "excel_row": "1736",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76392",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/image/国际象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/国际象棋.md"
+      },
+      {
+          "id": "76393-Unassigned-1737",
+          "sku": "76393",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "国际象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76393",
+          "product_name": "国际象棋",
+          "name": "国际象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 60.0,
+              "width": 31.5,
+              "height": 46.5
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 22.0,
+              "height": 4.8
+          },
+          "volume_cbm": 0.088,
+          "chargeable_unit_cn": 3.11,
+          "gross_weight_kg": 16.4,
+          "net_weight_kg": 15.8,
+          "price": "CNY 21.58",
+          "price_usd": "USD 3.276",
+          "price_raw": "USD 3.276",
+          "priceValue": 3.276,
+          "lower_price": 3.276,
+          "higher_price": null,
+          "price/chargeable_unit": 6.94,
+          "excel_row": "1737",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76393",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/image/国际象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/国际象棋.md"
+      },
+      {
+          "id": "76394-小盒规-Unassigned-1738",
+          "sku": "76394-小盒规",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "国际象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76394-小盒规",
+          "product_name": "国际象棋",
+          "name": "国际象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 59.5,
+              "width": 30.5,
+              "height": 32.0
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 15.0,
+              "height": 4.5
+          },
+          "volume_cbm": 0.058,
+          "chargeable_unit_cn": 2.05,
+          "gross_weight_kg": 14.5,
+          "net_weight_kg": 13.9,
+          "price": "CNY 34.88",
+          "price_usd": "USD 5.295",
+          "price_raw": "USD 5.295",
+          "priceValue": 5.295,
+          "lower_price": 5.295,
+          "higher_price": null,
+          "price/chargeable_unit": 17.01,
+          "excel_row": "1738",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76394-小盒规",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/image/国际象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/国际象棋.md"
+      },
+      {
+          "id": "76394-中盒规-Unassigned-1739",
+          "sku": "76394-中盒规",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "国际象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76394-中盒规",
+          "product_name": "国际象棋",
+          "name": "国际象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 60.0,
+              "width": 31.5,
+              "height": 46.5
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 22.0,
+              "height": 4.8
+          },
+          "volume_cbm": 0.088,
+          "chargeable_unit_cn": 3.11,
+          "gross_weight_kg": 16.0,
+          "net_weight_kg": 14.0,
+          "price": "CNY 34.88",
+          "price_usd": "USD 5.295",
+          "price_raw": "USD 5.295",
+          "priceValue": 5.295,
+          "lower_price": 5.295,
+          "higher_price": null,
+          "price/chargeable_unit": 11.22,
+          "excel_row": "1739",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76394-中盒规",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/image/国际象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/国际象棋.md"
+      },
+      {
+          "id": "76395-Unassigned-1740",
+          "sku": "76395",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "国际象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76395",
+          "product_name": "国际象棋",
+          "name": "国际象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 59.5,
+              "width": 30.5,
+              "height": 32.0
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 15.0,
+              "height": 4.5
+          },
+          "volume_cbm": 0.058,
+          "chargeable_unit_cn": 2.05,
+          "gross_weight_kg": 12.2,
+          "net_weight_kg": 11.6,
+          "price": "CNY 21.58",
+          "price_usd": "USD 3.276",
+          "price_raw": "USD 3.276",
+          "priceValue": 3.276,
+          "lower_price": 3.276,
+          "higher_price": null,
+          "price/chargeable_unit": 10.53,
+          "excel_row": "1740",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76395",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/image/国际象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/国际象棋.md"
+      },
+      {
+          "id": "76398-Unassigned-1743",
+          "sku": "76398",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "国际象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76398",
+          "product_name": "国际象棋",
+          "name": "国际象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 60.0,
+              "width": 31.5,
+              "height": 46.5
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 22.0,
+              "height": 4.8
+          },
+          "volume_cbm": 0.088,
+          "chargeable_unit_cn": 3.11,
+          "gross_weight_kg": 27.0,
+          "net_weight_kg": 26.4,
+          "price": "CNY 30.30",
+          "price_usd": "USD 4.600",
+          "price_raw": "USD 4.600",
+          "priceValue": 4.6,
+          "lower_price": 4.6,
+          "higher_price": null,
+          "price/chargeable_unit": 9.74,
+          "excel_row": "1743",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76398",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/image/国际象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/国际象棋.md"
+      },
+      {
+          "id": "76399-Unassigned-1744",
+          "sku": "76399",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "国际象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76399",
+          "product_name": "国际象棋",
+          "name": "国际象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 60.0,
+              "width": 31.5,
+              "height": 46.5
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 22.0,
+              "height": 4.8
+          },
+          "volume_cbm": 0.088,
+          "chargeable_unit_cn": 3.11,
+          "gross_weight_kg": 20.0,
+          "net_weight_kg": 18.2,
+          "price": "CNY 40.11",
+          "price_usd": "USD 6.089",
+          "price_raw": "USD 6.089",
+          "priceValue": 6.089,
+          "lower_price": 6.089,
+          "higher_price": null,
+          "price/chargeable_unit": 12.9,
+          "excel_row": "1744",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76399",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/image/国际象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/国际象棋.md"
+      },
+      {
+          "id": "76402-Unassigned-1747",
+          "sku": "76402",
+          "href": "",
+          "group": "Puzzles & Board Games",
+          "category": "国际象棋",
+          "stall_number": "Unassigned",
+          "company_code": "Unassigned",
+          "company_code_id": "Unassigned",
+          "product_code": "76402",
+          "product_name": "国际象棋",
+          "name": "国际象棋",
+          "packaging": "Color Box",
+          "qty_per_carton": 24,
+          "inner_box": 0,
+          "outer_carton_cm": {
+              "length": 59.5,
+              "width": 30.5,
+              "height": 32.0
+          },
+          "package_cm": {
+              "length": 29.0,
+              "width": 15.0,
+              "height": 4.5
+          },
+          "volume_cbm": 0.058,
+          "chargeable_unit_cn": 2.05,
+          "gross_weight_kg": 21.0,
+          "net_weight_kg": 19.9,
+          "price": "CNY 19.40",
+          "price_usd": "USD 2.945",
+          "price_raw": "USD 2.945",
+          "priceValue": 2.945,
+          "lower_price": 2.945,
+          "higher_price": null,
+          "price/chargeable_unit": 9.46,
+          "excel_row": "1747",
+          "priceRight": "24.0",
+          "marketTag": "",
+          "tags": [
+              "Unassigned",
+              "76402",
+              "Color Box"
+          ],
+          "image": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/image/国际象棋.jpeg",
+          "markdown": "Puzzles&BoardGames/国际象棋/Unassigned/国际象棋/国际象棋.md"
+      }
+    ]
+  }
+};

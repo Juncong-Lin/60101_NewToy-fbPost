@@ -1,0 +1,176 @@
+/* Image Magnifier Styles */
+
+.image-magnifier-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.image-magnifier-container:hover {
+  cursor: crosshair;
+}
+
+.image-magnifier-container.magnifying img {
+  filter: none;
+}
+
+/* ── In-place zoom (mobile/tablet) ── */
+.image-magnifier-container.inplace-zoom {
+  cursor: move;
+  overflow: hidden;
+}
+
+.image-magnifier-container.inplace-zoom img {
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+
+.magnifier-lens {
+  position: absolute;
+  border: 2px solid #3498db;
+  border-radius: 4px;
+  background: rgba(52, 152, 219, 0.25);
+  pointer-events: none;
+  display: none;
+  z-index: 10;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: lensAppear 0.15s ease-out;
+}
+
+@keyframes lensAppear {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── Result panel (desktop side-panel zoom) ── */
+.magnifier-result {
+  position: fixed;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  overflow: hidden;
+  display: none;
+  z-index: 10002;
+  pointer-events: none;
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  animation: resultAppear 0.2s ease-out;
+}
+
+@keyframes resultAppear {
+  from { opacity: 0; transform: scale(0.98) translateY(-5px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.magnifier-result::before {
+  content: '';
+  display: none;
+}
+
+/* Hide the toggle button since we're using hover/tap activation */
+.magnifier-toggle {
+  display: none !important;
+}
+
+/* ── Desktop: default sizes ── */
+.magnifier-lens {
+  width: 150px;
+  height: 150px;
+}
+
+.magnifier-result {
+  width: 400px;
+  height: 400px;
+}
+
+/* ── Mobile ≤768px: hide result panel (in-place zoom used instead) ── */
+@media (max-width: 768px) {
+  .magnifier-lens {
+    display: none !important;  /* No lens on mobile – in-place zoom instead */
+  }
+
+  .magnifier-result {
+    display: none !important;  /* No side panel on mobile */
+  }
+
+  .image-magnifier-container {
+    cursor: zoom-in;
+  }
+
+  .image-magnifier-container.inplace-zoom {
+    cursor: move;
+  }
+}
+
+/* ── Landscape on short screens: cap result height ── */
+@media (orientation: landscape) and (max-height: 500px) {
+  .magnifier-lens {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .magnifier-result {
+    max-height: calc(100vh - 20px) !important;
+  }
+}
+
+/* ── Small desktop / tablet ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .magnifier-lens {
+    width: 120px;
+    height: 120px;
+  }
+
+  .magnifier-result {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+/* High DPI display adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .magnifier-result {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Smooth transitions */
+.magnifier-lens,
+.magnifier-result {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.image-magnifier-container img {
+  transition: filter 0.3s ease;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .magnifier-lens,
+  .magnifier-result,
+  .magnifier-toggle,
+  .image-magnifier-container img {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .magnifier-toggle,
+  .magnifier-lens,
+  .magnifier-result {
+    display: none !important;
+  }
+}

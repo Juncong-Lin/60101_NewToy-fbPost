@@ -1,0 +1,26 @@
+# Ignore for Python cache files
+__pycache__/
+
+# Ignore directory for products_up_helper/
+products_to_toy_design_help_folder/products_ys_images/
+products_to_toy_design_help_folder/
+
+# Ignore directory for toy folder
+products_toy/toy/each_brand_products/
+products_toy/toy/logs/
+/products_toy/toy/category_lookup.json
+/products_toy/toy/group-manifest.json
+/products_toy/toy/skipped_products.json
+/products_toy/toy/toy.js
+/products_toy/toy/toy.md
+
+# Ignore copy of toy copy products
+products_toy/toy copy/
+products_toy/toy-copy/
+
+# Ignore specific toy-Chinese.py and toy.py scripts
+/products_toy/toy-Chinese.py
+/products_toy/toy.py
+
+# Ignore specific redesign-qili-logo.py script
+/scripts/*.py
